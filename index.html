@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+{% autoescape true %}
+<html>
+  <body>
+      <table style="margin: 0px auto;">
+      	<th>
+      		<td>Department: {{ dep }}</td>
+      	</th>
+      	<th>
+      		<td>Week: {{ week }}</td>
+      	</th>
+      	<tr>
+      		<td>Uploader: {{ user.user_id() }}</td>
+      	</tr>
+      	<tr>
+      		<td><img src="{{ filename }}" width="75%"></td>
+      	</tr>
+
+      </table>
+
+  </body>
+</html>
+{% endautoescape %}
