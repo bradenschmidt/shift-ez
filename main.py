@@ -29,13 +29,20 @@ def homepage():
         url = users.create_login_url('')
         url_linktext = 'Login'
 
-    filename = "images/schedule/s1.jpg"
+    schedules  = []
+
+    schedule = {
+        'user': 'Braden',
+        'dep': 'Lumber',
+        'week': '1',
+        'image': url_for('static', filename='images/schedule/s1.jpg')
+    }
+
+    schedules.append(schedule)
+    schedules.append(schedule)
 
     template_values = {
-        'dep': "Lumber",
-        'week': 1,
-        'user': user,
-        'filename': url_for('static', filename=filename)
+        'schedules': schedules
     }
 
     template = JINJA_ENVIRONMENT.get_template('index.html')

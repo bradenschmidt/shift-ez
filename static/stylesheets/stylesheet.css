@@ -1,0 +1,16 @@
+table, th, td {
+    border: 1px solid black;
+}
+
+table {
+    margin: 0px auto;
+    width: 75%
+}
+
+img {
+	width: 75%
+}
+
+.schedule_image {
+	text-align: center;
+}
