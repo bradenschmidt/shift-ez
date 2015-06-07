@@ -6,6 +6,8 @@
   	</head>
 
   <body>
+
+  	<div id="title">Shift EZ</div>
       <table>
 
 		{% for schedule in schedules %}
@@ -13,12 +15,14 @@
 
 				<table>
 			      	<tr>
+			      		<td>Store: {{ schedule.store }}</td>
 			      		<td>Department: {{ schedule.dep }}</td>
 			      		<td>Week: {{ schedule.week }}</td>
-			      		<td>Uploader: {{ schedule.user }}</td>
+			      		<td>Uploader: {{ schedule.user_name }} ({{ schedule.user_id }})</td>
+			      		<td>Date: {{ schedule.date }}</td>
 			      	</tr>
 			      	<tr>
-			      		<td class="schedule_image" colspan="3"><img src="{{ schedule.image }}"></td>
+			      		<td class="schedule_image" colspan="5"><img src="{{ schedule.image }}"></td>
 			      	</tr>
 			    </table>
 			</tr>
