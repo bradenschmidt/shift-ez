@@ -1,0 +1,24 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <title>Upload</title>
+    </head>
+
+    <body>
+
+	    <form action="{{ upload_url }}" method="POST" enctype="multipart/form-data">
+
+		    Store: <input type="text" name="store" value="8th St Coop Home Centre"><br>
+		    User ID: <input type="text" name="user_id" value="bps"><br>
+		    User Name: <input type="text" name="user_name" value="Braden"><br>
+		    Department: <input type="text" name="dep" value="Lumber"><br>
+		    Year: <input type="text" name="year" value="2015"><br>
+		    Week: <input type="text" name="week" value="20"><br>
+
+		    Upload File: <input type="file" name="file"><br>
+		    <input type="submit" name="submit" value="Submit">
+	    </form>
+
+    </body>
+</html>

@@ -1,11 +1,16 @@
 import os
+import logging
 
 from flask import Flask, url_for, jsonify, request
 
+from operator import itemgetter
+
 import jinja2
 
-# from google.appengine.api import users
-from google.appengine.ext import ndb
+from google.appengine.api import images  # , users
+from google.appengine.ext import ndb, blobstore
+
+from werkzeug.http import parse_options_header
 
 from models.schedule import Schedule
 
@@ -28,27 +33,83 @@ def schedule_key(schedule_name=DEFAULT_SCHEDULE_NAME):
     return ndb.Key('Schedule', schedule_name)
 
 
-def getSchedules():
-    schedules = []
-
+def createSchedules():
     schedule1 = Schedule(store='8th St Coop Home Centre',
                          user_id='bps',
                          user_name='Braden',
                          dep='Lumber',
-                         week='1',
-                         image=url_for('static', filename='images/schedule/s1.jpg'))
+                         year=2015,
+                         week=18,
+                         image=url_for('static',
+                                       filename='images/schedule/s1.jpg'))
 
     schedule2 = Schedule(store='8th St Coop Home Centre',
                          user_id='zap',
                          user_name='Zach',
                          dep='Lumber',
-                         week='2',
-                         image=url_for('static', filename='images/schedule/s2.jpg'))
+                         year=2015,
+                         week=19,
+                         image=url_for('static',
+                                       filename='images/schedule/s2.jpg'))
 
-    schedules.append(schedule1.to_dict())
-    schedules.append(schedule2.to_dict())
+    schedule1.put()
+    schedule2.put()
+
+
+def getSchedules():
+    # Fetch schedules by user_id and convert to dicts
+    schedules = [s.to_dict() for s in
+                 Schedule.query(Schedule.user_id == 'bps').fetch()]
+
+    # print(schedules)
+
+    if(len(schedules) > 0):
+        # Sort schedules by year then week
+        schedules = sorted(schedules, key=itemgetter('year', 'week'))
 
     return schedules
+
+
+@app.route('/upload')
+def uploadImageForm():
+    upload_url = blobstore.create_upload_url('/upload_image')
+
+    template_values = {
+        'upload_url': upload_url
+    }
+
+    template = JINJA_ENVIRONMENT.get_template('upload.html')
+    return template.render(template_values)
+
+
+@app.route('/upload_image', methods=['POST'])
+def uploadImage():
+    image = request.files['file']
+
+    header = image.headers['Content-Type']
+    parsed_header = parse_options_header(header)
+    blob_key_str = parsed_header[1]['blob-key']
+
+    logging.info(blob_key_str)
+
+    store = request.form.get('store')
+    user_id = request.form.get('user_id')
+    user_name = request.form.get('user_name')
+    dep = request.form.get('dep')
+    year = request.form.get('year', type=int)
+    week = request.form.get('week', type=int)
+
+    schedule = Schedule(store=store,
+                        user_id=user_id,
+                        user_name=user_name,
+                        dep=dep,
+                        year=year,
+                        week=week,
+                        image_blob=blobstore.BlobKey(blob_key_str))
+
+    schedule.put()
+
+    return 'SUCCESS'
 
 
 def getSchedulesByUsername(username):
@@ -72,6 +133,12 @@ def get():
     else:
         schedules = getSchedules()
 
+    print(schedules)
+
+    for s in schedules:
+        s['image'] = images.get_serving_url(s['image_blob'])
+        del s['image_blob']
+
     return jsonify(schedules=schedules)
 
 
@@ -86,6 +153,10 @@ def index():
     #     url_linktext = 'Login'
 
     schedules = getSchedules()
+
+    for s in schedules:
+        s['image'] = images.get_serving_url(s['image_blob'])
+        del s['image_blob']
 
     template_values = {
         'schedules': schedules

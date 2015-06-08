@@ -7,5 +7,6 @@ class Schedule(ndb.Model):
     user_name = ndb.StringProperty(required=True)
     store = ndb.StringProperty(required=True)
     dep = ndb.StringProperty(required=True)
-    week = ndb.StringProperty(required=True)
-    image = ndb.StringProperty(required=True)
+    year = ndb.IntegerProperty(required=True)
+    week = ndb.IntegerProperty(required=True)
+    image_blob = ndb.BlobKeyProperty()
