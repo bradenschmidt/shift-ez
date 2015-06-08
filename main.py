@@ -65,7 +65,8 @@ def getSchedules():
 
     if(len(schedules) > 0):
         # Sort schedules by year then week
-        schedules = sorted(schedules, key=itemgetter('year', 'week'))
+        schedules = sorted(schedules, key=itemgetter('week'), reverse=True)
+        schedules = sorted(schedules, key=itemgetter('year'), reverse=True)
 
     return schedules
 
