@@ -1,11 +1,11 @@
 import os
 import logging
 
+import jinja2
+
 from flask import Flask, url_for, jsonify, request
 
 from operator import itemgetter
-
-import jinja2
 
 from google.appengine.api import images  # , users
 from google.appengine.ext import ndb, blobstore
@@ -13,6 +13,7 @@ from google.appengine.ext import ndb, blobstore
 from werkzeug.http import parse_options_header
 
 from models.schedule import Schedule
+
 
 app = Flask(__name__)
 app.config['DEBUG'] = True
