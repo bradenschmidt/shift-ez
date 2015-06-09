@@ -71,6 +71,41 @@ def getSchedules():
     return schedules
 
 
+def getSchedulesByKey(user_id='', store='', dep='', year='', week=''):
+    if(user_id):
+        schedules = Schedule.query(Schedule.user_id == user_id).fetch()
+    elif(store):
+        print store
+        if(dep):
+            print dep
+            schedules = Schedule.query(ndb.AND(Schedule.store == store,
+                                       Schedule.dep == dep)).fetch()
+        else:
+            schedules = Schedule.query(Schedule.store == store).fetch()
+    elif(year):
+        if(week):
+            schedules = Schedule.query(ndb.AND(Schedule.week == week,
+                                       Schedule.year == year)).fetch()
+        else:
+            schedules = Schedule.query(Schedule.year == year).fetch()
+
+    else:
+        logging.info('No keys given')
+        schedules = []
+
+    # Fetch schedules by user_id and convert to dicts
+    schedules = [s.to_dict() for s in schedules]
+
+    # print(schedules)
+
+    if(len(schedules) > 0):
+        # Sort schedules by year then week
+        schedules = sorted(schedules, key=itemgetter('week'), reverse=True)
+        schedules = sorted(schedules, key=itemgetter('year'), reverse=True)
+
+    return schedules
+
+
 @app.route('/upload')
 def uploadImageForm():
     upload_url = blobstore.create_upload_url('/upload_image')
@@ -113,29 +148,33 @@ def uploadImage():
     return 'SUCCESS'
 
 
-def getSchedulesByUsername(username):
-    schedules = getSchedules()
-
-    s = []
-
-    for schedule in schedules:
-        if(schedule.username == username):
-            s.append(schedule)
-
-    return s
-
-
 @app.route('/get')
 def get():
-    username = request.args.get('username')
+    user_id = request.args.get('user_id')
+    store = request.values.get('store')
+    dep = request.args.get('dep')
+    year = request.args.get('year')
+    week = request.args.get('week')
 
-    if(username):
-        schedules = getSchedulesByUsername()
+    if(user_id):
+        schedules = getSchedulesByKey(user_id=user_id)
+    elif(store):
+        if(dep):
+            schedules = getSchedulesByKey(store=store, dep=dep)
+        else:
+            schedules = getSchedulesByKey(store=store)
+    elif(year):
+        if(week):
+            schedules = getSchedulesByKey(year=int(year), week=int(week))
+        else:
+            schedules = getSchedulesByKey(year=int(year))
     else:
-        schedules = getSchedules()
+        logging.info('No args given')
+        schedules = []
 
     print(schedules)
 
+    # Convert blob key to image url for each schedule, the remove blob key
     for s in schedules:
         s['image'] = images.get_serving_url(s['image_blob'])
         del s['image_blob']
