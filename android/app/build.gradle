@@ -29,4 +29,6 @@ dependencies {
     compile 'com.android.support:appcompat-v7:22.2.0'
     compile 'com.google.code.gson:gson:2.3'
     compile 'com.octo.android.robospice:robospice-retrofit:1.4.14'
+
+    compile 'com.squareup.picasso:picasso:2.5.2'
 }

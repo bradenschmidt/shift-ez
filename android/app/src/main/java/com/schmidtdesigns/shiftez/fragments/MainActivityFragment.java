@@ -5,14 +5,18 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.octo.android.robospice.persistence.DurationInMillis;
 import com.octo.android.robospice.persistence.exception.SpiceException;
 import com.octo.android.robospice.request.listener.RequestListener;
 import com.schmidtdesigns.shiftez.R;
+import com.schmidtdesigns.shiftez.models.Schedule;
 import com.schmidtdesigns.shiftez.models.ScheduleResponse;
 import com.schmidtdesigns.shiftez.network.ScheduleRetrofitRequest;
+import com.squareup.picasso.Picasso;
 
 /**
  * A placeholder fragment containing a simple view.
@@ -65,7 +69,13 @@ public class MainActivityFragment extends BaseFragment {
             Toast.makeText(getActivity(), "Schedule Request Success", Toast.LENGTH_SHORT).show();
             Log.d(TAG, result.toString());
 
+            Schedule s = result.getSchedule().get(0);
 
+            ImageView imageView = (ImageView) getActivity().findViewById(R.id.imageView);
+            Picasso.with(getActivity()).load(s.getImage()).into(imageView);
+
+            TextView textView = (TextView) getActivity().findViewById(R.id.textView);
+            textView.setText("Year: " + s.getYear() + " Week: " + s.getWeek());
         }
     }
 }
