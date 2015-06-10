@@ -1,7 +1,21 @@
-<fragment xmlns:android="http://schemas.android.com/apk/res/android"
-          xmlns:tools="http://schemas.android.com/tools"
+<LinearLayout
+    android:id="@+id/main_parent_view"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    android:orientation="vertical"
+    tools:context=".MainActivity">
+
+    <include
+        android:id="@+id/toolbar"
+        layout="@layout/toolbar"/>
+
+    <fragment
           android:id="@+id/fragment"
           android:name="com.schmidtdesigns.shiftez.fragments.ScheduleFragment"
           tools:layout="@layout/fragment_schedule"
           android:layout_width="match_parent"
           android:layout_height="match_parent"/>
+    </LinearLayout>
