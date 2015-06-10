@@ -10,11 +10,11 @@ public class ScheduleResponse {
     @SerializedName("schedules")
     private Schedule.List schedules;
 
-    public Schedule.List getSchedule() {
+    public Schedule.List getSchedules() {
         return schedules;
     }
 
-    public void setSchedule(Schedule.List schedules) {
+    public void setSchedules(Schedule.List schedules) {
         this.schedules = schedules;
     }
 

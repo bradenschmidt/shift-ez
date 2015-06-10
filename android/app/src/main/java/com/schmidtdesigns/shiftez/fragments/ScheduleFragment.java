@@ -1,37 +1,39 @@
 package com.schmidtdesigns.shiftez.fragments;
 
 import android.os.Bundle;
+import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.octo.android.robospice.persistence.DurationInMillis;
 import com.octo.android.robospice.persistence.exception.SpiceException;
 import com.octo.android.robospice.request.listener.RequestListener;
 import com.schmidtdesigns.shiftez.R;
-import com.schmidtdesigns.shiftez.models.Schedule;
+import com.schmidtdesigns.shiftez.adapters.ScheduleAdapter;
 import com.schmidtdesigns.shiftez.models.ScheduleResponse;
 import com.schmidtdesigns.shiftez.network.ScheduleRetrofitRequest;
-import com.squareup.picasso.Picasso;
 
 /**
  * A placeholder fragment containing a simple view.
  */
-public class MainActivityFragment extends BaseFragment {
+public class ScheduleFragment extends BaseFragment {
 
-    private static final String TAG = "MainActivityFragment";
+    private static final String TAG = "ScheduleFragment";
+    private ViewPager mPager;
+    private ScheduleAdapter mPagerAdapter;
 
-    public MainActivityFragment() {
+    public ScheduleFragment() {
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
+        ViewGroup rootView = (ViewGroup) inflater.inflate(
+                R.layout.fragment_schedule, container, false);
 
         /*
         * Request object for schedules
@@ -40,7 +42,11 @@ public class MainActivityFragment extends BaseFragment {
         ScheduleRetrofitRequest scheduleRequest = new ScheduleRetrofitRequest(year);
         getSpiceManager().execute(scheduleRequest, "schedules", DurationInMillis.ONE_MINUTE, new ListScheduleRequestListener());
 
-        return inflater.inflate(R.layout.fragment_main, container, false);
+        // Instantiate a ViewPager and a PagerAdapter.
+        mPager = (ViewPager) rootView.findViewById(R.id.schedulePager);
+
+
+        return rootView;
     }
 
     /**
@@ -69,13 +75,19 @@ public class MainActivityFragment extends BaseFragment {
             Toast.makeText(getActivity(), "Schedule Request Success", Toast.LENGTH_SHORT).show();
             Log.d(TAG, result.toString());
 
-            Schedule s = result.getSchedule().get(0);
+            /**
+            Schedule s = result.getSchedules().get(0);
 
             ImageView imageView = (ImageView) getActivity().findViewById(R.id.imageView);
             Picasso.with(getActivity()).load(s.getImage()).into(imageView);
 
             TextView textView = (TextView) getActivity().findViewById(R.id.textView);
             textView.setText("Year: " + s.getYear() + " Week: " + s.getWeek());
+            **/
+
+            mPagerAdapter = new ScheduleAdapter(getActivity().getApplicationContext(), result.getSchedules());
+            mPager.setAdapter(mPagerAdapter);
+
         }
     }
 }
