@@ -15,6 +15,11 @@ from werkzeug.http import parse_options_header
 from models.schedule import Schedule
 
 
+"""
+    Use 'appcfg.py -A shift-ez update app' to deploy on gae
+    Use 'dev_appserver.py .' to deploy locally for testing
+"""
+
 app = Flask(__name__)
 app.config['DEBUG'] = True
 
@@ -99,11 +104,6 @@ def getSchedulesByKey(user_id='', store='', dep='', year='', week=''):
 
     # print(schedules)
 
-    if(len(schedules) > 0):
-        # Sort schedules by year then week
-        schedules = sorted(schedules, key=itemgetter('week'), reverse=True)
-        schedules = sorted(schedules, key=itemgetter('year'), reverse=True)
-
     return schedules
 
 
@@ -156,6 +156,7 @@ def get():
     dep = request.args.get('dep')
     year = request.args.get('year')
     week = request.args.get('week')
+    reverse = request.args.get('reverse')
 
     if(user_id):
         schedules = getSchedulesByKey(user_id=user_id)
@@ -173,7 +174,15 @@ def get():
         logging.info('No args given')
         schedules = []
 
-    print(schedules)
+    if(len(schedules) > 0):
+        if(reverse == 'true'):
+            # Sort schedules by year then week with newest schedule first
+            schedules = sorted(schedules, key=itemgetter('week'), reverse=True)
+            schedules = sorted(schedules, key=itemgetter('year'), reverse=True)
+        else:
+            # Sort schedules by year then week with oldest schedule first
+            schedules = sorted(schedules, key=itemgetter('week'))
+            schedules = sorted(schedules, key=itemgetter('year'))
 
     # Convert blob key to image url for each schedule, the remove blob key
     for s in schedules:
