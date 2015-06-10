@@ -10,20 +10,22 @@ import java.util.HashMap;
  */
 public class ScheduleRetrofitRequest extends RetrofitSpiceRequest<ScheduleResponse, Api> {
 
-    private final int year;
     private String TAG = "ScheduleRetrofitRequest";
 
+    private final int mYear;
+    private final boolean mReverse;
 
-
-    public ScheduleRetrofitRequest(int year) {
+    public ScheduleRetrofitRequest(int year, Boolean reverse) {
         super(ScheduleResponse.class, Api.class);
-        this.year = year;
+        this.mYear = year;
+        this.mReverse = reverse;
     }
 
     @Override
     public ScheduleResponse loadDataFromNetwork() throws Exception {
         HashMap<String,String> scheduleParams = new HashMap<String, String>();
-        scheduleParams.put("year", String.valueOf(year));
+        scheduleParams.put("year", String.valueOf(mYear));
+        scheduleParams.put("reverse", String.valueOf(mReverse));
 
          return getService().getSchedules(scheduleParams);
     }

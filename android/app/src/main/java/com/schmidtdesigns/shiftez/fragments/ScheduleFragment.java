@@ -39,7 +39,8 @@ public class ScheduleFragment extends BaseFragment {
         * Request object for schedules
 	    */
         int year = 2015;
-        ScheduleRetrofitRequest scheduleRequest = new ScheduleRetrofitRequest(year);
+        Boolean reverse = false;
+        ScheduleRetrofitRequest scheduleRequest = new ScheduleRetrofitRequest(year, reverse);
         getSpiceManager().execute(scheduleRequest, "schedules", DurationInMillis.ONE_MINUTE, new ListScheduleRequestListener());
 
         // Instantiate a ViewPager and a PagerAdapter.
