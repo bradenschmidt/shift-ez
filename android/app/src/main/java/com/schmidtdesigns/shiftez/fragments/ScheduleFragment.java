@@ -1,11 +1,19 @@
 package com.schmidtdesigns.shiftez.fragments;
 
+import android.app.Activity;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.octo.android.robospice.persistence.DurationInMillis;
@@ -16,6 +24,11 @@ import com.schmidtdesigns.shiftez.adapters.ScheduleAdapter;
 import com.schmidtdesigns.shiftez.models.ScheduleResponse;
 import com.schmidtdesigns.shiftez.network.ScheduleRetrofitRequest;
 
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 /**
  * A placeholder fragment containing a simple view.
  */
@@ -24,6 +37,8 @@ public class ScheduleFragment extends BaseFragment {
     private static final String TAG = "ScheduleFragment";
     private ViewPager mPager;
     private ScheduleAdapter mPagerAdapter;
+    private Uri mFileUri;
+    private Uri selectedImage;
 
     public ScheduleFragment() {
     }
@@ -45,6 +60,14 @@ public class ScheduleFragment extends BaseFragment {
 
         // Instantiate a ViewPager and a PagerAdapter.
         mPager = (ViewPager) rootView.findViewById(R.id.schedulePager);
+
+        View v = rootView.findViewById(R.id.fab);
+        v.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                takePhoto();
+            }
+        });
 
 
         return rootView;
@@ -91,4 +114,57 @@ public class ScheduleFragment extends BaseFragment {
 
         }
     }
+
+    private void takePhoto() {
+        // Check Camera
+        if (getActivity().getApplicationContext().getPackageManager().hasSystemFeature(
+                PackageManager.FEATURE_CAMERA)) {
+            // Open default camera
+            Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            intent.putExtra(MediaStore.EXTRA_OUTPUT, mFileUri);
+
+            // start the image capture Intent
+            startActivityForResult(intent, 100);
+
+        } else {
+            Toast.makeText(getActivity(), "Camera not supported", Toast.LENGTH_LONG).show();
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == 100 && resultCode == Activity.RESULT_OK) {
+            Bundle extras = data.getExtras();
+
+            Bitmap bitmap = (Bitmap) extras.get("data");
+
+            mPager.setVisibility(View.INVISIBLE);
+
+            ImageView imageView = (ImageView) getActivity().findViewById(R.id.imageView2);
+            imageView.setImageBitmap(bitmap);
+            imageView.setAdjustViewBounds(true);
+
+            imageView.setVisibility(View.VISIBLE);
+        }
+    }
+
+    String mCurrentPhotoPath;
+
+    private File createImageFile() throws IOException {
+        // Create an image file name
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String imageFileName = "JPEG_" + timeStamp + "_";
+        File storageDir = Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_PICTURES);
+        File image = File.createTempFile(
+                imageFileName,  /* prefix */
+                ".jpg",         /* suffix */
+                storageDir      /* directory */
+        );
+
+        // Save a file: path for use with ACTION_VIEW intents
+        mCurrentPhotoPath = "file:" + image.getAbsolutePath();
+        return image;
+    }
+
 }
