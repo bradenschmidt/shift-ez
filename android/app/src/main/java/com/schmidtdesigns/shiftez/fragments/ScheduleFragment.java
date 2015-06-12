@@ -23,6 +23,8 @@ import com.octo.android.robospice.request.listener.RequestListener;
 import com.schmidtdesigns.shiftez.R;
 import com.schmidtdesigns.shiftez.adapters.ScheduleAdapter;
 import com.schmidtdesigns.shiftez.models.ScheduleResponse;
+import com.schmidtdesigns.shiftez.network.ImageUploadUrl;
+import com.schmidtdesigns.shiftez.network.ImageUploadUrlRetrofitRequest;
 import com.schmidtdesigns.shiftez.network.ScheduleRetrofitRequest;
 
 import java.io.File;
@@ -85,13 +87,17 @@ public class ScheduleFragment extends BaseFragment {
 
             mPager.setVisibility(View.INVISIBLE);
 
-            Bitmap bitmap = BitmapFactory.decodeFile(new File (mCurrentPhotoPath).getAbsolutePath());
+            File imageFile = new File(mCurrentPhotoPath);
+
+            Bitmap bitmap = BitmapFactory.decodeFile(imageFile.getAbsolutePath());
 
             ImageView imageView = (ImageView) getActivity().findViewById(R.id.imageView2);
             imageView.setImageBitmap(bitmap);
             //imageView.setAdjustViewBounds(true);
 
             imageView.setVisibility(View.VISIBLE);
+
+            uploadImage(imageFile);
         } else {
             Log.e(TAG, "Got bad req code: " + requestCode + " and bad resultCode: " + resultCode);
         }
@@ -158,6 +164,13 @@ public class ScheduleFragment extends BaseFragment {
         getActivity().sendBroadcast(mediaScanIntent);
     }
 
+    public void uploadImage(File imageFile) {
+        // Get an image upload url
+        ImageUploadUrlRetrofitRequest imageUploadUrlRequest = new ImageUploadUrlRetrofitRequest();
+        getSpiceManager().execute(imageUploadUrlRequest, "schedules", DurationInMillis.ONE_SECOND, new ImageUploadUrlListener());
+
+    }
+
     /**
      * Called on completion of the api request to get the Schedules.
      * Deals with api call failure -
@@ -200,4 +213,18 @@ public class ScheduleFragment extends BaseFragment {
         }
     }
 
+    private class ImageUploadUrlListener implements RequestListener<com.schmidtdesigns.shiftez.network.ImageUploadUrl> {
+        @Override
+        public void onRequestFailure(SpiceException spiceException) {
+            //TODO
+            Log.e(TAG, spiceException.getCause().toString());
+        }
+
+        @Override
+        public void onRequestSuccess(ImageUploadUrl imageUploadUrl) {
+            Log.i(TAG, "Got an upload url: " + imageUploadUrl.getUploadUrl());
+
+
+        }
+    }
 }

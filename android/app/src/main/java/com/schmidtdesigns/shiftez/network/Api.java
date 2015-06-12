@@ -17,8 +17,13 @@ import retrofit.http.QueryMap;
 public interface Api {
 
     ///// Schedules /////
+    // Get the schedules with the given params
     @GET("/get")
     ScheduleResponse getSchedules(@QueryMap Map<String, String> scheduleParams);
+
+    // Get an image upload link
+    @GET("/upload/link")
+    ImageUploadUrl getImageUploadURL();
 
     //@PUT("/users/{userid}/sections")
     //Boolean addUserToSection(@Path("userid") String userId, @QueryMap Map<String, String> userSectionParams);
