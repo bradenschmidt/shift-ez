@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -34,11 +35,13 @@ import java.util.Date;
  */
 public class ScheduleFragment extends BaseFragment {
 
+    static final int REQUEST_TAKE_PHOTO = 1;
     private static final String TAG = "ScheduleFragment";
     private ViewPager mPager;
     private ScheduleAdapter mPagerAdapter;
-    private Uri mFileUri;
-    private Uri selectedImage;
+
+    private String mCurrentPhotoPath;
+
 
     public ScheduleFragment() {
     }
@@ -65,12 +68,94 @@ public class ScheduleFragment extends BaseFragment {
         v.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                takePhoto();
+                dispatchTakePictureIntent();
             }
         });
 
 
         return rootView;
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQUEST_TAKE_PHOTO && resultCode == Activity.RESULT_OK) {
+            galleryAddPic();
+
+            Log.i(TAG, "Captured image: " + mCurrentPhotoPath);
+
+            mPager.setVisibility(View.INVISIBLE);
+
+            Bitmap bitmap = BitmapFactory.decodeFile(new File (mCurrentPhotoPath).getAbsolutePath());
+
+            ImageView imageView = (ImageView) getActivity().findViewById(R.id.imageView2);
+            imageView.setImageBitmap(bitmap);
+            //imageView.setAdjustViewBounds(true);
+
+            imageView.setVisibility(View.VISIBLE);
+        } else {
+            Log.e(TAG, "Got bad req code: " + requestCode + " and bad resultCode: " + resultCode);
+        }
+    }
+
+    private File createImageFile() throws IOException {
+        // Create an image file name
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String imageFileName = "JPEG_" + timeStamp + "_";
+        File storageDir = new File(Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_PICTURES), "shiftez");
+
+        if (! storageDir.exists()) {
+            if (! storageDir.mkdirs()) {
+                Log.e(TAG, "Failed to create directory.");
+                return null;
+            }
+        }
+
+        File image = File.createTempFile(
+                imageFileName,  /* prefix */
+                ".jpg",         /* suffix */
+                storageDir      /* directory */
+        );
+
+        // Save a file: path for use with ACTION_VIEW intents
+        mCurrentPhotoPath = "file:" + image.getAbsolutePath();
+        return image;
+    }
+
+    private void dispatchTakePictureIntent() {
+        // Check Camera
+        if (getActivity().getApplicationContext().getPackageManager().hasSystemFeature(
+                PackageManager.FEATURE_CAMERA)) {
+            Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            // Ensure that there's a camera activity to handle the intent
+            if (takePictureIntent.resolveActivity(getActivity().getPackageManager()) != null) {
+                // Create the File where the photo should go
+                File photoFile = null;
+                try {
+                    photoFile = createImageFile();
+                } catch (IOException ex) {
+                    // Error occurred while creating the File
+                    Log.e(TAG, "Couldn't create file:");
+                    Log.e(TAG, ex.toString());
+                }
+                // Continue only if the File was successfully created
+                if (photoFile != null) {
+                    takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT,
+                            Uri.fromFile(photoFile));
+                startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
+                }
+            }
+        } else {
+            Toast.makeText(getActivity(), "Camera not supported", Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private void galleryAddPic() {
+        Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+        File f = new File(mCurrentPhotoPath);
+        Uri contentUri = Uri.fromFile(f);
+        mediaScanIntent.setData(contentUri);
+        getActivity().sendBroadcast(mediaScanIntent);
     }
 
     /**
@@ -113,58 +198,6 @@ public class ScheduleFragment extends BaseFragment {
             mPager.setAdapter(mPagerAdapter);
 
         }
-    }
-
-    private void takePhoto() {
-        // Check Camera
-        if (getActivity().getApplicationContext().getPackageManager().hasSystemFeature(
-                PackageManager.FEATURE_CAMERA)) {
-            // Open default camera
-            Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-            intent.putExtra(MediaStore.EXTRA_OUTPUT, mFileUri);
-
-            // start the image capture Intent
-            startActivityForResult(intent, 100);
-
-        } else {
-            Toast.makeText(getActivity(), "Camera not supported", Toast.LENGTH_LONG).show();
-        }
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == 100 && resultCode == Activity.RESULT_OK) {
-            Bundle extras = data.getExtras();
-
-            Bitmap bitmap = (Bitmap) extras.get("data");
-
-            mPager.setVisibility(View.INVISIBLE);
-
-            ImageView imageView = (ImageView) getActivity().findViewById(R.id.imageView2);
-            imageView.setImageBitmap(bitmap);
-            imageView.setAdjustViewBounds(true);
-
-            imageView.setVisibility(View.VISIBLE);
-        }
-    }
-
-    String mCurrentPhotoPath;
-
-    private File createImageFile() throws IOException {
-        // Create an image file name
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        String imageFileName = "JPEG_" + timeStamp + "_";
-        File storageDir = Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_PICTURES);
-        File image = File.createTempFile(
-                imageFileName,  /* prefix */
-                ".jpg",         /* suffix */
-                storageDir      /* directory */
-        );
-
-        // Save a file: path for use with ACTION_VIEW intents
-        mCurrentPhotoPath = "file:" + image.getAbsolutePath();
-        return image;
     }
 
 }
