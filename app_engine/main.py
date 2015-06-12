@@ -156,7 +156,11 @@ def uploadImage():
 
     schedule.put()
 
-    return 'SUCCESS'
+    # Setup results
+    code = 0
+    desc = 'Upload Successful'
+
+    return jsonify(code=code, desc=desc)
 
 
 @app.route('/get')
