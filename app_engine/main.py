@@ -107,7 +107,7 @@ def getSchedulesByKey(user_id='', store='', dep='', year='', week=''):
     return schedules
 
 
-@app.route('/upload')
+@app.route('/upload/form')
 def uploadImageForm():
     upload_url = blobstore.create_upload_url('/upload_image')
 
@@ -117,6 +117,16 @@ def uploadImageForm():
 
     template = JINJA_ENVIRONMENT.get_template('upload.html')
     return template.render(template_values)
+
+
+@app.route('/upload/link')
+def uploadImageLink():
+    """Return a blobstore upload link as json for the client to upload an
+    image.
+    """
+    upload_url = blobstore.create_upload_url('/upload_image')
+
+    return jsonify(upload_url=upload_url)
 
 
 @app.route('/upload_image', methods=['POST'])
