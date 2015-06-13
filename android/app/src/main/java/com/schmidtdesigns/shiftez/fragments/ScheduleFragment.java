@@ -22,8 +22,10 @@ import com.octo.android.robospice.persistence.exception.SpiceException;
 import com.octo.android.robospice.request.listener.RequestListener;
 import com.schmidtdesigns.shiftez.R;
 import com.schmidtdesigns.shiftez.adapters.ScheduleAdapter;
+import com.schmidtdesigns.shiftez.models.ImageUploadUrl;
+import com.schmidtdesigns.shiftez.models.PostResult;
 import com.schmidtdesigns.shiftez.models.ScheduleResponse;
-import com.schmidtdesigns.shiftez.network.ImageUploadUrl;
+import com.schmidtdesigns.shiftez.network.ImageUploadRetrofitRequest;
 import com.schmidtdesigns.shiftez.network.ImageUploadUrlRetrofitRequest;
 import com.schmidtdesigns.shiftez.network.ScheduleRetrofitRequest;
 
@@ -31,6 +33,9 @@ import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
+
+import retrofit.mime.TypedFile;
 
 /**
  * A placeholder fragment containing a simple view.
@@ -43,6 +48,8 @@ public class ScheduleFragment extends BaseFragment {
     private ScheduleAdapter mPagerAdapter;
 
     private String mCurrentPhotoPath;
+    private File imageFile;
+
 
 
     public ScheduleFragment() {
@@ -117,15 +124,15 @@ public class ScheduleFragment extends BaseFragment {
             }
         }
 
-        File image = File.createTempFile(
+        imageFile = File.createTempFile(
                 imageFileName,  /* prefix */
                 ".jpg",         /* suffix */
                 storageDir      /* directory */
         );
 
         // Save a file: path for use with ACTION_VIEW intents
-        mCurrentPhotoPath = "file:" + image.getAbsolutePath();
-        return image;
+        mCurrentPhotoPath = "file:" + imageFile.getAbsolutePath();
+        return imageFile;
     }
 
     private void dispatchTakePictureIntent() {
@@ -167,7 +174,7 @@ public class ScheduleFragment extends BaseFragment {
     public void uploadImage(File imageFile) {
         // Get an image upload url
         ImageUploadUrlRetrofitRequest imageUploadUrlRequest = new ImageUploadUrlRetrofitRequest();
-        getSpiceManager().execute(imageUploadUrlRequest, "schedules", DurationInMillis.ONE_SECOND, new ImageUploadUrlListener());
+        getSpiceManager().execute(imageUploadUrlRequest, "imageuploadurl", DurationInMillis.ONE_SECOND, new ImageUploadUrlListener());
 
     }
 
@@ -195,7 +202,7 @@ public class ScheduleFragment extends BaseFragment {
         @Override
         public void onRequestSuccess(final ScheduleResponse result) {
             Toast.makeText(getActivity(), "Schedule Request Success", Toast.LENGTH_SHORT).show();
-            Log.d(TAG, result.toString());
+            //Log.d(TAG, result.toString());
 
             /**
             Schedule s = result.getSchedules().get(0);
@@ -213,7 +220,7 @@ public class ScheduleFragment extends BaseFragment {
         }
     }
 
-    private class ImageUploadUrlListener implements RequestListener<com.schmidtdesigns.shiftez.network.ImageUploadUrl> {
+    private class ImageUploadUrlListener implements RequestListener<ImageUploadUrl> {
         @Override
         public void onRequestFailure(SpiceException spiceException) {
             //TODO
@@ -223,7 +230,37 @@ public class ScheduleFragment extends BaseFragment {
         @Override
         public void onRequestSuccess(ImageUploadUrl imageUploadUrl) {
             Log.i(TAG, "Got an upload url: " + imageUploadUrl.getUploadUrl());
+            Log.i(TAG, "Path is: " + imageUploadUrl.getPath());
 
+
+            TypedFile image = new TypedFile("image/*", imageFile);
+            HashMap<String, String> imageParams = new HashMap<>();
+            imageParams.put("store", "8th St Coop Home Centre");
+            imageParams.put("dep", "Lumber");
+            imageParams.put("user_id", "bps");
+            imageParams.put("user_name", "Braden");
+            imageParams.put("week", "14");
+            imageParams.put("year", "2014");
+
+
+            // Upload image and info
+            ImageUploadRetrofitRequest imageUploadRequest = new ImageUploadRetrofitRequest(imageUploadUrl, image, imageParams);
+            getSpiceManager().execute(imageUploadRequest, "imageupload", DurationInMillis.ONE_SECOND, new ImageUploadListener());
+
+        }
+    }
+
+    private class ImageUploadListener implements RequestListener<com.schmidtdesigns.shiftez.models.PostResult> {
+        @Override
+        public void onRequestFailure(SpiceException spiceException) {
+            //TODO
+            Log.e(TAG, spiceException.getCause().toString());
+        }
+
+        @Override
+        public void onRequestSuccess(PostResult postResult) {
+            Log.i(TAG, "Image upload successful: " + postResult.toString());
+            Toast.makeText(getActivity(), "Image upload successful:" + postResult.toString(), Toast.LENGTH_LONG).show();
 
         }
     }

@@ -1,6 +1,7 @@
 package com.schmidtdesigns.shiftez.network;
 
 import com.octo.android.robospice.request.retrofit.RetrofitSpiceRequest;
+import com.schmidtdesigns.shiftez.models.ImageUploadUrl;
 
 /**
  * Created by braden on 15-06-08.
