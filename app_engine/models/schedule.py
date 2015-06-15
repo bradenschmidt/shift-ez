@@ -9,4 +9,5 @@ class Schedule(ndb.Model):
     dep = ndb.StringProperty(required=True)
     year = ndb.IntegerProperty(required=True)
     week = ndb.IntegerProperty(required=True)
+    week_offset = ndb.IntegerProperty(required=True)
     image_blob = ndb.BlobKeyProperty()

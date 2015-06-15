@@ -3,7 +3,7 @@ import logging
 
 import jinja2
 
-from flask import Flask, url_for, jsonify, request
+from flask import Flask, jsonify, request
 
 from operator import itemgetter
 
@@ -37,29 +37,6 @@ def schedule_key(schedule_name=DEFAULT_SCHEDULE_NAME):
     We use schedule_name as the key.
     """
     return ndb.Key('Schedule', schedule_name)
-
-
-def createSchedules():
-    schedule1 = Schedule(store='8th St Coop Home Centre',
-                         user_id='bps',
-                         user_name='Braden',
-                         dep='Lumber',
-                         year=2015,
-                         week=18,
-                         image=url_for('static',
-                                       filename='images/schedule/s1.jpg'))
-
-    schedule2 = Schedule(store='8th St Coop Home Centre',
-                         user_id='zap',
-                         user_name='Zach',
-                         dep='Lumber',
-                         year=2015,
-                         week=19,
-                         image=url_for('static',
-                                       filename='images/schedule/s2.jpg'))
-
-    schedule1.put()
-    schedule2.put()
 
 
 def getSchedules():
@@ -145,6 +122,7 @@ def uploadImage():
     dep = request.form.get('dep')
     year = request.form.get('year', type=int)
     week = request.form.get('week', type=int)
+    week_offset = request.form.get('week_offset', type=int)
 
     schedule = Schedule(store=store,
                         user_id=user_id,
@@ -152,6 +130,7 @@ def uploadImage():
                         dep=dep,
                         year=year,
                         week=week,
+                        week_offset=week_offset,
                         image_blob=blobstore.BlobKey(blob_key_str))
 
     schedule.put()
