@@ -2,7 +2,6 @@ package com.schmidtdesigns.shiftez.adapters;
 
 import android.content.Context;
 import android.support.v4.view.PagerAdapter;
-import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,7 +13,11 @@ import com.schmidtdesigns.shiftez.R;
 import com.schmidtdesigns.shiftez.models.Schedule;
 import com.squareup.picasso.Picasso;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Locale;
 
 /**
  * A simple pager adapter that represents 5 ScreenSlidePageFragment objects, in
@@ -37,11 +40,29 @@ public class ScheduleAdapter extends PagerAdapter {
 
         Schedule s = mSchedules.get(position);
 
-        ImageView imageView = (ImageView) view.findViewById(R.id.imageView);
-        Picasso.with(mContext).load(s.getImage()).into(imageView);
+        ImageView scheduleImage = (ImageView) view.findViewById(R.id.schedule_image);
+        Picasso.with(mContext).load(s.getImage()).into(scheduleImage);
 
-        TextView textView = (TextView) view.findViewById(R.id.textView);
-        textView.setText("Year: " + s.getYear() + " Week: " + s.getWeek());
+        TextView scheduleWeekNum = (TextView) view.findViewById(R.id.schedule_week_num);
+        scheduleWeekNum.setText("Year: " + s.getYear() + " - Week: " + s.getWeek());
+
+        TextView scheduleWeekDays = (TextView) view.findViewById(R.id.schedule_week_days);
+
+        Calendar cal = Calendar.getInstance();
+        cal.clear();
+
+        cal.set(Calendar.WEEK_OF_YEAR, s.getWeek() + s.getWeekOffset());
+        cal.set(Calendar.YEAR, s.getYear());
+
+        DateFormat df = new SimpleDateFormat("EEE MMM dd", Locale.CANADA);
+
+        String startDate = df.format(cal.getTime());
+
+        cal.add(Calendar.DATE, 6);
+
+        String endDate = df.format(cal.getTime());
+
+        scheduleWeekDays.setText(startDate + " - " + endDate);
 
         container.addView(view);
 
@@ -55,7 +76,7 @@ public class ScheduleAdapter extends PagerAdapter {
 
     @Override
     public boolean isViewFromObject(View view, Object object) {
-        return view == ((LinearLayout) object);
+        return view == object;
     }
 
     @Override

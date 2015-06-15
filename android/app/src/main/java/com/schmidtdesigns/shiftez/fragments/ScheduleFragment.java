@@ -32,6 +32,7 @@ import com.schmidtdesigns.shiftez.network.ScheduleRetrofitRequest;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 
@@ -83,6 +84,9 @@ public class ScheduleFragment extends BaseFragment {
                 dispatchTakePictureIntent();
             }
         });
+
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY);
 
         return rootView;
     }

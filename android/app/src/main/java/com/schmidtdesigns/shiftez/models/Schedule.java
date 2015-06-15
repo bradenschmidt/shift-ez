@@ -28,6 +28,9 @@ public class Schedule {
 	private String userName;
 	@Expose
 	private Integer week;
+	@SerializedName("week_offset")
+	@Expose
+	private int weekOffset;
 	@Expose
 	private Integer year;
 
@@ -227,6 +230,10 @@ public class Schedule {
 				", week=" + week +
 				", year=" + year +
 				'}';
+	}
+
+	public int getWeekOffset() {
+		return weekOffset;
 	}
 
 	public static class List extends ArrayList<Schedule> {

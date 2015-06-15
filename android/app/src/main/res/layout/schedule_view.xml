@@ -1,24 +1,31 @@
-<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:orientation="vertical"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent">
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
     <TextView
-        android:id="@+id/textView"
-        android:text="@string/hello_world"
-        android:textAppearance="@color/secondary_text"
-        android:textSize="15sp"
-        android:layout_gravity="center"
+        android:id="@+id/schedule_week_num"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="@string/schedule_week_num"
+        android:textAppearance="@color/primary_text"
+        android:textSize="15sp" />
+
+    <TextView
+        android:id="@+id/schedule_week_days"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="@string/schedule_week_days"
+        android:textAppearance="@color/secondary_text"
+        android:textSize="15sp" />
 
     <ImageView
-        android:id="@+id/imageView"
-        android:layout_gravity="center"
+        android:id="@+id/schedule_image"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:contentDescription="Schedule Image"
-        android:src="@drawable/ic_action_camera_enhance"/>
+        android:layout_gravity="bottom|center"
+        android:contentDescription="@string/schedule_image" />
 
 </LinearLayout>
