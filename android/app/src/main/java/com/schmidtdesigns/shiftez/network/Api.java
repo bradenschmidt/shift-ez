@@ -38,7 +38,4 @@ public interface Api {
     @POST("/{imageUrl}")
     PostResult uploadImage(@EncodedPath("imageUrl") String imageUrl, @Part("file") TypedFile image, @PartMap Map<String, String> imageParams);
 
-    //@PUT("/users/{userid}/sections")
-    //Boolean addUserToSection(@Path("userid") String userId, @QueryMap Map<String, String> userSectionParams);
-
 }

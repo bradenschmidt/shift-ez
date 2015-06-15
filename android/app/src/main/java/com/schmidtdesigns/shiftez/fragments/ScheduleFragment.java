@@ -38,18 +38,21 @@ import java.util.HashMap;
 import retrofit.mime.TypedFile;
 
 /**
- * A placeholder fragment containing a simple view.
+ * Schedule Fragment used to get the schedules from the server, show them in a pager, and take and
+ * upload a picture.
  */
 public class ScheduleFragment extends BaseFragment {
 
+    // The activity code used when launching camera intent
     static final int REQUEST_TAKE_PHOTO = 1;
+    // Logging tag
     private static final String TAG = "ScheduleFragment";
+    // The pager and adapter used to show the returned schedules
     private ViewPager mPager;
     private ScheduleAdapter mPagerAdapter;
 
-    private String mCurrentPhotoPath;
-    private File imageFile;
-
+    // The image file we create and upload
+    private File mImageFile;
 
 
     public ScheduleFragment() {
@@ -81,22 +84,23 @@ public class ScheduleFragment extends BaseFragment {
             }
         });
 
-
         return rootView;
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        /**
+         * Check if result was a photo which was OK. If so then launch the media scanner, show image
+         * on the screen, then upload the image to the server.
+         */
         if (requestCode == REQUEST_TAKE_PHOTO && resultCode == Activity.RESULT_OK) {
             galleryAddPic();
 
-            Log.i(TAG, "Captured image: " + mCurrentPhotoPath);
+            Log.i(TAG, "Captured image: " + mImageFile.getAbsolutePath());
 
             mPager.setVisibility(View.INVISIBLE);
 
-            File imageFile = new File(mCurrentPhotoPath);
-
-            Bitmap bitmap = BitmapFactory.decodeFile(imageFile.getAbsolutePath());
+            Bitmap bitmap = BitmapFactory.decodeFile(mImageFile.getAbsolutePath());
 
             ImageView imageView = (ImageView) getActivity().findViewById(R.id.imageView2);
             imageView.setImageBitmap(bitmap);
@@ -104,12 +108,18 @@ public class ScheduleFragment extends BaseFragment {
 
             imageView.setVisibility(View.VISIBLE);
 
-            uploadImage(imageFile);
+            uploadImage();
         } else {
             Log.e(TAG, "Got bad req code: " + requestCode + " and bad resultCode: " + resultCode);
         }
     }
 
+    /**
+     * Create an image file for the camera to use during saving
+     *
+     * @return File - file to use
+     * @throws IOException
+     */
     private File createImageFile() throws IOException {
         // Create an image file name
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
@@ -117,6 +127,7 @@ public class ScheduleFragment extends BaseFragment {
         File storageDir = new File(Environment.getExternalStoragePublicDirectory(
                 Environment.DIRECTORY_PICTURES), "shiftez");
 
+        // Make the shiftez dir if needed
         if (! storageDir.exists()) {
             if (! storageDir.mkdirs()) {
                 Log.e(TAG, "Failed to create directory.");
@@ -124,17 +135,20 @@ public class ScheduleFragment extends BaseFragment {
             }
         }
 
-        imageFile = File.createTempFile(
+        // Create the File to use, ensured to be unique
+        mImageFile = File.createTempFile(
                 imageFileName,  /* prefix */
                 ".jpg",         /* suffix */
                 storageDir      /* directory */
         );
 
-        // Save a file: path for use with ACTION_VIEW intents
-        mCurrentPhotoPath = "file:" + imageFile.getAbsolutePath();
-        return imageFile;
+        return mImageFile;
     }
 
+    /**
+     * Get a file then launch the camera to capture the image with the filename.
+     * Does error checking for cameras and camera activity.
+     */
     private void dispatchTakePictureIntent() {
         // Check Camera
         if (getActivity().getApplicationContext().getPackageManager().hasSystemFeature(
@@ -163,15 +177,22 @@ public class ScheduleFragment extends BaseFragment {
         }
     }
 
+    /**
+     * Launch the media scanner to pick up the new image file.
+     */
     private void galleryAddPic() {
         Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-        File f = new File(mCurrentPhotoPath);
-        Uri contentUri = Uri.fromFile(f);
+        Uri contentUri = Uri.fromFile(mImageFile);
         mediaScanIntent.setData(contentUri);
         getActivity().sendBroadcast(mediaScanIntent);
     }
 
-    public void uploadImage(File imageFile) {
+    /**
+     * Launch request to Upload the image, requests an upload link from the server, then uploads the
+     * image found at mImageFile to the server with the given schedule info. Uses two linked
+     * listeners.
+     */
+    public void uploadImage() {
         // Get an image upload url
         ImageUploadUrlRetrofitRequest imageUploadUrlRequest = new ImageUploadUrlRetrofitRequest();
         getSpiceManager().execute(imageUploadUrlRequest, "imageuploadurl", DurationInMillis.ONE_SECOND, new ImageUploadUrlListener());
@@ -204,22 +225,17 @@ public class ScheduleFragment extends BaseFragment {
             Toast.makeText(getActivity(), "Schedule Request Success", Toast.LENGTH_SHORT).show();
             //Log.d(TAG, result.toString());
 
-            /**
-            Schedule s = result.getSchedules().get(0);
-
-            ImageView imageView = (ImageView) getActivity().findViewById(R.id.imageView);
-            Picasso.with(getActivity()).load(s.getImage()).into(imageView);
-
-            TextView textView = (TextView) getActivity().findViewById(R.id.textView);
-            textView.setText("Year: " + s.getYear() + " Week: " + s.getWeek());
-            **/
-
             mPagerAdapter = new ScheduleAdapter(getActivity().getApplicationContext(), result.getSchedules());
             mPager.setAdapter(mPagerAdapter);
 
         }
     }
 
+    /**
+     * Callback for the getting the image upload url. On success create the params of the schedule
+     * image and launch robospice post to server.
+     *
+     */
     private class ImageUploadUrlListener implements RequestListener<ImageUploadUrl> {
         @Override
         public void onRequestFailure(SpiceException spiceException) {
@@ -227,13 +243,18 @@ public class ScheduleFragment extends BaseFragment {
             Log.e(TAG, spiceException.getCause().toString());
         }
 
+        /**
+         * Use the imageUploadUrl as a POST location for the image.
+         *
+         * @param imageUploadUrl
+         */
         @Override
         public void onRequestSuccess(ImageUploadUrl imageUploadUrl) {
             Log.i(TAG, "Got an upload url: " + imageUploadUrl.getUploadUrl());
             Log.i(TAG, "Path is: " + imageUploadUrl.getPath());
 
 
-            TypedFile image = new TypedFile("image/*", imageFile);
+            TypedFile image = new TypedFile("image/*", mImageFile);
             HashMap<String, String> imageParams = new HashMap<>();
             imageParams.put("store", "8th St Coop Home Centre");
             imageParams.put("dep", "Lumber");
@@ -250,6 +271,9 @@ public class ScheduleFragment extends BaseFragment {
         }
     }
 
+    /**
+     * Callback for image upload by robospice POST. On success show a popup message.
+     */
     private class ImageUploadListener implements RequestListener<com.schmidtdesigns.shiftez.models.PostResult> {
         @Override
         public void onRequestFailure(SpiceException spiceException) {
@@ -257,6 +281,10 @@ public class ScheduleFragment extends BaseFragment {
             Log.e(TAG, spiceException.getCause().toString());
         }
 
+        /**
+         * Use the returned message to show result.
+         * @param postResult
+         */
         @Override
         public void onRequestSuccess(PostResult postResult) {
             Log.i(TAG, "Image upload successful: " + postResult.toString());
