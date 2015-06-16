@@ -1,40 +1,59 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical"
+    android:weightSum="100">
 
-    <TextView
-        android:id="@+id/schedule_week_num"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:text="@string/schedule_week_num"
-        android:textAppearance="@color/primary_text"
-        android:textSize="18sp" />
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="0px"
+        android:layout_weight="20"
+        android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/schedule_week_current"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:text="@string/schedule_week_current"
-        android:textAppearance="@color/primary_text"
-        android:textSize="16sp" />
+        <TextView
+            android:id="@+id/schedule_week_num"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="@string/schedule_week_num"
+            android:textAppearance="@color/primary_text"
+            android:textSize="18sp" />
 
-    <TextView
-        android:id="@+id/schedule_week_days"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:text="@string/schedule_week_days"
-        android:textAppearance="@color/secondary_text"
-        android:textSize="15sp" />
+        <TextView
+            android:id="@+id/schedule_week_current"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="@string/schedule_week_current"
+            android:textAppearance="@color/primary_text"
+            android:textSize="16sp" />
 
-    <ImageView
-        android:id="@+id/schedule_image"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_gravity="bottom|center"
-        android:contentDescription="@string/schedule_image" />
+        <TextView
+            android:id="@+id/schedule_week_days"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="@string/schedule_week_days"
+            android:textAppearance="@color/secondary_text"
+            android:textSize="15sp" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="0px"
+        android:layout_weight="80"
+        android:orientation="vertical"
+        android:padding="10dp">
+
+        <ImageView
+            android:id="@+id/schedule_image"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_gravity="center"
+            android:adjustViewBounds="true"
+            android:contentDescription="@string/schedule_image"
+            android:scaleType="centerCrop" />
+    </LinearLayout>
 
 </LinearLayout>
