@@ -32,7 +32,6 @@ import com.schmidtdesigns.shiftez.network.ScheduleRetrofitRequest;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 
@@ -54,6 +53,8 @@ public class ScheduleFragment extends BaseFragment {
 
     // The image file we create and upload
     private File mImageFile;
+
+    private int mWeekOffset = 0;
 
 
     public ScheduleFragment() {
@@ -84,9 +85,6 @@ public class ScheduleFragment extends BaseFragment {
                 dispatchTakePictureIntent();
             }
         });
-
-        Calendar cal = Calendar.getInstance();
-        cal.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY);
 
         return rootView;
     }
@@ -132,8 +130,8 @@ public class ScheduleFragment extends BaseFragment {
                 Environment.DIRECTORY_PICTURES), "shiftez");
 
         // Make the shiftez dir if needed
-        if (! storageDir.exists()) {
-            if (! storageDir.mkdirs()) {
+        if (!storageDir.exists()) {
+            if (!storageDir.mkdirs()) {
                 Log.e(TAG, "Failed to create directory.");
                 return null;
             }
@@ -173,7 +171,7 @@ public class ScheduleFragment extends BaseFragment {
                 if (photoFile != null) {
                     takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT,
                             Uri.fromFile(photoFile));
-                startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
+                    startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
                 }
             }
         } else {
@@ -232,6 +230,7 @@ public class ScheduleFragment extends BaseFragment {
             mPagerAdapter = new ScheduleAdapter(getActivity().getApplicationContext(), result.getSchedules());
             mPager.setAdapter(mPagerAdapter);
 
+            mPager.setCurrentItem(mPagerAdapter.getCurrentWeekPosition(), true);
         }
     }
 
@@ -245,6 +244,8 @@ public class ScheduleFragment extends BaseFragment {
         public void onRequestFailure(SpiceException spiceException) {
             //TODO
             Log.e(TAG, spiceException.getCause().toString());
+            Toast.makeText(getActivity(), "Image upload successful:" + spiceException.getCause().toString(), Toast.LENGTH_LONG).show();
+
         }
 
         /**
@@ -265,7 +266,8 @@ public class ScheduleFragment extends BaseFragment {
             imageParams.put("user_id", "bps");
             imageParams.put("user_name", "Braden");
             imageParams.put("week", "14");
-            imageParams.put("year", "2014");
+            imageParams.put("week_offset", "5");
+            imageParams.put("year", "2015");
 
 
             // Upload image and info
@@ -283,6 +285,8 @@ public class ScheduleFragment extends BaseFragment {
         public void onRequestFailure(SpiceException spiceException) {
             //TODO
             Log.e(TAG, spiceException.getCause().toString());
+            Toast.makeText(getActivity(), "Image upload successful:" + spiceException.getCause().toString(), Toast.LENGTH_LONG).show();
+
         }
 
         /**

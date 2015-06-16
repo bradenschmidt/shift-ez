@@ -10,7 +10,16 @@
         android:layout_gravity="center"
         android:text="@string/schedule_week_num"
         android:textAppearance="@color/primary_text"
-        android:textSize="15sp" />
+        android:textSize="18sp" />
+
+    <TextView
+        android:id="@+id/schedule_week_current"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="@string/schedule_week_current"
+        android:textAppearance="@color/primary_text"
+        android:textSize="16sp" />
 
     <TextView
         android:id="@+id/schedule_week_days"
