@@ -1,11 +1,14 @@
 package com.schmidtdesigns.shiftez.activities;
 
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
 import com.schmidtdesigns.shiftez.R;
+import com.schmidtdesigns.shiftez.fragments.SchedulePagerFragment;
 
 public class MainActivity extends BaseActivity {
 
@@ -18,8 +21,9 @@ public class MainActivity extends BaseActivity {
         if (toolbar != null) {
             setSupportActionBar(toolbar);
         }
-    }
 
+        displayView(new SchedulePagerFragment(), false);
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -42,4 +46,19 @@ public class MainActivity extends BaseActivity {
 
         return super.onOptionsItemSelected(item);
     }
+
+    public void displayView(Fragment fragment, boolean hasUp) {
+        getSupportActionBar().setDisplayHomeAsUpEnabled(hasUp);
+
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+
+        // Replace whatever is in the fragment_container view with this fragment,
+        // and add the transaction to the back stack if needed
+        transaction.replace(R.id.fragment_container, fragment);
+        transaction.addToBackStack(null);
+
+        // Commit the transaction
+        transaction.commit();
+    }
+
 }

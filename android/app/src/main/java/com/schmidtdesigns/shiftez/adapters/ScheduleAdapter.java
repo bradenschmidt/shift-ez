@@ -8,8 +8,11 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.schmidtdesigns.shiftez.R;
+import com.schmidtdesigns.shiftez.activities.MainActivity;
+import com.schmidtdesigns.shiftez.fragments.ScheduleFragment;
 import com.schmidtdesigns.shiftez.models.Schedule;
 import com.squareup.picasso.Picasso;
 
@@ -44,10 +47,20 @@ public class ScheduleAdapter extends PagerAdapter {
     public Object instantiateItem(ViewGroup container, int position) {
         View view = LayoutInflater.from(mContext).inflate(R.layout.schedule_view, container, false);
 
-        Schedule s = mSchedules.get(position);
+        final Schedule s = mSchedules.get(position);
 
         ImageView scheduleImage = (ImageView) view.findViewById(R.id.schedule_image);
         Picasso.with(mContext).load(s.getImage()).into(scheduleImage);
+
+        scheduleImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(mContext, "Clicked image", Toast.LENGTH_SHORT).show();
+
+                ((MainActivity) mContext).displayView(ScheduleFragment.newInstance(s), true);
+
+            }
+        });
 
         TextView scheduleWeekCurrent = (TextView) view.findViewById(R.id.schedule_week_current);
         setupScheduleWeekCurrent(scheduleWeekCurrent, s);

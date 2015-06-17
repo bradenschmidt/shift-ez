@@ -1,5 +1,6 @@
 package com.schmidtdesigns.shiftez.models;
 
+import com.google.gson.Gson;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
@@ -33,6 +34,21 @@ public class Schedule {
 	private int weekOffset;
 	@Expose
 	private Integer year;
+
+	// Serialize a single object.
+	public static String serializeToJson(Schedule s) {
+		Gson gson = new Gson();
+		String scheduleString = gson.toJson(s);
+		return scheduleString;
+	}
+
+	//Using gson to deserialize to a single object.
+	// Deserialize to single object.
+	public static Schedule deserializeFromJson(String jsonString) {
+		Gson gson = new Gson();
+		Schedule s = gson.fromJson(jsonString, Schedule.class);
+		return s;
+	}
 
 	/**
 	 *
