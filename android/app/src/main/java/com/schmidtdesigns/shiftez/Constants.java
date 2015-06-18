@@ -7,4 +7,5 @@ public class Constants {
 
     public static final String SCHEDULE_PARAM = "schedule";
 
+    public static final String IMAGE_PARAM = "image_file";
 }

@@ -9,4 +9,8 @@
 
     <string name="activity_schedule_title">Schedule</string>
     <string name="schedule_info_icon">Info Icon</string>
+    <string name="schedule_info_preview">Schedule Image Preview</string>
+    <string name="activity_upload_base_name">activity_upload_base</string>
+    <string name="activity_upload_title">Schedule Upload</string>
+    <string name="schedule_upload_button">Upload Schedule</string>
 </resources>
