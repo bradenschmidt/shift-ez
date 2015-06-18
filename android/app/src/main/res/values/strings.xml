@@ -6,4 +6,6 @@
     <string name="schedule_week_days">Sun XX/XX/XXXX - Sat XX/XX/XXXX</string>
     <string name="schedule_image">Schedule Image</string>
     <string name="schedule_week_current">X  Weeks Ago</string>
+
+    <string name="activity_schedule_title">Schedule</string>
 </resources>

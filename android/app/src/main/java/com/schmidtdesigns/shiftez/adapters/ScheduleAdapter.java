@@ -1,6 +1,7 @@
 package com.schmidtdesigns.shiftez.adapters;
 
 import android.content.Context;
+import android.content.Intent;
 import android.support.v4.view.PagerAdapter;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,9 +11,9 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.schmidtdesigns.shiftez.Constants;
 import com.schmidtdesigns.shiftez.R;
-import com.schmidtdesigns.shiftez.activities.MainActivity;
-import com.schmidtdesigns.shiftez.fragments.ScheduleFragment;
+import com.schmidtdesigns.shiftez.activities.ScheduleActivity;
 import com.schmidtdesigns.shiftez.models.Schedule;
 import com.squareup.picasso.Picasso;
 
@@ -57,7 +58,9 @@ public class ScheduleAdapter extends PagerAdapter {
             public void onClick(View v) {
                 Toast.makeText(mContext, "Clicked image", Toast.LENGTH_SHORT).show();
 
-                ((MainActivity) mContext).displayView(ScheduleFragment.newInstance(s), true);
+                Intent intent = new Intent(mContext, ScheduleActivity.class);
+                intent.putExtra(Constants.SCHEDULE_PARAM, Schedule.serializeToJson(s));
+                mContext.startActivity(intent);
 
             }
         });
@@ -77,7 +80,9 @@ public class ScheduleAdapter extends PagerAdapter {
     }
 
     private void setupScheduleWeekCurrent(TextView scheduleWeekCurrent, Schedule s) {
-        int weeks = Weeks.weeksBetween(new DateTime().withYear(s.getYear()).withWeekOfWeekyear(s.getWeek()).plusWeeks(s.getWeekOffset()), new DateTime()).getWeeks();
+        int weeks = Weeks.weeksBetween(new DateTime().withYear(s.getYear())
+                        .withWeekOfWeekyear(s.getWeek()).plusWeeks(s.getWeekOffset()),
+                new DateTime()).getWeeks();
 
         if (weeks == 0) {
             scheduleWeekCurrent.setText("Current Week");

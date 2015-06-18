@@ -2,8 +2,12 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/android:black"
+    android:background="#100000"
     android:orientation="vertical">
+
+    <include
+        android:id="@+id/schedule_toolbar"
+        layout="@layout/toolbar" />
 
     <com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
         android:id="@+id/schedule_image_zoom"
@@ -11,6 +15,5 @@
         android:layout_height="0px"
         android:layout_gravity="center"
         android:layout_weight="1" />
-
 
 </LinearLayout>
