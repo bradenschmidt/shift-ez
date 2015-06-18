@@ -19,6 +19,8 @@ import com.schmidtdesigns.shiftez.models.Schedule;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
+import java.util.ArrayList;
+
 public class ScheduleActivity extends BaseActivity implements View.OnClickListener {
 
     private static final String TAG = "ScheduleActivity";
@@ -111,11 +113,14 @@ public class ScheduleActivity extends BaseActivity implements View.OnClickListen
     public void onClick(View v) {
         //TODO
 
+        ArrayList<String> list = mSchedule.asStringList();
+
         AlertDialog.Builder builder =
                 new AlertDialog.Builder(this);
         builder.setTitle("Schedule Info");
-        builder.setMessage("Lorem ipsum dolor ....");
+        //builder.setMessage("Lorem ipsum dolor ....");
         builder.setPositiveButton("OK", null);
+        builder.setItems(list.toArray(new CharSequence[list.size()]), null);
         builder.show();
     }
 }

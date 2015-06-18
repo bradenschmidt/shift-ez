@@ -248,6 +248,18 @@ public class Schedule {
 				'}';
 	}
 
+	public ArrayList<String> asStringList() {
+		ArrayList<String> values = new ArrayList<>();
+		values.add("Store: " + store);
+		values.add("Department: " + dep);
+		values.add("Year: " + year);
+		values.add("Week: " + week);
+		values.add("Uploaded By: " + userName);
+		values.add("Upload Date: " + uploadDateTime);
+
+		return values;
+	}
+
 	public int getWeekOffset() {
 		return weekOffset;
 	}
