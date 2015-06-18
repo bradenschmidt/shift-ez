@@ -3,10 +3,13 @@ package com.schmidtdesigns.shiftez.activities;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.ImageButton;
 
 import com.davemorrissey.labs.subscaleview.ImageSource;
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView;
@@ -16,7 +19,7 @@ import com.schmidtdesigns.shiftez.models.Schedule;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
-public class ScheduleActivity extends BaseActivity {
+public class ScheduleActivity extends BaseActivity implements View.OnClickListener {
 
     private static final String TAG = "ScheduleActivity";
     private Schedule mSchedule;
@@ -28,21 +31,25 @@ public class ScheduleActivity extends BaseActivity {
         setContentView(R.layout.activity_schedule);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.schedule_toolbar);
-        if (toolbar != null) {
-            setSupportActionBar(toolbar);
-        } else {
-            Log.e(TAG, "Toolbar is null");
-        }
-
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        }
+        setupToolbar(toolbar);
 
         String schedule = getIntent().getStringExtra(Constants.SCHEDULE_PARAM);
+        // Get the schedule from the intent
+        if (schedule == null) {
+            Log.e(TAG, "Schedule from intent is null");
+        }
         mSchedule = Schedule.deserializeFromJson(schedule);
 
         final SubsamplingScaleImageView image =
                 (SubsamplingScaleImageView) findViewById(R.id.schedule_image_zoom);
+        setupScheduleImage(image);
+
+        ImageButton infoButton = (ImageButton) findViewById(R.id.schedule_info_button);
+        infoButton.setOnClickListener(this);
+
+    }
+
+    private void setupScheduleImage(final SubsamplingScaleImageView image) {
         image.setMaxScale(10F);
 
         Picasso.with(getApplicationContext())
@@ -63,6 +70,18 @@ public class ScheduleActivity extends BaseActivity {
                         //TODO
                     }
                 });
+    }
+
+    private void setupToolbar(Toolbar toolbar) {
+        if (toolbar != null) {
+            setSupportActionBar(toolbar);
+        } else {
+            Log.e(TAG, "Toolbar is null");
+        }
+
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
     }
 
 
@@ -88,4 +107,15 @@ public class ScheduleActivity extends BaseActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public void onClick(View v) {
+        //TODO
+
+        AlertDialog.Builder builder =
+                new AlertDialog.Builder(this);
+        builder.setTitle("Schedule Info");
+        builder.setMessage("Lorem ipsum dolor ....");
+        builder.setPositiveButton("OK", null);
+        builder.show();
+    }
 }
