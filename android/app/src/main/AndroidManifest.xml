@@ -29,7 +29,8 @@
         <activity
             android:name=".activities.ScheduleActivity"
             android:label="@string/activity_schedule_title"
-            android:parentActivityName=".activities.MainActivity" >
+            android:parentActivityName=".activities.MainActivity"
+            android:theme="@style/ScheduleTheme">
             <!-- Parent activity meta-data to support 4.0 and lower -->
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
