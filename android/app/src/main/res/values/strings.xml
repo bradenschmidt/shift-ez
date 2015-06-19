@@ -13,4 +13,7 @@
     <string name="activity_upload_base_name">activity_upload_base</string>
     <string name="activity_upload_title">Schedule Upload</string>
     <string name="schedule_upload_button">Upload Schedule</string>
+    <string name="year_spinner_title">Year</string>
+    <string name="week_spinner_title">Week</string>
+    <string name="week_offset_title">Week Offset</string>
 </resources>

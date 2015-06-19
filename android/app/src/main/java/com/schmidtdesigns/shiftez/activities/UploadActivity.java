@@ -6,8 +6,10 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.octo.android.robospice.persistence.DurationInMillis;
@@ -21,15 +23,25 @@ import com.schmidtdesigns.shiftez.network.ImageUploadRetrofitRequest;
 import com.schmidtdesigns.shiftez.network.ImageUploadUrlRetrofitRequest;
 import com.squareup.picasso.Picasso;
 
+import org.joda.time.DateTime;
+
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 
+import butterknife.ButterKnife;
+import butterknife.InjectView;
 import retrofit.mime.TypedFile;
 
 public class UploadActivity extends BaseActivity {
 
     private static final String TAG = "UploadActivity";
-
+    @InjectView(R.id.week_spinner)
+    public Spinner mWeekSpinner;
+    @InjectView(R.id.year_spinner)
+    public Spinner mYearSpinner;
+    @InjectView(R.id.week_offset_spinner)
+    public Spinner mWeekOffsetSpinner;
     // The image file we want to upload
     private File mImageFile;
 
@@ -37,6 +49,8 @@ public class UploadActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_upload);
+
+        ButterKnife.inject(this);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.upload_toolbar);
         setupToolbar(toolbar);
@@ -49,6 +63,8 @@ public class UploadActivity extends BaseActivity {
         } else {
             mImageFile = new File(imageFile);
         }
+
+        setupSpinners();
 
         ImageView image =
                 (ImageView) findViewById(R.id.schedule_image_preview);
@@ -64,6 +80,7 @@ public class UploadActivity extends BaseActivity {
 
     }
 
+
     private void setupToolbar(Toolbar toolbar) {
         if (toolbar != null) {
             setSupportActionBar(toolbar);
@@ -74,6 +91,57 @@ public class UploadActivity extends BaseActivity {
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
+    }
+
+    private void setupSpinners() {
+        // Create an ArrayAdapter using a list containing the possible weeks
+        ArrayList<Integer> weeks = new ArrayList<>();
+        for (int i = 1; i <= 53; i++) {
+            weeks.add(i);
+        }
+
+        ArrayAdapter<Integer> weekAdapter = new ArrayAdapter<>(getApplicationContext(),
+                R.layout.spinner_item, weeks);
+        // Specify the layout to use when the list of choices appears
+        weekAdapter.setDropDownViewResource(R.layout.spinner_dropdown_item);
+        // Apply the adapter to the spinner
+        mWeekSpinner.setAdapter(weekAdapter);
+
+
+        // Create an ArrayAdapter using a list containing the possible week offsets
+        ArrayList<Integer> weekOffsets = new ArrayList<>();
+        for (int i = 0; i <= 10; i++) {
+            weekOffsets.add(i);
+        }
+
+        ArrayAdapter<Integer> weekOffsetAdapter = new ArrayAdapter<>(getApplicationContext(),
+                R.layout.spinner_item, weekOffsets);
+        // Specify the layout to use when the list of choices appears
+        weekOffsetAdapter.setDropDownViewResource(R.layout.spinner_dropdown_item);
+        // Apply the adapter to the spinner
+        mWeekOffsetSpinner.setAdapter(weekOffsetAdapter);
+
+
+        // Create an ArrayAdapter using a list containing the possible years
+        //  (last year, current, and next
+        DateTime time = new DateTime();
+        int currYear = time.getYear();
+        time = time.minusYears(1);
+        int lastYear = time.getYear();
+        time = time.plusYears(2);
+        int nextYear = time.getYear();
+
+        ArrayList<Integer> years = new ArrayList<>();
+        years.add(lastYear);
+        years.add(currYear);
+        years.add(nextYear);
+
+        ArrayAdapter<Integer> yearAdapter = new ArrayAdapter<>(getApplicationContext(),
+                R.layout.spinner_item, years);
+        // Specify the layout to use when the list of choices appears
+        yearAdapter.setDropDownViewResource(R.layout.spinner_dropdown_item);
+        // Apply the adapter to the spinner
+        mYearSpinner.setAdapter(yearAdapter);
     }
 
     private void setupScheduleImage(final ImageView image) {
@@ -146,10 +214,11 @@ public class UploadActivity extends BaseActivity {
             imageParams.put("dep", "Lumber");
             imageParams.put("user_id", "bps");
             imageParams.put("user_name", "Braden");
-            imageParams.put("week", "14");
-            imageParams.put("week_offset", "5");
-            imageParams.put("year", "2015");
+            imageParams.put("week", String.valueOf(mWeekSpinner.getSelectedItem()));
+            imageParams.put("week_offset", String.valueOf(mWeekOffsetSpinner.getSelectedItem()));
+            imageParams.put("year", String.valueOf(mYearSpinner.getSelectedItem()));
 
+            Log.d(TAG, "Uploading image with params: " + imageParams.toString());
 
             // Upload image and info
             ImageUploadRetrofitRequest imageUploadRequest = new ImageUploadRetrofitRequest(imageUploadUrl, image, imageParams);
