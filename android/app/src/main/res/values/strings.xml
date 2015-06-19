@@ -16,4 +16,5 @@
     <string name="year_spinner_title">Year</string>
     <string name="week_spinner_title">Week</string>
     <string name="week_offset_title">Week Offset</string>
+    <string name="failure_image_desc">Failure Image</string>
 </resources>

@@ -14,6 +14,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
@@ -31,28 +32,33 @@ import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import butterknife.OnClick;
 
 /**
- * Schedule Fragment used to get the schedules from the server, show them in a pager, and take and
- * upload a picture.
+ * Schedule Fragment used to get the schedules from the server, show them in a pager, and allow
+ * the user to add a schedule by taking a picture and sending to {@link UploadActivity}.
  */
 public class SchedulePagerFragment extends BaseFragment {
-
 
     // Logging tag
     private static final String TAG = "SchedulePagerFragment";
     // The pager and adapter used to show the returned schedules
     @InjectView(R.id.schedule_pager)
     public ViewPager mPager;
+    // Fab to add schedule
     @InjectView(R.id.fab)
     public View mFab;
+    // Progress bar for loading schedules
     @InjectView(R.id.progress)
     public ProgressBar mProgress;
-    private ScheduleAdapter mPagerAdapter;
+    // Failure image to show on schedule retrieval failure
+    @InjectView(R.id.failureImage)
+    public ImageView mFailureImageView;
+
     // The image file we create and upload
     private File mImageFile;
 
@@ -75,7 +81,8 @@ public class SchedulePagerFragment extends BaseFragment {
         int year = 2015;
         Boolean reverse = false;
         ScheduleRetrofitRequest scheduleRequest = new ScheduleRetrofitRequest(year, reverse);
-        getSpiceManager().execute(scheduleRequest, "schedules", DurationInMillis.ONE_MINUTE, new ListScheduleRequestListener());
+        getSpiceManager().execute(scheduleRequest, "schedules", DurationInMillis.ONE_MINUTE,
+                new ListScheduleRequestListener());
 
         return rootView;
     }
@@ -88,7 +95,8 @@ public class SchedulePagerFragment extends BaseFragment {
      */
     private File createImageFile() throws IOException {
         // Create an image file name
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.CANADA)
+                .format(new Date());
         String imageFileName = "JPEG_" + timeStamp + "_";
         File storageDir = new File(Environment.getExternalStoragePublicDirectory(
                 Environment.DIRECTORY_PICTURES), "shiftez");
@@ -155,18 +163,6 @@ public class SchedulePagerFragment extends BaseFragment {
 
             Log.i(TAG, "Captured image: " + mImageFile.getAbsolutePath());
 
-            /*
-            mPager.setVisibility(View.INVISIBLE);
-
-            Bitmap bitmap = BitmapFactory.decodeFile(mImageFile.getAbsolutePath());
-
-            ImageView imageView = (ImageView) getActivity().findViewById(R.id.imageView2);
-            imageView.setImageBitmap(bitmap);
-            //imageView.setAdjustViewBounds(true);
-
-            imageView.setVisibility(View.VISIBLE);
-            */
-
             Intent intent = new Intent(getActivity(), UploadActivity.class);
 
             // Send file location
@@ -177,7 +173,8 @@ public class SchedulePagerFragment extends BaseFragment {
             ActivityOptionsCompat options =
                     ActivityOptionsCompat.makeSceneTransitionAnimation(getActivity(),
                             mFab,   // The view which starts the transition
-                            transitionName    // The transitionName of the view we’re transitioning to
+                            transitionName    // The transitionName of the view we’re transitioning
+                            // to
                     );
             ActivityCompat.startActivity(getActivity(), intent, options.toBundle());
 
@@ -190,13 +187,13 @@ public class SchedulePagerFragment extends BaseFragment {
     /**
      * Launch the media scanner to pick up the new image file.
      */
+    //TODO TEST??
     private void galleryAddPic() {
         Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
         Uri contentUri = Uri.fromFile(mImageFile);
         mediaScanIntent.setData(contentUri);
         getActivity().sendBroadcast(mediaScanIntent);
     }
-
 
 
     /**
@@ -207,16 +204,17 @@ public class SchedulePagerFragment extends BaseFragment {
     public final class ListScheduleRequestListener implements RequestListener<ScheduleResponse> {
         @Override
         public void onRequestFailure(SpiceException spiceException) {
-            //TODO
-            Toast.makeText(getActivity(), "Schedule Request Failure", Toast.LENGTH_SHORT).show();
-            Log.d(TAG, spiceException.getCause().toString());
+            //TODO SHOW CAUSE
+            Log.e(TAG, spiceException.getCause().toString());
 
-            //TextView mainText = (TextView) findViewById(R.id.mainText);
-            //mainText.setText("Failed");
+            Toast.makeText(getActivity(), "Failed to Retrieve Schedules", Toast.LENGTH_SHORT)
+                    .show();
+            mProgress.setVisibility(View.GONE);
+            mFailureImageView.setVisibility(View.VISIBLE);
         }
 
         /**
-         * Use the schedules
+         * Display the schedules in the pager, hiding the progress bar and showing the fab
          *
          * @param result Schedules in the Datastore
          */
@@ -228,7 +226,8 @@ public class SchedulePagerFragment extends BaseFragment {
             mPager.setVisibility(View.VISIBLE);
             mFab.setVisibility(View.VISIBLE);
 
-            mPagerAdapter = new ScheduleAdapter(getActivity(), result.getSchedules());
+            ScheduleAdapter mPagerAdapter = new ScheduleAdapter(getActivity(),
+                    result.getSchedules());
             mPager.setAdapter(mPagerAdapter);
 
             mPager.setCurrentItem(mPagerAdapter.getCurrentWeekPosition(), true);

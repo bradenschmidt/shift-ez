@@ -27,4 +27,13 @@
         android:layout_width="100dp"
         android:layout_height="100dp"
         android:layout_gravity="center" />
+
+    <ImageView
+        android:id="@+id/failureImage"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_gravity="center"
+        android:contentDescription="@string/failure_image_desc"
+        android:src="@drawable/ic_action_error"
+        android:visibility="gone" />
 </FrameLayout>
