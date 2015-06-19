@@ -27,4 +27,16 @@ public class PostResult {
     public void setDesc(String desc) {
         this.desc = desc;
     }
+
+    public String niceToString() {
+        return desc + " (Code: " + code + ")";
+    }
+
+    @Override
+    public String toString() {
+        return "PostResult{" +
+                "code=" + code +
+                ", desc='" + desc + '\'' +
+                '}';
+    }
 }

@@ -244,7 +244,7 @@ public class UploadActivity extends BaseActivity {
         @Override
         public void onRequestSuccess(PostResult postResult) {
             Log.i(TAG, "Image upload successful: " + postResult.toString());
-            Toast.makeText(getApplicationContext(), "Image upload successful:" + postResult.toString(), Toast.LENGTH_LONG).show();
+            Toast.makeText(getApplicationContext(), postResult.niceToString(), Toast.LENGTH_LONG).show();
             finish();
         }
     }
