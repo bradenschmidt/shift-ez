@@ -14,6 +14,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.octo.android.robospice.persistence.DurationInMillis;
@@ -31,25 +32,29 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import butterknife.ButterKnife;
+import butterknife.InjectView;
+import butterknife.OnClick;
+
 /**
  * Schedule Fragment used to get the schedules from the server, show them in a pager, and take and
  * upload a picture.
  */
 public class SchedulePagerFragment extends BaseFragment {
 
-    // The activity code used when launching camera intent
-    static final int REQUEST_TAKE_PHOTO = 1;
+
     // Logging tag
     private static final String TAG = "SchedulePagerFragment";
     // The pager and adapter used to show the returned schedules
-    private ViewPager mPager;
+    @InjectView(R.id.schedule_pager)
+    public ViewPager mPager;
+    @InjectView(R.id.fab)
+    public View mFab;
+    @InjectView(R.id.progress)
+    public ProgressBar mProgress;
     private ScheduleAdapter mPagerAdapter;
-
     // The image file we create and upload
     private File mImageFile;
-
-    private int mWeekOffset = 0;
-    private View mFab;
 
 
     public SchedulePagerFragment() {
@@ -62,6 +67,8 @@ public class SchedulePagerFragment extends BaseFragment {
         ViewGroup rootView = (ViewGroup) inflater.inflate(
                 R.layout.fragment_schedules, container, false);
 
+        ButterKnife.inject(this, rootView);
+
         /*
         * Request object for schedules
 	    */
@@ -69,17 +76,6 @@ public class SchedulePagerFragment extends BaseFragment {
         Boolean reverse = false;
         ScheduleRetrofitRequest scheduleRequest = new ScheduleRetrofitRequest(year, reverse);
         getSpiceManager().execute(scheduleRequest, "schedules", DurationInMillis.ONE_MINUTE, new ListScheduleRequestListener());
-
-        // Instantiate a ViewPager and a PagerAdapter.
-        mPager = (ViewPager) rootView.findViewById(R.id.schedulePager);
-
-        mFab = rootView.findViewById(R.id.fab);
-        mFab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dispatchTakePictureIntent();
-            }
-        });
 
         return rootView;
     }
@@ -119,7 +115,8 @@ public class SchedulePagerFragment extends BaseFragment {
      * Get a file then launch the camera to capture the image with the filename.
      * Does error checking for cameras and camera activity.
      */
-    private void dispatchTakePictureIntent() {
+    @OnClick(R.id.fab)
+    public void dispatchTakePictureIntent() {
         // Check Camera
         if (getActivity().getApplicationContext().getPackageManager().hasSystemFeature(
                 PackageManager.FEATURE_CAMERA)) {
@@ -139,7 +136,7 @@ public class SchedulePagerFragment extends BaseFragment {
                 if (photoFile != null) {
                     takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT,
                             Uri.fromFile(photoFile));
-                    startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
+                    startActivityForResult(takePictureIntent, Constants.REQUEST_TAKE_PHOTO);
                 }
             }
         } else {
@@ -153,7 +150,7 @@ public class SchedulePagerFragment extends BaseFragment {
          * Check if result was a photo which was OK. If so then launch the media scanner, show image
          * on the screen, then upload the image to the server.
          */
-        if (requestCode == REQUEST_TAKE_PHOTO && resultCode == Activity.RESULT_OK) {
+        if (requestCode == Constants.REQUEST_TAKE_PHOTO && resultCode == Activity.RESULT_OK) {
             galleryAddPic();
 
             Log.i(TAG, "Captured image: " + mImageFile.getAbsolutePath());
@@ -225,8 +222,11 @@ public class SchedulePagerFragment extends BaseFragment {
          */
         @Override
         public void onRequestSuccess(final ScheduleResponse result) {
-            Toast.makeText(getActivity(), "Schedule Request Success", Toast.LENGTH_SHORT).show();
             //Log.d(TAG, result.toString());
+
+            mProgress.setVisibility(View.GONE);
+            mPager.setVisibility(View.VISIBLE);
+            mFab.setVisibility(View.VISIBLE);
 
             mPagerAdapter = new ScheduleAdapter(getActivity(), result.getSchedules());
             mPager.setAdapter(mPagerAdapter);
