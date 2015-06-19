@@ -9,7 +9,6 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.schmidtdesigns.shiftez.Constants;
 import com.schmidtdesigns.shiftez.R;
@@ -26,6 +25,9 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Locale;
 
+import butterknife.ButterKnife;
+import butterknife.InjectView;
+
 import static java.lang.Math.abs;
 
 /**
@@ -37,6 +39,7 @@ import static java.lang.Math.abs;
 public class ScheduleAdapter extends PagerAdapter {
     private ArrayList<Schedule> mSchedules;
     private Context mContext;
+    private ViewHolder mViewHolder;
 
     public ScheduleAdapter(Context context, ArrayList<Schedule> schedules) {
         mSchedules = schedules;
@@ -48,62 +51,57 @@ public class ScheduleAdapter extends PagerAdapter {
     public Object instantiateItem(ViewGroup container, int position) {
         View view = LayoutInflater.from(mContext).inflate(R.layout.schedule_view, container, false);
 
+        mViewHolder = new ViewHolder(view);
+
         final Schedule s = mSchedules.get(position);
 
-        ImageView scheduleImage = (ImageView) view.findViewById(R.id.schedule_image);
-        Picasso.with(mContext).load(s.getImage()).into(scheduleImage);
+        Picasso.with(mContext).load(s.getImage()).into(mViewHolder.scheduleImage);
 
-        scheduleImage.setOnClickListener(new View.OnClickListener() {
+        mViewHolder.scheduleImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(mContext, "Clicked image", Toast.LENGTH_SHORT).show();
-
                 Intent intent = new Intent(mContext, ScheduleActivity.class);
                 intent.putExtra(Constants.SCHEDULE_PARAM, Schedule.serializeToJson(s));
                 mContext.startActivity(intent);
-
             }
         });
 
-        TextView scheduleWeekCurrent = (TextView) view.findViewById(R.id.schedule_week_current);
-        setupScheduleWeekCurrent(scheduleWeekCurrent, s);
+        setupScheduleWeekCurrent(s);
 
-        TextView scheduleWeekNum = (TextView) view.findViewById(R.id.schedule_week_num);
-        scheduleWeekNum.setText("Year: " + s.getYear() + " - Week: " + s.getWeek());
+        mViewHolder.scheduleYear.setText(String.valueOf(s.getYear()));
+        mViewHolder.scheduleWeek.setText(" Week " + s.getWeek());
 
-        TextView scheduleWeekDays = (TextView) view.findViewById(R.id.schedule_week_days);
-        setupScheduleWeekDays(scheduleWeekDays, s);
+        setupScheduleWeekDays(s);
 
         container.addView(view);
 
         return view;
     }
 
-    private void setupScheduleWeekCurrent(TextView scheduleWeekCurrent, Schedule s) {
+    private void setupScheduleWeekCurrent(Schedule s) {
         int weeks = Weeks.weeksBetween(new DateTime().withYear(s.getYear())
                         .withWeekOfWeekyear(s.getWeek()).plusWeeks(s.getWeekOffset()),
                 new DateTime()).getWeeks();
 
         if (weeks == 0) {
-            scheduleWeekCurrent.setText("Current Week");
+            mViewHolder.scheduleWeekCurrent.setText("Current Week");
         } else if (weeks == -1) {
-            scheduleWeekCurrent.setText("In " + abs(weeks) + " Week");
+            mViewHolder.scheduleWeekCurrent.setText("In " + abs(weeks) + " Week");
         } else if (weeks == 1) {
-            scheduleWeekCurrent.setText(weeks + " Week Ago");
+            mViewHolder.scheduleWeekCurrent.setText(weeks + " Week Ago");
         } else if (weeks < 0) {
-            scheduleWeekCurrent.setText("In " + abs(weeks) + " Weeks");
+            mViewHolder.scheduleWeekCurrent.setText("In " + abs(weeks) + " Weeks");
         } else {
-            scheduleWeekCurrent.setText(abs(weeks) + " Weeks Ago");
+            mViewHolder.scheduleWeekCurrent.setText(abs(weeks) + " Weeks Ago");
         }
     }
 
     /**
      * Setup the schedule start and end dates based on the schedules information.
      *
-     * @param scheduleWeekDays TextView to put days
-     * @param s                Schedule to use for info
+     * @param s Schedule to use for info
      */
-    private void setupScheduleWeekDays(TextView scheduleWeekDays, Schedule s) {
+    private void setupScheduleWeekDays(Schedule s) {
         // Get start and end dates of the current schedules week
         Calendar cal = Calendar.getInstance();
         cal.clear();
@@ -116,7 +114,7 @@ public class ScheduleAdapter extends PagerAdapter {
         cal.add(Calendar.DATE, 6);
         String endDate = df.format(cal.getTime());
 
-        scheduleWeekDays.setText(startDate + " - " + endDate);
+        mViewHolder.scheduleWeekDays.setText(startDate + " - " + endDate);
     }
 
     /**
@@ -155,5 +153,28 @@ public class ScheduleAdapter extends PagerAdapter {
     @Override
     public void destroyItem(ViewGroup container, int position, Object object) {
         container.removeView((LinearLayout) object);
+    }
+
+    /**
+     * This class contains all butterknife-injected Views & Layouts from layout file 'schedule_view.xml'
+     * for easy to all layout elements.
+     *
+     * @author ButterKnifeZelezny, plugin for Android Studio by Avast Developers (http://github.com/avast)
+     */
+    static class ViewHolder {
+        @InjectView(R.id.schedule_year)
+        TextView scheduleYear;
+        @InjectView(R.id.schedule_week)
+        TextView scheduleWeek;
+        @InjectView(R.id.schedule_week_current)
+        TextView scheduleWeekCurrent;
+        @InjectView(R.id.schedule_week_days)
+        TextView scheduleWeekDays;
+        @InjectView(R.id.schedule_image)
+        ImageView scheduleImage;
+
+        ViewHolder(View view) {
+            ButterKnife.inject(this, view);
+        }
     }
 }
