@@ -91,7 +91,7 @@ public class ScheduleAdapter extends PagerAdapter {
         } else if (weeks == 1) {
             scheduleWeekCurrent.setText(weeks + " Week Ago");
         } else if (weeks < 0) {
-            scheduleWeekCurrent.setText("In " + weeks + " Weeks");
+            scheduleWeekCurrent.setText("In " + abs(weeks) + " Weeks");
         } else {
             scheduleWeekCurrent.setText(abs(weeks) + " Weeks Ago");
         }
