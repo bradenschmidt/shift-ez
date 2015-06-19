@@ -98,6 +98,9 @@ public class UploadActivity extends BaseActivity {
         weekAdapter.setDropDownViewResource(R.layout.spinner_dropdown_item);
         // Apply the adapter to the spinner
         mWeekSpinner.setAdapter(weekAdapter);
+        // Set default position to current week
+        DateTime time = new DateTime();
+        mWeekSpinner.setSelection(weeks.indexOf(time.getWeekOfWeekyear()));
 
 
         // Create an ArrayAdapter using a list containing the possible week offsets
@@ -116,7 +119,6 @@ public class UploadActivity extends BaseActivity {
 
         // Create an ArrayAdapter using a list containing the possible years
         //  (last year, current, and next
-        DateTime time = new DateTime();
         int currYear = time.getYear();
         time = time.minusYears(1);
         int lastYear = time.getYear();
@@ -134,6 +136,8 @@ public class UploadActivity extends BaseActivity {
         yearAdapter.setDropDownViewResource(R.layout.spinner_dropdown_item);
         // Apply the adapter to the spinner
         mYearSpinner.setAdapter(yearAdapter);
+        // Set default to current year
+        mYearSpinner.setSelection(1, true);
     }
 
     private void setupScheduleImage() {
