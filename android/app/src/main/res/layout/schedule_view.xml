@@ -81,7 +81,8 @@
                     android:layout_gravity="center"
                     android:adjustViewBounds="true"
                     android:contentDescription="@string/schedule_image"
-                    android:scaleType="centerCrop" />
+                    android:scaleType="centerCrop"
+                    android:transitionName="@string/schedule_image_transition" />
             </LinearLayout>
 
         </LinearLayout>

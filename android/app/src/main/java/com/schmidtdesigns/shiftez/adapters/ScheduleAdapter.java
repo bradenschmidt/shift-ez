@@ -1,7 +1,10 @@
 package com.schmidtdesigns.shiftez.adapters;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.view.PagerAdapter;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -62,7 +65,17 @@ public class ScheduleAdapter extends PagerAdapter {
             public void onClick(View v) {
                 Intent intent = new Intent(mContext, ScheduleActivity.class);
                 intent.putExtra(Constants.SCHEDULE_PARAM, Schedule.serializeToJson(s));
-                mContext.startActivity(intent);
+
+                // Setup Transition Animation
+                // TODO
+                String transitionName = mContext.getString(R.string.schedule_image_transition);
+                ActivityOptionsCompat options =
+                        ActivityOptionsCompat.makeSceneTransitionAnimation((Activity) mContext,
+                                mViewHolder.scheduleImage,   // The view which starts the transition
+                                transitionName    // The transitionName of the view we’re transitioning
+                                // to
+                        );
+                ActivityCompat.startActivity((Activity) mContext, intent, options.toBundle());
             }
         });
 

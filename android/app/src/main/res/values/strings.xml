@@ -18,4 +18,5 @@
     <string name="week_offset_title">Week Offset</string>
     <string name="failure_image_desc">Failure Image</string>
     <string name="schedule_year">XXXX</string>
+    <string name="schedule_image_transition">schedule_image_transition</string>
 </resources>

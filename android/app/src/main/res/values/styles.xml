@@ -25,6 +25,7 @@
     <style name="ScheduleTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="android:textColorPrimary">@color/primary</item>
         <item name="colorPrimary">@android:color/transparent</item>
+        <item name="colorPrimaryDark">@color/primary_dark</item>
         <item name="windowActionBarOverlay">true</item>
     </style>
 
