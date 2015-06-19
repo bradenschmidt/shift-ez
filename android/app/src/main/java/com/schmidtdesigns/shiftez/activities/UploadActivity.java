@@ -5,9 +5,7 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.Toast;
@@ -31,6 +29,7 @@ import java.util.HashMap;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
+import butterknife.OnClick;
 import retrofit.mime.TypedFile;
 
 public class UploadActivity extends BaseActivity {
@@ -42,6 +41,11 @@ public class UploadActivity extends BaseActivity {
     public Spinner mYearSpinner;
     @InjectView(R.id.week_offset_spinner)
     public Spinner mWeekOffsetSpinner;
+
+    @InjectView(R.id.upload_toolbar)
+    public Toolbar mToolbar;
+    @InjectView(R.id.schedule_image_preview)
+    public ImageView mImageView;
     // The image file we want to upload
     private File mImageFile;
 
@@ -52,8 +56,7 @@ public class UploadActivity extends BaseActivity {
 
         ButterKnife.inject(this);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.upload_toolbar);
-        setupToolbar(toolbar);
+        setupToolbar();
 
         String imageFile = getIntent().getStringExtra(Constants.IMAGE_PARAM);
         // Get the schedule from the intent
@@ -66,24 +69,13 @@ public class UploadActivity extends BaseActivity {
 
         setupSpinners();
 
-        ImageView image =
-                (ImageView) findViewById(R.id.schedule_image_preview);
-        setupScheduleImage(image);
-
-        Button uploadButton = (Button) findViewById(R.id.schedule_upload_button);
-        uploadButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                uploadImage();
-            }
-        });
-
+        setupScheduleImage();
     }
 
 
-    private void setupToolbar(Toolbar toolbar) {
-        if (toolbar != null) {
-            setSupportActionBar(toolbar);
+    private void setupToolbar() {
+        if (mToolbar != null) {
+            setSupportActionBar(mToolbar);
         } else {
             Log.e(TAG, "Toolbar is null");
         }
@@ -144,10 +136,10 @@ public class UploadActivity extends BaseActivity {
         mYearSpinner.setAdapter(yearAdapter);
     }
 
-    private void setupScheduleImage(final ImageView image) {
+    private void setupScheduleImage() {
         Picasso.with(getApplicationContext())
                 .load(mImageFile)
-                .into(image);
+                .into(mImageView);
     }
 
     @Override
@@ -177,6 +169,7 @@ public class UploadActivity extends BaseActivity {
      * image found at mImageFile to the server with the given schedule info. Uses two linked
      * listeners.
      */
+    @OnClick(R.id.schedule_upload_button)
     public void uploadImage() {
         // Get an image upload url
         ImageUploadUrlRetrofitRequest imageUploadUrlRequest = new ImageUploadUrlRetrofitRequest();
@@ -200,7 +193,7 @@ public class UploadActivity extends BaseActivity {
         /**
          * Use the imageUploadUrl as a POST location for the image.
          *
-         * @param imageUploadUrl
+         * @param imageUploadUrl ImageUploadUrl to send the image to
          */
         @Override
         public void onRequestSuccess(ImageUploadUrl imageUploadUrl) {
@@ -242,7 +235,7 @@ public class UploadActivity extends BaseActivity {
         /**
          * Use the returned message to show result.
          *
-         * @param postResult
+         * @param postResult PostResponse containing information from the response
          */
         @Override
         public void onRequestSuccess(PostResult postResult) {
