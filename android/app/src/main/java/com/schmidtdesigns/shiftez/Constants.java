@@ -11,4 +11,5 @@ public class Constants {
 
     // The activity code used when launching camera intent
     public static final int REQUEST_TAKE_PHOTO = 1;
+    public static String ACCOUNT_PARAM = "account";
 }

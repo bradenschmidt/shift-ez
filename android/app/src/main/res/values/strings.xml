@@ -19,4 +19,5 @@
     <string name="failure_image_desc">Failure Image</string>
     <string name="schedule_year">XXXX</string>
     <string name="schedule_image_transition">schedule_image_transition</string>
+    <string name="activity_login_title">Login</string>
 </resources>
