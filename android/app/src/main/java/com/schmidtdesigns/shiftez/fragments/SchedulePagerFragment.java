@@ -81,8 +81,11 @@ public class SchedulePagerFragment extends BaseFragment {
         int year = 2015;
         Boolean reverse = false;
         ScheduleRetrofitRequest scheduleRequest = new ScheduleRetrofitRequest(year, reverse);
-        getSpiceManager().execute(scheduleRequest, "schedules", DurationInMillis.ONE_MINUTE,
+        getSpiceManager().execute(scheduleRequest, "schedules", 5 * DurationInMillis.ONE_MINUTE,
                 new ListScheduleRequestListener());
+
+        // TODO ENSURE THIS IS INVALIDATED ON UPLOADS OR NEW CONTENT
+        // USE CACHED IF NO NETWORK
 
         return rootView;
     }
@@ -205,6 +208,7 @@ public class SchedulePagerFragment extends BaseFragment {
         @Override
         public void onRequestFailure(SpiceException spiceException) {
             //TODO SHOW CAUSE
+            // TODO Null exception
             Log.e(TAG, spiceException.getCause().toString());
 
             Toast.makeText(getActivity(), "Failed to Retrieve Schedules", Toast.LENGTH_SHORT)

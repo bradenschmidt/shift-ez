@@ -5,7 +5,10 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.Toast;
@@ -15,8 +18,12 @@ import com.octo.android.robospice.persistence.exception.SpiceException;
 import com.octo.android.robospice.request.listener.RequestListener;
 import com.schmidtdesigns.shiftez.Constants;
 import com.schmidtdesigns.shiftez.R;
+import com.schmidtdesigns.shiftez.ShiftEZ;
+import com.schmidtdesigns.shiftez.adapters.StoreAdapter;
+import com.schmidtdesigns.shiftez.models.Account;
 import com.schmidtdesigns.shiftez.models.ImageUploadUrl;
 import com.schmidtdesigns.shiftez.models.PostResult;
+import com.schmidtdesigns.shiftez.models.Store;
 import com.schmidtdesigns.shiftez.network.ImageUploadRetrofitRequest;
 import com.schmidtdesigns.shiftez.network.ImageUploadUrlRetrofitRequest;
 import com.squareup.picasso.Picasso;
@@ -33,21 +40,14 @@ import butterknife.OnClick;
 import retrofit.mime.TypedFile;
 
 public class UploadActivity extends BaseActivity {
-
+    // Log tag
     private static final String TAG = "UploadActivity";
-    @InjectView(R.id.week_spinner)
-    public Spinner mWeekSpinner;
-    @InjectView(R.id.year_spinner)
-    public Spinner mYearSpinner;
-    @InjectView(R.id.week_offset_spinner)
-    public Spinner mWeekOffsetSpinner;
 
-    @InjectView(R.id.upload_toolbar)
-    public Toolbar mToolbar;
-    @InjectView(R.id.schedule_image_preview)
-    public ImageView mImageView;
     // The image file we want to upload
     private File mImageFile;
+
+    // View Holder containing all of this activities views.
+    private ViewHolder mHolder;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,6 +55,8 @@ public class UploadActivity extends BaseActivity {
         setContentView(R.layout.activity_upload);
 
         ButterKnife.inject(this);
+
+        mHolder = new ViewHolder(this);
 
         setupToolbar();
 
@@ -72,10 +74,12 @@ public class UploadActivity extends BaseActivity {
         setupScheduleImage();
     }
 
-
+    /**
+     * Setup the toolbar for this activity
+     */
     private void setupToolbar() {
-        if (mToolbar != null) {
-            setSupportActionBar(mToolbar);
+        if (mHolder.mToolbar != null) {
+            setSupportActionBar(mHolder.mToolbar);
         } else {
             Log.e(TAG, "Toolbar is null");
         }
@@ -85,7 +89,45 @@ public class UploadActivity extends BaseActivity {
         }
     }
 
+    /**
+     * Setup the week, year, and week offset spinners with the possible values.
+     */
     private void setupSpinners() {
+        Account account = ShiftEZ.getInstance().getAccount();
+
+        // Setup the stores to list
+        StoreAdapter storeAdapter = new StoreAdapter(getApplicationContext(),
+                R.layout.spinner_item, R.layout.spinner_dropdown_item, account.getStores());
+        // Apply the adapter to the spinner
+        mHolder.mStoreSpinner.setAdapter(storeAdapter);
+        // TODO Set default position to current store
+        //mHolder.mDepSpinner.setSelection();
+        mHolder.mStoreSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                mHolder.mDepSpinner.setEnabled(true);
+                mHolder.mUploadButton.setEnabled(true);
+
+                Store store = (Store) mHolder.mStoreSpinner.getSelectedItem();
+
+                // Setup the Departments to use
+                ArrayAdapter<String> depAdapter = new ArrayAdapter<>(getApplicationContext(),
+                        R.layout.spinner_item, store.getDeps());
+                // Specify the layout to use when the list of choices appears
+                depAdapter.setDropDownViewResource(R.layout.spinner_dropdown_item);
+                // Apply the adapter to the spinner
+                mHolder.mDepSpinner.setAdapter(depAdapter);
+                // TODO Set default position to current dep
+                //mHolder.mDepSpinner.setSelection();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                // TODO
+            }
+
+        });
+
         // Create an ArrayAdapter using a list containing the possible weeks
         ArrayList<Integer> weeks = new ArrayList<>();
         for (int i = 1; i <= 53; i++) {
@@ -97,10 +139,10 @@ public class UploadActivity extends BaseActivity {
         // Specify the layout to use when the list of choices appears
         weekAdapter.setDropDownViewResource(R.layout.spinner_dropdown_item);
         // Apply the adapter to the spinner
-        mWeekSpinner.setAdapter(weekAdapter);
+        mHolder.mWeekSpinner.setAdapter(weekAdapter);
         // Set default position to current week
         DateTime time = new DateTime();
-        mWeekSpinner.setSelection(weeks.indexOf(time.getWeekOfWeekyear()));
+        mHolder.mWeekSpinner.setSelection(weeks.indexOf(time.getWeekOfWeekyear()));
 
 
         // Create an ArrayAdapter using a list containing the possible week offsets
@@ -114,7 +156,7 @@ public class UploadActivity extends BaseActivity {
         // Specify the layout to use when the list of choices appears
         weekOffsetAdapter.setDropDownViewResource(R.layout.spinner_dropdown_item);
         // Apply the adapter to the spinner
-        mWeekOffsetSpinner.setAdapter(weekOffsetAdapter);
+        mHolder.mWeekOffsetSpinner.setAdapter(weekOffsetAdapter);
 
 
         // Create an ArrayAdapter using a list containing the possible years
@@ -135,15 +177,18 @@ public class UploadActivity extends BaseActivity {
         // Specify the layout to use when the list of choices appears
         yearAdapter.setDropDownViewResource(R.layout.spinner_dropdown_item);
         // Apply the adapter to the spinner
-        mYearSpinner.setAdapter(yearAdapter);
+        mHolder.mYearSpinner.setAdapter(yearAdapter);
         // Set default to current year
-        mYearSpinner.setSelection(1, true);
+        mHolder.mYearSpinner.setSelection(1, true);
     }
 
+    /**
+     * Setup the schedule image preview to contain the image file location passed by intent
+     */
     private void setupScheduleImage() {
         Picasso.with(getApplicationContext())
                 .load(mImageFile)
-                .into(mImageView);
+                .into(mHolder.mScheduleImagePreview);
     }
 
     @Override
@@ -182,6 +227,42 @@ public class UploadActivity extends BaseActivity {
     }
 
     /**
+     * This class contains all butterknife-injected Views & Layouts from layout file 'activity_upload.xml'
+     * for easy to all layout elements.
+     *
+     * @author ButterKnifeZelezny, plugin for Android Studio by Avast Developers (http://github.com/avast)
+     */
+    static class ViewHolder {
+        // Possible weeks
+        @InjectView(R.id.week_spinner)
+        public Spinner mWeekSpinner;
+        // Possible years
+        @InjectView(R.id.year_spinner)
+        public Spinner mYearSpinner;
+        // Possible offsets
+        @InjectView(R.id.week_offset_spinner)
+        public Spinner mWeekOffsetSpinner;
+        // toolbar used by this activity
+        @InjectView(R.id.upload_toolbar)
+        public Toolbar mToolbar;
+        @InjectView(R.id.schedule_upload_button)
+        public Button mUploadButton;
+        @InjectView(R.id.store_spinner)
+        Spinner mStoreSpinner;
+        @InjectView(R.id.dep_spinner)
+        Spinner mDepSpinner;
+        // Image preview shown
+        @InjectView(R.id.schedule_image_preview)
+        ImageView mScheduleImagePreview;
+
+        ViewHolder(UploadActivity uploadActivity) {
+            ButterKnife.inject(this, uploadActivity);
+            // Start as disabled
+            mDepSpinner.setEnabled(false);
+        }
+    }
+
+    /**
      * Callback for the getting the image upload url. On success create the params of the schedule
      * image and launch robospice post to server.
      */
@@ -202,18 +283,18 @@ public class UploadActivity extends BaseActivity {
         @Override
         public void onRequestSuccess(ImageUploadUrl imageUploadUrl) {
             Log.i(TAG, "Got an upload url: " + imageUploadUrl.getUploadUrl());
-            Log.i(TAG, "Path is: " + imageUploadUrl.getPath());
+            Log.i(TAG, "Image Path is: " + imageUploadUrl.getPath());
 
-
+            // Collect params from Account and from spinners.
             TypedFile image = new TypedFile("image/*", mImageFile);
             HashMap<String, String> imageParams = new HashMap<>();
-            imageParams.put("store", "8th St Coop Home Centre");
-            imageParams.put("dep", "Lumber");
-            imageParams.put("user_id", "bps");
-            imageParams.put("user_name", "Braden");
-            imageParams.put("week", String.valueOf(mWeekSpinner.getSelectedItem()));
-            imageParams.put("week_offset", String.valueOf(mWeekOffsetSpinner.getSelectedItem()));
-            imageParams.put("year", String.valueOf(mYearSpinner.getSelectedItem()));
+            imageParams.put("store", String.valueOf(mHolder.mStoreSpinner.getSelectedItem()));
+            imageParams.put("dep", String.valueOf(mHolder.mStoreSpinner.getSelectedItem()));
+            imageParams.put("user_id", ShiftEZ.getInstance().getAccount().getEmail());
+            imageParams.put("user_name", ShiftEZ.getInstance().getAccount().getName());
+            imageParams.put("week", String.valueOf(mHolder.mWeekSpinner.getSelectedItem()));
+            imageParams.put("week_offset", String.valueOf(mHolder.mWeekOffsetSpinner.getSelectedItem()));
+            imageParams.put("year", String.valueOf(mHolder.mYearSpinner.getSelectedItem()));
 
             Log.d(TAG, "Uploading image with params: " + imageParams.toString());
 
@@ -227,12 +308,12 @@ public class UploadActivity extends BaseActivity {
     /**
      * Callback for image upload by robospice POST. On success show a popup message.
      */
-    private class ImageUploadListener implements RequestListener<com.schmidtdesigns.shiftez.models.PostResult> {
+    private class ImageUploadListener implements RequestListener<PostResult> {
         @Override
         public void onRequestFailure(SpiceException spiceException) {
             //TODO
             Log.e(TAG, spiceException.getCause().toString());
-            Toast.makeText(getApplicationContext(), "Image upload successful:" + spiceException.getCause().toString(), Toast.LENGTH_LONG).show();
+            Toast.makeText(getApplicationContext(), "Image upload Failed:" + spiceException.getCause().toString(), Toast.LENGTH_LONG).show();
 
         }
 

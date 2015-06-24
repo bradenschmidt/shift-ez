@@ -20,4 +20,6 @@
     <string name="schedule_year">XXXX</string>
     <string name="schedule_image_transition">schedule_image_transition</string>
     <string name="activity_login_title">Login</string>
+    <string name="store_spinner_title">Store Name</string>
+    <string name="dep_spinner_title">Department</string>
 </resources>

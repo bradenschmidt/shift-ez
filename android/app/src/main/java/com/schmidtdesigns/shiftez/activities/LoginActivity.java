@@ -19,6 +19,10 @@ import com.schmidtdesigns.shiftez.Constants;
 import com.schmidtdesigns.shiftez.R;
 import com.schmidtdesigns.shiftez.ShiftEZ;
 import com.schmidtdesigns.shiftez.models.Account;
+import com.schmidtdesigns.shiftez.models.Store;
+
+import java.util.ArrayList;
+import java.util.Arrays;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
@@ -33,17 +37,14 @@ public class LoginActivity extends BaseActivity implements GoogleApiClient.Conne
 
     // Logging tag
     private static final String TAG = "LoginActivity";
+    /* Request code used to invoke sign in user interactions. */
+    private static final int RC_SIGN_IN = 0;
     @InjectView(R.id.toolbar)
     Toolbar mToolbar;
     @InjectView(R.id.login_name)
     TextView mLoginName;
     @InjectView(R.id.progress)
     ProgressBar mProgress;
-
-
-    /* Request code used to invoke sign in user interactions. */
-    private static final int RC_SIGN_IN = 0;
-
     /* A flag indicating that a PendingIntent is in progress and prevents
      * us from starting further intents.
      */
@@ -131,7 +132,16 @@ public class LoginActivity extends BaseActivity implements GoogleApiClient.Conne
         Person person = Plus.PeopleApi.getCurrentPerson(mGoogleApiClient);
         mLoginName.setText(person.getDisplayName());
 
-        ShiftEZ.getInstance().setAccount(new Account(person.getName().toString(), email));
+        // TODO: GET FROM SERVER
+        ArrayList<Store> stores = new ArrayList<>();
+        ArrayList<String> deps = new ArrayList<>(Arrays.asList("Lumber", "Hardware"));
+        Store store1 = new Store("8th St Coop Home Centre", deps);
+        Store store2 = new Store("Rona", deps);
+        stores.add(store1);
+        stores.add(store2);
+        // END TODO
+
+        ShiftEZ.getInstance().setAccount(new Account(person.getName().toString(), email, stores));
 
         // get shared preferences
         SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());

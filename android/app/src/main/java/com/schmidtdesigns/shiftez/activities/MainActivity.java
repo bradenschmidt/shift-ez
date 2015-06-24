@@ -16,6 +16,10 @@ import com.schmidtdesigns.shiftez.R;
 import com.schmidtdesigns.shiftez.ShiftEZ;
 import com.schmidtdesigns.shiftez.fragments.SchedulePagerFragment;
 import com.schmidtdesigns.shiftez.models.Account;
+import com.schmidtdesigns.shiftez.models.Store;
+
+import java.util.ArrayList;
+import java.util.Arrays;
 
 public class MainActivity extends BaseActivity {
 
@@ -36,7 +40,21 @@ public class MainActivity extends BaseActivity {
         String accountString = sharedPrefs.getString(Constants.ACCOUNT_PARAM, null);
         ShiftEZ shiftEZ = ShiftEZ.getInstance();
         if(shiftEZ != null) {
-            shiftEZ.setAccount(Account.deserializeFromJson(accountString));
+            //shiftEZ.setAccount(Account.deserializeFromJson(accountString));
+
+            // TODO: GET FROM SERVER
+            ArrayList<Store> stores = new ArrayList<>();
+            ArrayList<String> deps = new ArrayList<>(Arrays.asList("Lumber", "Hardware"));
+            ArrayList<String> deps2 = new ArrayList<>(Arrays.asList("Lumber", "Cashier"));
+            Store store1 = new Store("8th St Coop Home Centre", deps);
+            Store store2 = new Store("Rona", deps2);
+            stores.add(store1);
+            stores.add(store2);
+            // END TODO
+            // TODO: REMOVE ONCE ACCOUNT IS AUTO DONE
+            Account a = new Account("Braden Schmidt", "bradenschmidt@gmail.com", stores);
+            shiftEZ.setAccount(a);
+
         } else {
             Log.i(TAG, "shiftEZ is null");
         }

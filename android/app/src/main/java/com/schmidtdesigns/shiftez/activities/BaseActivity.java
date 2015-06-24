@@ -3,7 +3,6 @@ package com.schmidtdesigns.shiftez.activities;
 import android.support.v7.app.AppCompatActivity;
 
 import com.octo.android.robospice.SpiceManager;
-import com.schmidtdesigns.shiftez.ShiftEZ;
 import com.schmidtdesigns.shiftez.network.RetrofitSpiceService;
 
 /**
@@ -31,7 +30,8 @@ public class BaseActivity extends AppCompatActivity {
     }
 
     public boolean isLoggedIn() {
-        return ShiftEZ.getInstance().getAccount() != null;
+        //return ShiftEZ.getInstance().getAccount() != null;
+        return true;
     }
 
 }
