@@ -16,10 +16,6 @@ import com.schmidtdesigns.shiftez.R;
 import com.schmidtdesigns.shiftez.ShiftEZ;
 import com.schmidtdesigns.shiftez.fragments.SchedulePagerFragment;
 import com.schmidtdesigns.shiftez.models.Account;
-import com.schmidtdesigns.shiftez.models.Store;
-
-import java.util.ArrayList;
-import java.util.Arrays;
 
 public class MainActivity extends BaseActivity {
 
@@ -35,33 +31,27 @@ public class MainActivity extends BaseActivity {
             setSupportActionBar(toolbar);
         }
 
-        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
-
-        String accountString = sharedPrefs.getString(Constants.ACCOUNT_PARAM, null);
-        ShiftEZ shiftEZ = ShiftEZ.getInstance();
-        if(shiftEZ != null) {
-            //shiftEZ.setAccount(Account.deserializeFromJson(accountString));
-
-            // TODO: GET FROM SERVER
-            ArrayList<Store> stores = new ArrayList<>();
-            ArrayList<String> deps = new ArrayList<>(Arrays.asList("Lumber", "Hardware"));
-            ArrayList<String> deps2 = new ArrayList<>(Arrays.asList("Lumber", "Cashier"));
-            Store store1 = new Store("8th St Coop Home Centre", deps);
-            Store store2 = new Store("Rona", deps2);
-            stores.add(store1);
-            stores.add(store2);
-            // END TODO
-            // TODO: REMOVE ONCE ACCOUNT IS AUTO DONE
-            Account a = new Account("Braden Schmidt", "bradenschmidt@gmail.com", stores);
-            shiftEZ.setAccount(a);
-
-        } else {
-            Log.i(TAG, "shiftEZ is null");
-        }
-
         if(!isLoggedIn()) {
             startActivity(new Intent(this, LoginActivity.class));
             finish();
+        } else {
+            SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+
+            String accountString = sharedPrefs.getString(Constants.ACCOUNT_PARAM, null);
+            ShiftEZ shiftEZ = ShiftEZ.getInstance();
+            if (shiftEZ != null) {
+                if (accountString != null) {
+                    // Recover using cache pref data
+                    shiftEZ.setAccount(Account.deserializeFromJson(accountString));
+                } else {
+                    // No pref data saved
+                    startActivity(new Intent(this, LoginActivity.class));
+                    finish();
+                }
+
+            } else {
+                Log.i(TAG, "shiftEZ is null");
+            }
         }
 
         displayView(new SchedulePagerFragment(), false);
@@ -81,9 +71,17 @@ public class MainActivity extends BaseActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        switch (id) {
+            case R.id.action_settings:
+                return true;
+            case R.id.action_logout:
+                logout();
+                return true;
+            case R.id.action_revoke:
+                revoke();
+                return true;
+            default:
+                Log.e(TAG, "Invalid menu action id received: " + id);
         }
 
         return super.onOptionsItemSelected(item);
