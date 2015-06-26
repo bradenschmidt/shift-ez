@@ -1,8 +1,10 @@
 package com.schmidtdesigns.shiftez.activities;
 
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 
 import com.octo.android.robospice.SpiceManager;
+import com.schmidtdesigns.shiftez.ShiftEZ;
 import com.schmidtdesigns.shiftez.network.RetrofitSpiceService;
 
 /**
@@ -30,8 +32,15 @@ public class BaseActivity extends AppCompatActivity {
     }
 
     public boolean isLoggedIn() {
-        //return ShiftEZ.getInstance().getAccount() != null;
-        return true;
+        boolean isAccountNotNull = ShiftEZ.getInstance().getAccount() != null;
+
+        Log.i(TAG, "Is User Logged in: " + isAccountNotNull);
+
+        if (isAccountNotNull) {
+            Log.i(TAG, "Account Info: " + ShiftEZ.getInstance().getAccount().toString());
+        }
+
+        return isAccountNotNull;
     }
 
 }

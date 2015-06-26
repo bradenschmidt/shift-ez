@@ -1,5 +1,6 @@
 package com.schmidtdesigns.shiftez.activities;
 
+import android.app.Dialog;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.SharedPreferences;
@@ -10,8 +11,11 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
+import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.plus.Plus;
 import com.google.android.gms.plus.model.people.Person;
@@ -45,6 +49,8 @@ public class LoginActivity extends BaseActivity implements GoogleApiClient.Conne
     TextView mLoginName;
     @InjectView(R.id.progress)
     ProgressBar mProgress;
+    @InjectView(R.id.sign_in_button)
+    SignInButton mSignInButton;
     /* A flag indicating that a PendingIntent is in progress and prevents
      * us from starting further intents.
      */
@@ -67,13 +73,13 @@ public class LoginActivity extends BaseActivity implements GoogleApiClient.Conne
         }
 
 
-
     }
 
     @OnClick(R.id.sign_in_button)
     public void loginWithGPlus() {
         login();
         mProgress.setVisibility(View.VISIBLE);
+        mSignInButton.setEnabled(false);
     }
 
     protected void onActivityResult(int requestCode, int responseCode, Intent intent) {
@@ -85,15 +91,18 @@ public class LoginActivity extends BaseActivity implements GoogleApiClient.Conne
             }
         }
     }
+
     @Override
     public void onConnectionSuspended(int i) {
-        if(mGoogleApiClient != null) {
+        if (mGoogleApiClient != null) {
             mGoogleApiClient.connect();
         }
     }
 
     @Override
     public void onConnectionFailed(ConnectionResult result) {
+        Log.i(TAG, "***********In onConnectionFailed.");
+
         if (!mIntentInProgress && result.hasResolution()) {
             try {
                 mIntentInProgress = true;
@@ -109,13 +118,20 @@ public class LoginActivity extends BaseActivity implements GoogleApiClient.Conne
     }
 
     public void login() {
-        mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .addApi(Plus.API)
-                .addScope(Plus.SCOPE_PLUS_LOGIN)
-                .addScope(Plus.SCOPE_PLUS_PROFILE)
-                .build();
+        if (!checkForPlayServices()) {
+            Log.e(TAG, "ERROR: Play Services is not installed.");
+            mProgress.setVisibility(View.GONE);
+            mSignInButton.setEnabled(true);
+        } else {
+            mGoogleApiClient = new GoogleApiClient.Builder(this)
+                    .addConnectionCallbacks(this)
+                    .addOnConnectionFailedListener(this)
+                    .addApi(Plus.API)
+                    .addScope(Plus.SCOPE_PLUS_LOGIN)
+                    .addScope(Plus.SCOPE_PLUS_PROFILE)
+                    .build();
+            mGoogleApiClient.connect();
+        }
     }
 
     @Override
@@ -159,7 +175,7 @@ public class LoginActivity extends BaseActivity implements GoogleApiClient.Conne
     @Override
     protected void onStart() {
         super.onStart();
-        if(mGoogleApiClient != null) {
+        if (mGoogleApiClient != null) {
             mGoogleApiClient.connect();
         }
     }
@@ -168,11 +184,23 @@ public class LoginActivity extends BaseActivity implements GoogleApiClient.Conne
     protected void onStop() {
         super.onStop();
 
-        if(mGoogleApiClient != null) {
+        if (mGoogleApiClient != null) {
             if (mGoogleApiClient.isConnected()) {
                 mGoogleApiClient.disconnect();
             }
         }
     }
 
+    private boolean checkForPlayServices() {
+        int state = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
+
+        if (state == ConnectionResult.SUCCESS) {
+            Toast.makeText(this, "SUCCESS", Toast.LENGTH_LONG).show();
+            return true;
+        } else {
+            Dialog dialog = GooglePlayServicesUtil.getErrorDialog(state, this, -1);
+            dialog.show();
+            return false;
+        }
+    }
 }
