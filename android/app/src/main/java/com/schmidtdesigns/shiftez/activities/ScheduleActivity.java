@@ -51,6 +51,12 @@ public class ScheduleActivity extends BaseActivity implements View.OnClickListen
 
     }
 
+    @Override
+    public void updateUI(boolean result) {
+        //TODO
+        Log.i(TAG, "Update UI Needed.");
+    }
+
     private void setupScheduleImage(final SubsamplingScaleImageView image) {
         image.setMaxScale(10F);
 

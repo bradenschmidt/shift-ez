@@ -24,4 +24,5 @@
     <string name="dep_spinner_title">Department</string>
     <string name="action_logout">Logout</string>
     <string name="action_revoke">Revoke</string>
+    <string name="play_services_error_fmt">Play Services Error</string>
 </resources>

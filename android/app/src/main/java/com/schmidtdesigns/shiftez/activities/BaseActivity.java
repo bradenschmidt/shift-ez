@@ -1,6 +1,7 @@
 package com.schmidtdesigns.shiftez.activities;
 
 import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.SharedPreferences;
@@ -17,6 +18,7 @@ import com.google.android.gms.plus.Plus;
 import com.google.android.gms.plus.model.people.Person;
 import com.octo.android.robospice.SpiceManager;
 import com.schmidtdesigns.shiftez.Constants;
+import com.schmidtdesigns.shiftez.R;
 import com.schmidtdesigns.shiftez.ShiftEZ;
 import com.schmidtdesigns.shiftez.models.Account;
 import com.schmidtdesigns.shiftez.models.Store;
@@ -28,54 +30,39 @@ import java.util.Arrays;
 /**
  * Created by braden on 15-06-09.
  */
-public class BaseActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+public abstract class BaseActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
     private static final String TAG = "BaseActivity";
-    /* Request code used to invoke sign in user interactions. */
-    private static final int RC_SIGN_IN = 0;
+    /* RequestCode for resolutions involving sign-in */
+    private static final int RC_SIGN_IN = 9001;
+    /* Keys for persisting instance variables in savedInstanceState */
+    private static final String KEY_IS_RESOLVING = "is_resolving";
+    private static final String KEY_SHOULD_RESOLVE = "should_resolve";
     protected SpiceManager spiceManager = new SpiceManager(RetrofitSpiceService.class);
     private GoogleApiClient mGoogleApiClient;
     /* A flag indicating that a PendingIntent is in progress and prevents
      * us from starting further intents.
      */
     private boolean mIntentInProgress;
+    /* Is there a ConnectionResult resolution in progress? */
+    private boolean mIsResolving = false;
+
+    /* Should we automatically resolve ConnectionResults when possible? */
+    private boolean mShouldResolve = false;
 
     public GoogleApiClient getGoogleApiClient() {
         return mGoogleApiClient;
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
-        spiceManager.start(this);
-
-        /*
-        if (mGoogleApiClient != null) {
-            mGoogleApiClient.connect();
-        }
-        */
-    }
-
-    @Override
-    protected void onStop() {
-        spiceManager.shouldStop();
-        super.onStop();
-
-        /*
-        if (mGoogleApiClient != null) {
-            if (mGoogleApiClient.isConnected()) {
-                mGoogleApiClient.disconnect();
-            }
-        }
-        */
-    }
-
-    protected SpiceManager getSpiceManager() {
-        return spiceManager;
-    }
-
-    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Restore from saved instance state
+        if (savedInstanceState != null) {
+            mIsResolving = savedInstanceState.getBoolean(KEY_IS_RESOLVING);
+            mShouldResolve = savedInstanceState.getBoolean(KEY_SHOULD_RESOLVE);
+        }
+
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
@@ -85,6 +72,42 @@ public class BaseActivity extends AppCompatActivity implements GoogleApiClient.C
                 .build();
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        spiceManager.start(this);
+
+        if (mGoogleApiClient != null) {
+            mGoogleApiClient.connect();
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        spiceManager.shouldStop();
+        super.onStop();
+
+        if (mGoogleApiClient != null) {
+            if (mGoogleApiClient.isConnected()) {
+                mGoogleApiClient.disconnect();
+            }
+        }
+
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putBoolean(KEY_IS_RESOLVING, mIsResolving);
+        outState.putBoolean(KEY_SHOULD_RESOLVE, mIsResolving);
+    }
+
+    protected SpiceManager getSpiceManager() {
+        return spiceManager;
+    }
+
+
+
     public boolean isLoggedIn() {
         boolean isAccountNotNull = ShiftEZ.getInstance().getAccount() != null;
 
@@ -92,9 +115,21 @@ public class BaseActivity extends AppCompatActivity implements GoogleApiClient.C
 
         if (isAccountNotNull) {
             Log.i(TAG, "Account Info: " + ShiftEZ.getInstance().getAccount().toString());
+            return true;
+        } else {
+            // Attempt to recover account data from prefs
+            SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+
+            String accountString = sharedPrefs.getString(Constants.ACCOUNT_PARAM, null);
+            ShiftEZ shiftEZ = ShiftEZ.getInstance();
+            if (shiftEZ != null && accountString != null) {
+                // Recover using cache pref data
+                shiftEZ.setAccount(Account.deserializeFromJson(accountString));
+                return true;
+            }
         }
 
-        return isAccountNotNull;
+        return false;
     }
 
     private boolean checkForPlayServices() {
@@ -115,18 +150,24 @@ public class BaseActivity extends AppCompatActivity implements GoogleApiClient.C
             Log.e(TAG, "ERROR: Play Services is not installed.");
             return false;
         } else {
+            mShouldResolve = true;
             mGoogleApiClient.connect();
         }
         return true;
     }
 
-    protected void onActivityResult(int requestCode, int responseCode, Intent intent) {
-        if (requestCode == RC_SIGN_IN) {
-            mIntentInProgress = false;
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        Log.d(TAG, "onActivityResult:" + requestCode + ":" + resultCode + ":" + data);
 
-            if (!mGoogleApiClient.isConnecting()) {
-                mGoogleApiClient.connect();
+        if (requestCode == RC_SIGN_IN) {
+            // If the error resolution was not successful we should not resolve further errors.
+            if (resultCode != RESULT_OK) {
+                mShouldResolve = false;
             }
+
+            mIsResolving = false;
+            mGoogleApiClient.connect();
         }
     }
 
@@ -134,34 +175,81 @@ public class BaseActivity extends AppCompatActivity implements GoogleApiClient.C
     public void onConnected(Bundle connectionHint) {
         // We've resolved any connection errors.  mGoogleApiClient can be used to
         // access Google APIs on behalf of the user.
-        Log.i(TAG, "***********In onConnected.");
-        getProfileInformation();
+        // onConnected indicates that an account was selected on the device, that the selected
+        // account has granted any requested permissions to our app and that we were able to
+        // establish a service connection to Google Play services.
+        Log.d(TAG, "onConnected:" + connectionHint);
+
+        if (ShiftEZ.getInstance().getAccount() == null) {
+            getProfileInformation();
+        } else {
+            Log.i(TAG, "Account is not null.");
+        }
     }
 
     @Override
     public void onConnectionSuspended(int i) {
-        if (mGoogleApiClient != null) {
-            mGoogleApiClient.connect();
-        }
+        // The connection to Google Play services was lost. The GoogleApiClient will automatically
+        // attempt to re-connect. Any UI elements that depend on connection to Google APIs should
+        // be hidden or disabled until onConnected is called again.
+        Log.w(TAG, "onConnectionSuspended:" + i);
     }
 
     @Override
-    public void onConnectionFailed(ConnectionResult result) {
+    public void onConnectionFailed(ConnectionResult connectionResult) {
         Log.i(TAG, "***********In onConnectionFailed.");
 
-        if (!mIntentInProgress && result.hasResolution()) {
-            try {
-                mIntentInProgress = true;
-                startIntentSenderForResult(result.getResolution().getIntentSender(),
-                        RC_SIGN_IN, null, 0, 0, 0);
-            } catch (IntentSender.SendIntentException e) {
-                // The intent was canceled before it was sent.  Return to the default
-                // state and attempt to connect to get an updated ConnectionResult.
-                mIntentInProgress = false;
-                mGoogleApiClient.connect();
+        // Could not connect to Google Play Services.  The user needs to select an account,
+        // grant permissions or resolve an error in order to sign in. Refer to the javadoc for
+        // ConnectionResult to see possible error codes.
+        Log.d(TAG, "onConnectionFailed:" + connectionResult);
+
+        if (!mIsResolving && mShouldResolve) {
+            if (connectionResult.hasResolution()) {
+                try {
+                    connectionResult.startResolutionForResult(this, RC_SIGN_IN);
+                    mIsResolving = true;
+                } catch (IntentSender.SendIntentException e) {
+                    Log.e(TAG, "Could not resolve ConnectionResult.", e);
+                    mIsResolving = false;
+                    mGoogleApiClient.connect();
+                }
+            } else {
+                // Could not resolve the connection result, show the user an
+                // error dialog.
+                showErrorDialog(connectionResult);
             }
+        } else {
+            // Show the signed-out UI
+            updateUI(false);
         }
     }
+
+    private void showErrorDialog(ConnectionResult connectionResult) {
+        int errorCode = connectionResult.getErrorCode();
+
+        if (GooglePlayServicesUtil.isUserRecoverableError(errorCode)) {
+            // Show the default Google Play services error dialog which may still start an intent
+            // on our behalf if the user can resolve the issue.
+            GooglePlayServicesUtil.getErrorDialog(errorCode, this, RC_SIGN_IN,
+                    new DialogInterface.OnCancelListener() {
+                        @Override
+                        public void onCancel(DialogInterface dialog) {
+                            mShouldResolve = false;
+                            updateUI(false);
+                        }
+                    }).show();
+        } else {
+            // No default Google Play Services error, display a message to the user.
+            String errorString = getString(R.string.play_services_error_fmt, errorCode);
+            Toast.makeText(this, errorString, Toast.LENGTH_SHORT).show();
+
+            mShouldResolve = false;
+            updateUI(false);
+        }
+    }
+
+    public abstract void updateUI(boolean result);
 
     public void getProfileInformation() {
         String email = Plus.AccountApi.getAccountName(mGoogleApiClient);
@@ -203,6 +291,8 @@ public class BaseActivity extends AppCompatActivity implements GoogleApiClient.C
         editor.remove(Constants.ACCOUNT_PARAM);
         editor.apply();
 
+        ShiftEZ.getInstance().setAccount(null);
+
         // Revoke all granted permissions and clear the default account.  The user will have
         // to pass the consent screen to sign in again.
         if (mGoogleApiClient != null) {
@@ -210,6 +300,8 @@ public class BaseActivity extends AppCompatActivity implements GoogleApiClient.C
                 Plus.AccountApi.clearDefaultAccount(mGoogleApiClient);
                 Plus.AccountApi.revokeAccessAndDisconnect(mGoogleApiClient);
                 mGoogleApiClient.disconnect();
+            } else {
+                Log.e(TAG, "GPlus API Client is not connected during revoke.");
             }
         } else {
             Log.e(TAG, "GPlus API Client is null during revoke.");
@@ -229,10 +321,14 @@ public class BaseActivity extends AppCompatActivity implements GoogleApiClient.C
         editor.remove(Constants.ACCOUNT_PARAM);
         editor.apply();
 
+        ShiftEZ.getInstance().setAccount(null);
+
         if (mGoogleApiClient != null) {
             if (mGoogleApiClient.isConnected()) {
                 Plus.AccountApi.clearDefaultAccount(mGoogleApiClient);
                 mGoogleApiClient.disconnect();
+            } else {
+                Log.e(TAG, "GPlus API Client is not connected during logout.");
             }
         } else {
             Log.e(TAG, "GPlus API Client is null during logout.");

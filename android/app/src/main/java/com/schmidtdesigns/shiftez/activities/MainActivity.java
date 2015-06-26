@@ -1,9 +1,7 @@
 package com.schmidtdesigns.shiftez.activities;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.Toolbar;
@@ -11,11 +9,8 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import com.schmidtdesigns.shiftez.Constants;
 import com.schmidtdesigns.shiftez.R;
-import com.schmidtdesigns.shiftez.ShiftEZ;
 import com.schmidtdesigns.shiftez.fragments.SchedulePagerFragment;
-import com.schmidtdesigns.shiftez.models.Account;
 
 public class MainActivity extends BaseActivity {
 
@@ -32,29 +27,18 @@ public class MainActivity extends BaseActivity {
         }
 
         if(!isLoggedIn()) {
+            Log.i(TAG, "USER IS NOT LOGGED IN");
             startActivity(new Intent(this, LoginActivity.class));
             finish();
-        } else {
-            SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
-
-            String accountString = sharedPrefs.getString(Constants.ACCOUNT_PARAM, null);
-            ShiftEZ shiftEZ = ShiftEZ.getInstance();
-            if (shiftEZ != null) {
-                if (accountString != null) {
-                    // Recover using cache pref data
-                    shiftEZ.setAccount(Account.deserializeFromJson(accountString));
-                } else {
-                    // No pref data saved
-                    startActivity(new Intent(this, LoginActivity.class));
-                    finish();
-                }
-
-            } else {
-                Log.i(TAG, "shiftEZ is null");
-            }
         }
 
         displayView(new SchedulePagerFragment(), false);
+    }
+
+    @Override
+    public void updateUI(boolean result) {
+        //TODO
+        Log.i(TAG, "Update UI Needed.");
     }
 
     @Override

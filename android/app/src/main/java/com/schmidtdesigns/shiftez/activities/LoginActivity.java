@@ -57,4 +57,15 @@ public class LoginActivity extends BaseActivity {
     protected void onActivityResult(int requestCode, int responseCode, Intent intent) {
         super.onActivityResult(requestCode, responseCode, intent);
     }
+
+    @Override
+    public void updateUI(boolean result) {
+        if (result) {
+            mProgress.setVisibility(View.VISIBLE);
+            mSignInButton.setEnabled(false);
+        } else {
+            mProgress.setVisibility(View.GONE);
+            mSignInButton.setEnabled(true);
+        }
+    }
 }
