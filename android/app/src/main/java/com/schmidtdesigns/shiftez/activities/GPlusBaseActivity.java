@@ -243,13 +243,17 @@ public abstract class GPlusBaseActivity extends BaseActivity implements GoogleAp
         // TODO: GET FROM SERVER
         ArrayList<Store> stores = new ArrayList<>();
         ArrayList<String> deps = new ArrayList<>(Arrays.asList("Lumber", "Hardware"));
+        ArrayList<String> deps2 = new ArrayList<>(Arrays.asList("Lumber", "Cashier"));
         Store store1 = new Store("8th St Coop Home Centre", deps);
-        Store store2 = new Store("Rona", deps);
+        Store store2 = new Store("Rona", deps2);
         stores.add(store1);
         stores.add(store2);
         // END TODO
 
-        ShiftEZ.getInstance().setAccount(new Account(person.getName().toString(), email, stores));
+        Account account = new Account(person.getDisplayName(), email, stores);
+        Log.i(TAG, "Saving New Profile Info: " + account);
+
+        ShiftEZ.getInstance().setAccount(account);
 
         // get shared preferences
         SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());

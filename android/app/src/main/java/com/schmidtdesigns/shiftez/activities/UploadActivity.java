@@ -288,8 +288,8 @@ public class UploadActivity extends BaseActivity {
             // Collect params from Account and from spinners.
             TypedFile image = new TypedFile("image/*", mImageFile);
             HashMap<String, String> imageParams = new HashMap<>();
-            imageParams.put("store", String.valueOf(mHolder.mStoreSpinner.getSelectedItem()));
-            imageParams.put("dep", String.valueOf(mHolder.mStoreSpinner.getSelectedItem()));
+            imageParams.put("store", ((Store) mHolder.mStoreSpinner.getSelectedItem()).getName());
+            imageParams.put("dep", String.valueOf(mHolder.mDepSpinner.getSelectedItem()));
             imageParams.put("user_id", ShiftEZ.getInstance().getAccount().getEmail());
             imageParams.put("user_name", ShiftEZ.getInstance().getAccount().getName());
             imageParams.put("week", String.valueOf(mHolder.mWeekSpinner.getSelectedItem()));

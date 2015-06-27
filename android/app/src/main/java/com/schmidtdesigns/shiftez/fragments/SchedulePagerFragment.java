@@ -12,6 +12,9 @@ import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -25,6 +28,7 @@ import com.schmidtdesigns.shiftez.Constants;
 import com.schmidtdesigns.shiftez.R;
 import com.schmidtdesigns.shiftez.activities.UploadActivity;
 import com.schmidtdesigns.shiftez.adapters.ScheduleAdapter;
+import com.schmidtdesigns.shiftez.models.Schedule;
 import com.schmidtdesigns.shiftez.models.ScheduleResponse;
 import com.schmidtdesigns.shiftez.network.ScheduleRetrofitRequest;
 
@@ -33,6 +37,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.concurrent.Future;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
@@ -72,22 +77,61 @@ public class SchedulePagerFragment extends BaseFragment {
 
         ViewGroup rootView = (ViewGroup) inflater.inflate(
                 R.layout.fragment_schedules, container, false);
-
+        setHasOptionsMenu(true);
         ButterKnife.inject(this, rootView);
 
-        /*
-        * Request object for schedules
-	    */
         int year = 2015;
+        getSchedules(year);
+
+        return rootView;
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        // Do something that differs the Activity's menu here
+        super.onCreateOptionsMenu(menu, inflater);
+        inflater.inflate(R.menu.schedule_pager_fragment, menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_refresh:
+                // TODO USE YEAR
+                refreshSchedules(2015);
+                return true;
+            case R.id.action_settings:
+                // TODO Not implemented here
+                return false;
+            default:
+                break;
+        }
+
+        return false;
+    }
+
+    public void refreshSchedules(int year) {
+        Future<?> s = getSpiceManager().removeDataFromCache(Schedule.class, Constants.SCHEDULE_KEY_PARAM + year);
+        if (s.isDone()) {
+            getSchedules(year);
+        }
+    }
+
+    /**
+     * Get the schedules from the server with the given year
+     *
+     * @param year Year of schedules to retrieve
+     */
+    private void getSchedules(int year) {
         Boolean reverse = false;
         ScheduleRetrofitRequest scheduleRequest = new ScheduleRetrofitRequest(year, reverse);
-        getSpiceManager().execute(scheduleRequest, "schedules", 5 * DurationInMillis.ONE_MINUTE,
+        getSpiceManager().execute(scheduleRequest, Constants.SCHEDULE_KEY_PARAM + year, 5 * DurationInMillis.ONE_MINUTE,
                 new ListScheduleRequestListener());
 
         // TODO ENSURE THIS IS INVALIDATED ON UPLOADS OR NEW CONTENT
         // USE CACHED IF NO NETWORK
-
-        return rootView;
+        // https://groups.google.com/forum/#!topic/robospice/C1bZGKQeLLc
+        //getFromCacheAndLoadFromNetworkIfExpired
     }
 
     /**
