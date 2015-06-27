@@ -1,7 +1,7 @@
 <LinearLayout
+    android:id="@+id/login_parent_view"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/login_parent_view"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
@@ -16,17 +16,9 @@
         android:id="@+id/sign_in_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_gravity="center"
         android:layout_marginBottom="20dp"
-        android:textSize="18sp"
-        android:layout_gravity="center"/>
-
-
-    <TextView
-        android:id="@+id/login_name"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        tools:text="Name" />
-
+        android:textSize="18sp"/>
 
 
     <ProgressBar

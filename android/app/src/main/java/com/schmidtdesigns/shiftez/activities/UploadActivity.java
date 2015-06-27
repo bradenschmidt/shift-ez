@@ -74,6 +74,12 @@ public class UploadActivity extends BaseActivity {
         setupScheduleImage();
     }
 
+    @Override
+    public void updateUI(boolean result) {
+        //TODO
+        Log.i(TAG, "Update UI Needed.");
+    }
+
     /**
      * Setup the toolbar for this activity
      */
