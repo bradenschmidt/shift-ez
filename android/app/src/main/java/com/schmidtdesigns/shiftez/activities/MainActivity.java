@@ -12,7 +12,7 @@ import android.view.MenuItem;
 import com.schmidtdesigns.shiftez.R;
 import com.schmidtdesigns.shiftez.fragments.SchedulePagerFragment;
 
-public class MainActivity extends BaseActivity {
+public class MainActivity extends GPlusBaseActivity {
 
     private static final String TAG = "BaseActivity";
 

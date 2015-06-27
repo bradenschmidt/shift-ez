@@ -17,7 +17,7 @@ import butterknife.OnClick;
  * Schedule Fragment used to get the schedules from the server, show them in a pager, and allow
  * the user to add a schedule by taking a picture and sending to {@link UploadActivity}.
  */
-public class LoginActivity extends BaseActivity {
+public class LoginActivity extends GPlusBaseActivity {
 
     // Logging tag
     private static final String TAG = "LoginActivity";
