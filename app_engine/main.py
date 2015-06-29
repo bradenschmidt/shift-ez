@@ -14,6 +14,8 @@ from werkzeug.http import parse_options_header
 
 from models.schedule import Schedule
 
+import re
+
 
 """
     Use 'appcfg.py -A shift-ez update app' to deploy on gae
@@ -33,60 +35,101 @@ DEFAULT_SCHEDULE_NAME = 'default_schedule'
 
 def schedule_key(schedule_name=DEFAULT_SCHEDULE_NAME):
     """Constructs a Datastore key for a Schedule entity.
-
     We use schedule_name as the key.
     """
     return ndb.Key('Schedule', schedule_name)
 
 
-def getSchedules():
-    # Fetch schedules by user_id and convert to dicts
-    schedules = [s.to_dict() for s in
-                 Schedule.query(Schedule.user_id == 'bps').fetch()]
-
-    # print(schedules)
-
-    if(len(schedules) > 0):
-        # Sort schedules by year then week
-        schedules = sorted(schedules, key=itemgetter('week'), reverse=True)
-        schedules = sorted(schedules, key=itemgetter('year'), reverse=True)
-
-    return schedules
-
-
-def getSchedulesByKey(user_id='', store='', dep='', year='', week=''):
-    if(user_id):
-        schedules = Schedule.query(Schedule.user_id == user_id).fetch()
-    elif(store):
-        print store
-        if(dep):
-            print dep
-            schedules = Schedule.query(ndb.AND(Schedule.store == store,
-                                       Schedule.dep == dep)).fetch()
-        else:
-            schedules = Schedule.query(Schedule.store == store).fetch()
-    elif(year):
-        if(week):
-            schedules = Schedule.query(ndb.AND(Schedule.week == week,
-                                       Schedule.year == year)).fetch()
-        else:
-            schedules = Schedule.query(Schedule.year == year).fetch()
-
-    else:
-        logging.info('No keys given')
-        schedules = []
-
-    # Fetch schedules by user_id and convert to dicts
+def jsonifySchedules(schedules, reverse):
+    # convert to dicts
     schedules = [s.to_dict() for s in schedules]
 
-    # print(schedules)
+    # sort
+    if(len(schedules) > 0):
+        if(reverse == 'true'):
+            # Sort schedules by year then week with newest schedule first
+            schedules = sorted(schedules, key=itemgetter('week'), reverse=True)
+            schedules = sorted(schedules, key=itemgetter('year'), reverse=True)
+        else:
+            # Sort schedules by year then week with oldest schedule first
+            schedules = sorted(schedules, key=itemgetter('week'))
+            schedules = sorted(schedules, key=itemgetter('year'))
+
+    # Convert blob key to image url for each schedule, the remove blob key
+    for s in schedules:
+        s['image'] = images.get_serving_url(s['image_blob'])
+        del s['image_blob']
+
+    return jsonify(schedules=schedules)
+
+
+def listifySchedules(schedules, reverse):
+    # convert to dicts
+    schedules = [s.to_dict() for s in schedules]
+
+    # sort
+    if(len(schedules) > 0):
+        if(reverse == 'true'):
+            # Sort schedules by year then week with newest schedule first
+            schedules = sorted(schedules, key=itemgetter('week'), reverse=True)
+            schedules = sorted(schedules, key=itemgetter('year'), reverse=True)
+        else:
+            # Sort schedules by year then week with oldest schedule first
+            schedules = sorted(schedules, key=itemgetter('week'))
+            schedules = sorted(schedules, key=itemgetter('year'))
+
+    # Convert blob key to image url for each schedule, the remove blob key
+    for s in schedules:
+        s['image'] = images.get_serving_url(s['image_blob'])
+        del s['image_blob']
 
     return schedules
+
+
+def getAllSchedules():
+    schedules = Schedule.query().fetch()
+    return listifySchedules(schedules, None)
+
+
+# Pages ######################################################################
+@app.route('/')
+def index():
+    """Serve the homepage"""
+
+    # user = users.get_current_user()
+    # if user:
+    #     url = users.create_logout_url('')
+    #     url_linktext = 'Logout'
+    # else:
+    #     url = users.create_login_url('')
+    #     url_linktext = 'Login'
+
+    schedules = getAllSchedules()
+
+    template_values = {
+        'schedules': schedules
+    }
+
+    template = JINJA_ENVIRONMENT.get_template('index.html')
+    return template.render(template_values)
+
+
+@app.route('/hello')
+def hello():
+    """Return a friendly HTTP greeting."""
+    return 'Hello World!'
+
+
+@app.errorhandler(404)
+def page_not_found(e):
+    """Return a custom 404 error."""
+    return 'Sorry, nothing at this URL.', 404
 
 
 @app.route('/upload/form')
 def uploadImageForm():
-    upload_url = blobstore.create_upload_url('/upload_image')
+    """Show an upload form"""
+    upload_url = blobstore.create_upload_url('/api/upload_image')
 
     template_values = {
         'upload_url': upload_url
@@ -96,18 +139,12 @@ def uploadImageForm():
     return template.render(template_values)
 
 
-@app.route('/upload/link')
-def uploadImageLink():
-    """Return a blobstore upload link as json for the client to upload an
-    image.
-    """
-    upload_url = blobstore.create_upload_url('/upload_image')
+# API ENDPOINTS  #############################################################
+# POSTS  #####################################################################
 
-    return jsonify(upload_url=upload_url)
-
-
-@app.route('/upload_image', methods=['POST'])
+@app.route('/api/upload_image', methods=['POST'])
 def uploadImage():
+    """ Accept an schedule with info and image"""
     image = request.files['file']
 
     header = image.headers['Content-Type']
@@ -142,80 +179,126 @@ def uploadImage():
     return jsonify(code=code, desc=desc)
 
 
-@app.route('/get')
-def get():
+# GETS  ######################################################################
+@app.route('/api/upload/link')
+def uploadImageLink():
+    """Return a blobstore upload link as json for the client to upload an
+    image.
+    """
+    upload_url = blobstore.create_upload_url('/api/upload_image')
+
+    return jsonify(upload_url=upload_url)
+
+
+@app.route('/api/users/<user_id>')
+def getSchedulesByUser(user_id):
+    """Return the users info    """
+
+    return jsonify(user_id=user_id)
+
+
+@app.route('/api/schedules/all')
+def getSchedules():
+    """Return all of the users schedules"""
+
     user_id = request.args.get('user_id')
-    store = request.values.get('store')
-    dep = request.args.get('dep')
-    year = request.args.get('year')
-    week = request.args.get('week')
     reverse = request.args.get('reverse')
 
-    if(user_id):
-        schedules = getSchedulesByKey(user_id=user_id)
-    elif(store):
-        if(dep):
-            schedules = getSchedulesByKey(store=store, dep=dep)
-        else:
-            schedules = getSchedulesByKey(store=store)
-    elif(year):
-        if(week):
-            schedules = getSchedulesByKey(year=int(year), week=int(week))
-        else:
-            schedules = getSchedulesByKey(year=int(year))
-    else:
-        logging.info('No args given')
-        schedules = []
+    schedules = Schedule.query(Schedule.user_id == user_id).fetch()
 
-    if(len(schedules) > 0):
-        if(reverse == 'true'):
-            # Sort schedules by year then week with newest schedule first
-            schedules = sorted(schedules, key=itemgetter('week'), reverse=True)
-            schedules = sorted(schedules, key=itemgetter('year'), reverse=True)
-        else:
-            # Sort schedules by year then week with oldest schedule first
-            schedules = sorted(schedules, key=itemgetter('week'))
-            schedules = sorted(schedules, key=itemgetter('year'))
-
-    # Convert blob key to image url for each schedule, the remove blob key
-    for s in schedules:
-        s['image'] = images.get_serving_url(s['image_blob'])
-        del s['image_blob']
-
-    return jsonify(schedules=schedules)
+    return jsonifySchedules(schedules, reverse)
 
 
-@app.route('/')
-def index():
-    # user = users.get_current_user()
-    # if user:
-    #     url = users.create_logout_url('')
-    #     url_linktext = 'Logout'
-    # else:
-    #     url = users.create_login_url('')
-    #     url_linktext = 'Login'
+@app.route('/api/schedules/year/<year>')
+def getSchedulesByYear(year):
+    """Return the users schedules for a given year"""
 
-    schedules = getSchedules()
+    user_id = request.args.get('user_id')
+    reverse = request.args.get('reverse')
 
-    for s in schedules:
-        s['image'] = images.get_serving_url(s['image_blob'])
-        del s['image_blob']
+    schedules = Schedule.query(ndb.AND(Schedule.user_id == user_id,
+                                       Schedule.year == int(year))).fetch()
 
-    template_values = {
-        'schedules': schedules
-    }
-
-    template = JINJA_ENVIRONMENT.get_template('index.html')
-    return template.render(template_values)
+    return jsonifySchedules(schedules, reverse)
 
 
-@app.route('/hello')
-def hello():
-    """Return a friendly HTTP greeting."""
-    return 'Hello World!'
+@app.route('/api/schedules/year/<year>/week/<week>')
+def getSchedulesByYearWeek(year, week):
+    """Return the users schedules for a given year and week"""
+
+    user_id = request.args.get('user_id')
+    reverse = request.args.get('reverse')
+
+    schedules = Schedule.query(ndb.AND(Schedule.user_id == user_id,
+                                       Schedule.year == int(year),
+                                       Schedule.week == int(week))).fetch()
+
+    return jsonifySchedules(schedules, reverse)
 
 
-@app.errorhandler(404)
-def page_not_found(e):
-    """Return a custom 404 error."""
-    return 'Sorry, nothing at this URL.', 404
+@app.route('/api/schedules/year/<year>/store/<store>')
+def getSchedulesByYearStore(year, store):
+    """Return the users schedules for a given year and store"""
+
+    user_id = request.args.get('user_id')
+    reverse = request.args.get('reverse')
+
+    schedules = Schedule.query(ndb.AND(Schedule.user_id == user_id,
+                                       Schedule.year == int(year),
+                                       Schedule.store == store)).fetch()
+
+    return jsonifySchedules(schedules, reverse)
+
+
+@app.route('/api/schedules/year/<year>/store/<store>/dep/<dep>')
+def getSchedulesByYearStoreDep(year, store, dep):
+    """Return the users schedules for a given year and Store and Dep"""
+
+    user_id = request.args.get('user_id')
+    reverse = request.args.get('reverse')
+
+    schedules = Schedule.query(ndb.AND(Schedule.user_id == user_id,
+                               Schedule.year == int(year),
+                               Schedule.store == store),
+                               Schedule.dep == dep).fetch()
+
+    return jsonifySchedules(schedules, reverse)
+
+
+@app.route('/api/schedules/store/<store>')
+def getSchedulesByStore(store):
+    """Return the users schedules for a store"""
+
+    user_id = request.args.get('user_id')
+    reverse = request.args.get('reverse')
+
+    schedules = Schedule.query(ndb.AND(Schedule.user_id == user_id,
+                                       Schedule.store == store)).fetch()
+
+    return jsonifySchedules(schedules, reverse)
+
+
+@app.route('/api/schedules/store/<store>/dep/<dep>')
+def getSchedulesByStoreDep(store, dep):
+    """Return the users schedules for a given Store and Dep"""
+
+    user_id = request.args.get('user_id')
+    reverse = request.args.get('reverse')
+
+    schedules = Schedule.query(
+                    ndb.AND(Schedule.user_id == user_id,
+                            Schedule.store == store,
+                            Schedule.dep == dep)).fetch()
+
+    return jsonifySchedules(schedules, reverse)
+
+
+@app.route('/api/help', methods=['GET'])
+def help():
+    """Print available functions."""
+    func_list = {}
+    for rule in app.url_map.iter_rules():
+        if rule.endpoint != 'static':
+            doc = app.view_functions[rule.endpoint].__doc__
+            func_list[rule.rule] = re.sub(r"\s+", " ", doc)
+    return jsonify(func_list)
