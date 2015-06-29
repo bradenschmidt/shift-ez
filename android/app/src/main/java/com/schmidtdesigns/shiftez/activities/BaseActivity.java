@@ -8,7 +8,7 @@ import com.schmidtdesigns.shiftez.network.RetrofitSpiceService;
 /**
  * Created by braden on 15-06-09.
  */
-public abstract class BaseActivity extends AppCompatActivity {
+public class BaseActivity extends AppCompatActivity {
 
     protected SpiceManager spiceManager = new SpiceManager(RetrofitSpiceService.class);
 

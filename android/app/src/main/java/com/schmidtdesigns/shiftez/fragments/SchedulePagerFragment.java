@@ -172,6 +172,8 @@ public class SchedulePagerFragment extends BaseFragment {
      */
     @OnClick(R.id.fab)
     public void dispatchTakePictureIntent() {
+        //TODO IMAGE PICKER?
+
         // Check Camera
         if (getActivity().getApplicationContext().getPackageManager().hasSystemFeature(
                 PackageManager.FEATURE_CAMERA)) {

@@ -12,6 +12,7 @@ import retrofit.http.Multipart;
 import retrofit.http.POST;
 import retrofit.http.Part;
 import retrofit.http.PartMap;
+import retrofit.http.Path;
 import retrofit.http.QueryMap;
 import retrofit.mime.TypedFile;
 
@@ -25,12 +26,16 @@ import retrofit.mime.TypedFile;
 public interface Api {
 
     ///// Schedules /////
-    // Get the schedules with the given params
-    @GET("/get")
+    // Get all the schedules with the given params
+    @GET("/api/schedules/all")
     ScheduleResponse getSchedules(@QueryMap Map<String, String> scheduleParams);
 
+    // Get the schedules by year with the given params
+    @GET("/api/schedules/year/{year}")
+    ScheduleResponse getSchedules(@Path("year") int year, @QueryMap Map<String, String> scheduleParams);
+
     // Get an image upload link
-    @GET("/upload/link")
+    @GET("/api/upload/link")
     ImageUploadUrl getImageUploadURL();
 
     // Send the image with its data
