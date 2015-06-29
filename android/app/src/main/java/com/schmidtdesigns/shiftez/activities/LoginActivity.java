@@ -2,16 +2,15 @@ package com.schmidtdesigns.shiftez.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.Toolbar;
-import android.view.View;
-import android.widget.ProgressBar;
 
-import com.google.android.gms.common.SignInButton;
 import com.schmidtdesigns.shiftez.R;
+import com.schmidtdesigns.shiftez.fragments.LoginFragment;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
-import butterknife.OnClick;
 
 /**
  * Schedule Fragment used to get the schedules from the server, show them in a pager, and allow
@@ -24,10 +23,6 @@ public class LoginActivity extends GPlusBaseActivity {
 
     @InjectView(R.id.toolbar)
     Toolbar mToolbar;
-    @InjectView(R.id.progress)
-    ProgressBar mProgress;
-    @InjectView(R.id.sign_in_button)
-    SignInButton mSignInButton;
 
     public LoginActivity() {
     }
@@ -41,16 +36,8 @@ public class LoginActivity extends GPlusBaseActivity {
         if (mToolbar != null) {
             setSupportActionBar(mToolbar);
         }
-    }
 
-    @OnClick(R.id.sign_in_button)
-    public void loginWithGPlus() {
-        mProgress.setVisibility(View.VISIBLE);
-        mSignInButton.setEnabled(false);
-        if(!login()) {
-            mProgress.setVisibility(View.GONE);
-            mSignInButton.setEnabled(true);
-        }
+        displayView(LoginFragment.newInstance());
     }
 
     @Override
@@ -58,14 +45,16 @@ public class LoginActivity extends GPlusBaseActivity {
         super.onActivityResult(requestCode, responseCode, intent);
     }
 
-    @Override
-    public void updateUI(boolean result) {
-        if (result) {
-            mProgress.setVisibility(View.VISIBLE);
-            mSignInButton.setEnabled(false);
-        } else {
-            mProgress.setVisibility(View.GONE);
-            mSignInButton.setEnabled(true);
-        }
+    public void displayView(Fragment fragment) {
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+
+        // Replace whatever is in the fragment_container view with this fragment,
+        // and add the transaction to the back stack if needed
+        transaction.replace(R.id.fragment_container, fragment);
+        transaction.addToBackStack(null);
+
+        // Commit the transaction
+        transaction.commit();
     }
+
 }

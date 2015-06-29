@@ -27,7 +27,10 @@ import java.util.Arrays;
 /**
  * Created by braden on 15-06-09.
  */
-public abstract class GPlusBaseActivity extends BaseActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+public class GPlusBaseActivity extends BaseActivity implements
+        GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener {
+
     private static final String TAG = "GPlusBaseActivity";
     /* RequestCode for resolutions involving sign-in */
     private static final int RC_SIGN_IN = 9001;
@@ -234,7 +237,9 @@ public abstract class GPlusBaseActivity extends BaseActivity implements GoogleAp
         }
     }
 
-    public abstract void updateUI(boolean result);
+    //TODO
+    public void updateUI(boolean result) {
+    }
 
     public void getProfileInformation() {
         String email = Plus.AccountApi.getAccountName(mGoogleApiClient);
