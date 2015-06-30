@@ -14,20 +14,15 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.plus.Plus;
-import com.google.android.gms.plus.model.people.Person;
 import com.schmidtdesigns.shiftez.Constants;
 import com.schmidtdesigns.shiftez.R;
 import com.schmidtdesigns.shiftez.ShiftEZ;
 import com.schmidtdesigns.shiftez.models.Account;
-import com.schmidtdesigns.shiftez.models.Store;
-
-import java.util.ArrayList;
-import java.util.Arrays;
 
 /**
  * Created by braden on 15-06-09.
  */
-public class GPlusBaseActivity extends BaseActivity implements
+public abstract class GPlusBaseActivity extends BaseActivity implements
         GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener {
 
@@ -241,37 +236,7 @@ public class GPlusBaseActivity extends BaseActivity implements
     public void updateUI(boolean result) {
     }
 
-    public void getProfileInformation() {
-        String email = Plus.AccountApi.getAccountName(mGoogleApiClient);
-        Person person = Plus.PeopleApi.getCurrentPerson(mGoogleApiClient);
-
-        // TODO: GET FROM SERVER
-        ArrayList<Store> stores = new ArrayList<>();
-        ArrayList<String> deps = new ArrayList<>(Arrays.asList("Lumber", "Hardware"));
-        ArrayList<String> deps2 = new ArrayList<>(Arrays.asList("Lumber", "Cashier"));
-        Store store1 = new Store("8th St Coop Home Centre", deps);
-        Store store2 = new Store("Rona", deps2);
-        stores.add(store1);
-        stores.add(store2);
-        // END TODO
-
-        Account account = new Account(person.getDisplayName(), email, stores);
-        Log.i(TAG, "Saving New Profile Info: " + account);
-
-        ShiftEZ.getInstance().setAccount(account);
-
-        // get shared preferences
-        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-
-        //get the preferences editor
-        SharedPreferences.Editor editor = pref.edit();
-
-        // save user info
-        editor.putString(Constants.ACCOUNT_PARAM, Account.serializeToJson(ShiftEZ.getInstance().getAccount()));
-        editor.apply();
-
-        startActivity(new Intent(this, MainActivity.class));
-    }
+    public abstract void getProfileInformation();
 
     public void revoke() {
         Log.i(TAG, "Revoke triggered");

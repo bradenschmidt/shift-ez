@@ -38,6 +38,9 @@ public interface Api {
     @GET("/api/upload/link")
     ImageUploadUrl getImageUploadURL();
 
+    @POST("/api/stores/add")
+    PostResult addNewStore(@QueryMap Map<String, String> storeParams);
+
     // Send the image with its data
     @Multipart
     @POST("/{imageUrl}")

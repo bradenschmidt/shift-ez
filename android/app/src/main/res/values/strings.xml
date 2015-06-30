@@ -26,4 +26,7 @@
     <string name="action_revoke">Revoke</string>
     <string name="play_services_error_fmt">Play Services Error</string>
     <string name="action_refresh">Refresh Schedules</string>
+    <string name="profile_setup_button">Finish Profile Setup</string>
+    <string name="new_dep">Add a New Department</string>
+    <string name="new_store">Add a New Store</string>
 </resources>

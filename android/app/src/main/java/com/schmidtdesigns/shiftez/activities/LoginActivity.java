@@ -6,8 +6,11 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.Toolbar;
 
+import com.google.android.gms.plus.Plus;
+import com.google.android.gms.plus.model.people.Person;
 import com.schmidtdesigns.shiftez.R;
 import com.schmidtdesigns.shiftez.fragments.LoginFragment;
+import com.schmidtdesigns.shiftez.fragments.ProfileSetupFragment;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
@@ -43,6 +46,14 @@ public class LoginActivity extends GPlusBaseActivity {
     @Override
     protected void onActivityResult(int requestCode, int responseCode, Intent intent) {
         super.onActivityResult(requestCode, responseCode, intent);
+    }
+
+    public void getProfileInformation() {
+        String email = Plus.AccountApi.getAccountName(getGoogleApiClient());
+        Person person = Plus.PeopleApi.getCurrentPerson(getGoogleApiClient());
+
+        // TODO PERSON CAN BE NULL??
+        displayView(ProfileSetupFragment.newInstance(email, person.getDisplayName()));
     }
 
     public void displayView(Fragment fragment) {
