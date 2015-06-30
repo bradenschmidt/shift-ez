@@ -13,6 +13,7 @@ from google.appengine.ext import ndb, blobstore
 from werkzeug.http import parse_options_header
 
 from models.schedule import Schedule
+from models.store import Store
 
 import re
 
@@ -31,6 +32,7 @@ JINJA_ENVIRONMENT = jinja2.Environment(
     autoescape=True)
 
 DEFAULT_SCHEDULE_NAME = 'default_schedule'
+DEFAULT_STORE_NAME = 'default_store'
 
 
 def schedule_key(schedule_name=DEFAULT_SCHEDULE_NAME):
@@ -38,6 +40,13 @@ def schedule_key(schedule_name=DEFAULT_SCHEDULE_NAME):
     We use schedule_name as the key.
     """
     return ndb.Key('Schedule', schedule_name)
+
+
+def store_key(store_name=DEFAULT_STORE_NAME):
+    """Constructs a Datastore key for a Schedule entity.
+    We use schedule_name as the key.
+    """
+    return ndb.Key('Store', store_name)
 
 
 def jsonifySchedules(schedules, reverse):
@@ -179,7 +188,43 @@ def uploadImage():
     return jsonify(code=code, desc=desc)
 
 
+@app.route('/api/stores/add', methods=['POST'])
+def addNewStore():
+    user_id = request.args.get('user_id')
+    store = request.args.get('store')
+    dep = request.args.get('dep')
+
+    deps = []
+    deps.append(dep)
+
+    store = Store(store=store,
+                  user_id=user_id,
+                  deps=deps)
+
+    store.put()
+
+    # Setup results
+    code = 0
+    desc = 'Upload Successful'
+
+    return jsonify(code=code, desc=desc)
+
+
 # GETS  ######################################################################
+@app.route('/api/stores/all')
+def getStores():
+    """Return all of the users stores"""
+
+    user_id = request.args.get('user_id')
+
+    stores = Store.query(Store.user_id == user_id).fetch()
+
+    # convert to dicts
+    stores = [s.to_dict() for s in stores]
+
+    return jsonify(stores=stores)
+
+
 @app.route('/api/upload/link')
 def uploadImageLink():
     """Return a blobstore upload link as json for the client to upload an
