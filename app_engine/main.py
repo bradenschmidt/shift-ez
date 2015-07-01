@@ -194,14 +194,20 @@ def addNewStore():
     store = request.args.get('store')
     dep = request.args.get('dep')
 
-    deps = []
-    deps.append(dep)
+    store = Store.query(ndb.AND(Store.user_id == user_id,
+                                Store.store == store)).fetch(1)
 
-    store = Store(store=store,
-                  user_id=user_id,
-                  deps=deps)
+    if(store):
+        store[0].deps.append(dep)
+        print store
+    else:
+        deps = []
+        deps.append(dep)
+        store = Store(store=store,
+                      user_id=user_id,
+                      deps=deps)
 
-    store.put()
+    store[0].put()
 
     # Setup results
     code = 0
