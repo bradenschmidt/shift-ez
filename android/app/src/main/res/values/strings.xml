@@ -30,4 +30,6 @@
     <string name="new_dep">Add a New Department</string>
     <string name="new_store">Add a New Store</string>
     <string name="no_network">Error: No Network Available</string>
+    <string name="drawer_item_settings">Settings</string>
+    <string name="drawer_header_stores">Stores</string>
 </resources>
