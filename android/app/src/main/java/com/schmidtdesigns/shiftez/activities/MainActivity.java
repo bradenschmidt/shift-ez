@@ -32,7 +32,7 @@ public class MainActivity extends GPlusBaseActivity {
             finish();
         }
 
-        displayView(new SchedulePagerFragment(), false);
+        displayView(new SchedulePagerFragment());
     }
 
     @Override
@@ -76,16 +76,15 @@ public class MainActivity extends GPlusBaseActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    public void displayView(Fragment fragment, boolean hasUp) {
-        getSupportActionBar().setDisplayHomeAsUpEnabled(hasUp);
-
+    public void displayView(Fragment fragment) {
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
 
         // Replace whatever is in the fragment_container view with this fragment,
         // and add the transaction to the back stack if needed
         transaction.replace(R.id.fragment_container, fragment);
-        transaction.addToBackStack(null);
-
+        if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
+            transaction.addToBackStack(null);
+        }
         // Commit the transaction
         transaction.commit();
     }
