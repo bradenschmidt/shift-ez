@@ -1,0 +1,93 @@
+Shift EZ Uses Cases
+
+Use Case 1
+Login With Google Plus
+1. User Not Logged In?
+2. Show Login Page
+3. Don't login yet
+4. User clicks login button
+5. Connect to google plus
+6. Get user name and email(id).
+7. Get Account from server.
+8. Does account exist?
+	1a. Yes.
+	2a.
+
+
+	1b. No.
+
+
+Use Case 2
+View Schedules
+1. Logged In
+
+Use Case 3
+View One Schedule
+
+
+Use Case 4
+View Schedule Info
+
+
+Use Case 5
+Save Schedule Image
+
+
+Use Case 6
+Share Schedule Image
+
+
+Use Case 7
+Replace Schedule Image
+
+
+Use Case 8
+Add Schedule From Photo
+
+
+Use Case 9
+Add Schedule From Gallery
+
+
+Use Case 10
+Share Store
+
+
+Use Case 11
+Join Store
+
+
+Use Case 12
+Settings
+
+
+Use Case 13
+Logout
+
+
+Use Case 14
+Revoke
+
+
+Use Case 15
+Refresh Schedules
+
+
+Use Case 16
+
+
+
+Use Case 17
+
+
+
+Use Case 18
+
+
+
+Use Case 19
+
+
+
+Use Case 20
+
