@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 
 import com.google.android.gms.plus.Plus;
 import com.google.android.gms.plus.model.people.Person;
@@ -53,7 +54,19 @@ public class LoginActivity extends GPlusBaseActivity {
         Person person = Plus.PeopleApi.getCurrentPerson(getGoogleApiClient());
 
         // TODO PERSON CAN BE NULL??
-        displayView(ProfileSetupFragment.newInstance(email, person.getDisplayName()));
+        if (person != null) {
+            displayView(ProfileSetupFragment.newInstance(email, person.getDisplayName()));
+        } else {
+            Log.e(TAG, "Person was null.");
+            //updateUI(true);
+            loginFailedUI();
+        }
+    }
+
+    private void loginFailedUI() {
+        LoginFragment fragment = (LoginFragment) getSupportFragmentManager().
+                findFragmentById(R.id.fragment_container);
+        fragment.updateUI(false);
     }
 
     public void displayView(Fragment fragment) {

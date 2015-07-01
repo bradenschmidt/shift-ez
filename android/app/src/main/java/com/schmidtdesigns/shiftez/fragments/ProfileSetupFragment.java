@@ -18,24 +18,29 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
+import android.widget.Toast;
 
+import com.octo.android.robospice.exception.NoNetworkException;
 import com.octo.android.robospice.persistence.DurationInMillis;
 import com.octo.android.robospice.persistence.exception.SpiceException;
 import com.octo.android.robospice.request.listener.RequestListener;
 import com.schmidtdesigns.shiftez.Constants;
 import com.schmidtdesigns.shiftez.R;
 import com.schmidtdesigns.shiftez.ShiftEZ;
+import com.schmidtdesigns.shiftez.Utils;
 import com.schmidtdesigns.shiftez.activities.MainActivity;
 import com.schmidtdesigns.shiftez.adapters.StoreAdapter;
 import com.schmidtdesigns.shiftez.models.Account;
 import com.schmidtdesigns.shiftez.models.PostResult;
 import com.schmidtdesigns.shiftez.models.Store;
+import com.schmidtdesigns.shiftez.models.StoreResponse;
 import com.schmidtdesigns.shiftez.network.NewStoreRetrofitRequest;
+import com.schmidtdesigns.shiftez.network.StoreRetrofitRequest;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
@@ -60,6 +65,7 @@ public class ProfileSetupFragment extends BaseFragment {
 
     private String mName;
     private String mEmail;
+    private ArrayList<Store> mStores;
 
     public ProfileSetupFragment() {
     }
@@ -69,6 +75,8 @@ public class ProfileSetupFragment extends BaseFragment {
         Bundle args = new Bundle();
         args.putString(EMAIL_PARAM, email);
         args.putString(NAME_PARAM, displayName);
+        Log.d(TAG, "EMAIL AND NAME: " + email + displayName);
+        fragment.setArguments(args);
         return fragment;
     }
 
@@ -89,9 +97,16 @@ public class ProfileSetupFragment extends BaseFragment {
                 R.layout.fragment_profile_setup, container, false);
         ButterKnife.inject(this, rootView);
 
-        setupSpinners();
+        getStores();
 
         return rootView;
+    }
+
+    private void getStores() {
+        // Get stores and info
+        StoreRetrofitRequest storeRequest = new StoreRetrofitRequest(mEmail);
+        getSpiceManager().execute(storeRequest, Constants.STORES, DurationInMillis.ONE_SECOND,
+                new StoresListener());
     }
 
     @Override
@@ -101,12 +116,12 @@ public class ProfileSetupFragment extends BaseFragment {
 
     /**
      * Setup the week, year, and week offset spinners with the possible values.
+     * @param stores
      */
-    private void setupSpinners() {
+    private void setupSpinners(ArrayList<Store> stores) {
         // Setup the stores to list
         // TODO GET STORES FROM SERVER
 
-        ArrayList<Store> stores = new ArrayList<>();
         stores.add(stores.size(), new Store(getResources().getText(R.string.new_store).toString(),
                 new ArrayList<>(Collections.singletonList(
                         getResources().getText(R.string.new_dep).toString()))));
@@ -122,22 +137,29 @@ public class ProfileSetupFragment extends BaseFragment {
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 Store store = (Store) mStoreSpinner.getSelectedItem();
 
-                if (store.getName().equals(getResources().getText(R.string.new_store).toString())) {
+                if (store.getStoreName().equals(getResources().getText(R.string.new_store).toString())) {
                     showAddStoreDialog();
                 }
 
                 mDepSpinner.setEnabled(true);
                 mProfileSetupButton.setEnabled(true);
 
+
+                List<String> deps = store.getDeps();
+                if (!deps.get(deps.size() - 1).equals(getResources().getText(R.string.new_dep).toString())) {
+                    deps.add(getResources().getText(R.string.new_dep).toString());
+
+                }
+
                 // Setup the Departments to use
                 ArrayAdapter<String> depAdapter = new ArrayAdapter<>(getActivity(),
-                        R.layout.spinner_item, store.getDeps());
+                        R.layout.spinner_item, deps);
                 // Specify the layout to use when the list of choices appears
                 depAdapter.setDropDownViewResource(R.layout.spinner_dropdown_item);
                 // Apply the adapter to the spinner
                 mDepSpinner.setAdapter(depAdapter);
                 // TODO Set default position to current dep
-                //mHolder.mDepSpinner.setSelection();
+                //mDepSpinner.setSelection();
             }
 
             @Override
@@ -146,10 +168,26 @@ public class ProfileSetupFragment extends BaseFragment {
             }
 
         });
+        mDepSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                if (mDepSpinner.getSelectedItem().equals(getResources().getText(R.string.new_dep).toString())) {
+                    Store store = (Store) mStoreSpinner.getSelectedItem();
+
+                    showAddDepDialog(store.getStoreName());
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
     }
 
     @OnClick(R.id.profile_setup_button)
     public void setupProfile() {
+        /*
         // TODO: GET FROM SERVER
         ArrayList<Store> stores = new ArrayList<>();
         ArrayList<String> deps = new ArrayList<>(Arrays.asList("Lumber", "Hardware"));
@@ -159,7 +197,20 @@ public class ProfileSetupFragment extends BaseFragment {
         stores.add(store1);
         stores.add(store2);
         // END TODO
+        */
 
+        Store store = (Store) mStoreSpinner.getSelectedItem();
+        List<String> deps = store.getDeps();
+
+        String last = (String) Utils.getLastItem(deps);
+
+        if (last != null) {
+            if (last.equals(getResources().getText(R.string.new_dep).toString())) {
+                deps.remove(deps.size() - 1);
+            }
+        }
+
+        ArrayList<Store> stores = new ArrayList<>(Collections.singletonList(store));
 
         Account account = new Account(mName, mEmail, stores);
         Log.i(TAG, "Saving New Profile Info: " + account);
@@ -235,7 +286,7 @@ public class ProfileSetupFragment extends BaseFragment {
 
         Log.d(TAG, "Uploading new store with params: " + storeParams.toString());
 
-        // Upload image and info
+        // Upload store and info
         NewStoreRetrofitRequest storeUploadRequest = new NewStoreRetrofitRequest(storeParams);
         getSpiceManager().execute(storeUploadRequest, Constants.UPLOAD_NEW_STORE, DurationInMillis.ONE_SECOND, new NewStoreUploadListener());
     }
@@ -250,7 +301,12 @@ public class ProfileSetupFragment extends BaseFragment {
 
         @Override
         public void onRequestFailure(SpiceException spiceException) {
-            Log.e(TAG, spiceException.getCause().toString());
+            Log.e(TAG, spiceException.getMessage());
+
+            //TODO
+            if (spiceException instanceof NoNetworkException) {
+                Toast.makeText(getActivity(), R.string.no_network, Toast.LENGTH_LONG).show();
+            }
         }
 
         @Override
@@ -259,6 +315,27 @@ public class ProfileSetupFragment extends BaseFragment {
             // TODO HANDLE DIFFERENT POST RESULTS
 
             updateUI(false);
+            getStores();
+        }
+    }
+
+    private class StoresListener implements RequestListener<StoreResponse> {
+        @Override
+        public void onRequestFailure(SpiceException spiceException) {
+            Log.e(TAG, spiceException.getMessage());
+
+            if (spiceException instanceof NoNetworkException) {
+                Toast.makeText(getActivity(), R.string.no_network, Toast.LENGTH_LONG).show();
+            }
+        }
+
+        @Override
+        public void onRequestSuccess(StoreResponse storeResponse) {
+            Log.d(TAG, storeResponse.toString());
+            // TODO HANDLE DIFFERENT store responses
+            mStores = storeResponse.getStores();
+            setupSpinners(mStores);
+
         }
     }
 }

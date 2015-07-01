@@ -1,6 +1,7 @@
-package com.schmidtdesigns.shiftez;
+package com.schmidtdesigns.shiftez.models;
 
 import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
@@ -10,52 +11,18 @@ import java.util.List;
 public class Store {
 
     @Expose
-    private List<Store_> stores = new ArrayList<Store_>();
-
-    /**
-     *
-     * @return
-     * The stores
-     */
-    public List<Store_> getStores() {
-        return stores;
-    }
-
-    /**
-     *
-     * @param stores
-     * The stores
-     */
-    public void setStores(List<Store_> stores) {
-        this.stores = stores;
-    }
-
-    @Override
-    public String toString() {
-        return ToStringBuilder.reflectionToString(this);
-    }
-
-}
-
-        package com.schmidtdesigns.shiftez;
-
-        import java.util.ArrayList;
-        import java.util.List;
-        import javax.annotation.Generated;
-        import com.google.gson.annotations.Expose;
-        import com.google.gson.annotations.SerializedName;
-        import org.apache.commons.lang.builder.ToStringBuilder;
-
-@Generated("org.jsonschema2pojo")
-public class Store_ {
-
+    private List<String> deps = new ArrayList<>();
+    @SerializedName("store")
     @Expose
-    private List<String> deps = new ArrayList<String>();
-    @Expose
-    private String store;
+    private String mStoreName;
     @SerializedName("user_id")
     @Expose
     private String userId;
+
+    public Store(String storeName, ArrayList<String> deps) {
+        this.mStoreName = storeName;
+        this.deps = deps;
+    }
 
     /**
      *
@@ -78,19 +45,19 @@ public class Store_ {
     /**
      *
      * @return
-     * The store
+     * The storeName
      */
-    public String getStore() {
-        return store;
+    public String getStoreName() {
+        return mStoreName;
     }
 
     /**
      *
-     * @param store
-     * The store
+     * @param storeName
+     * The storeName
      */
-    public void setStore(String store) {
-        this.store = store;
+    public void setStoreName(String storeName) {
+        this.mStoreName = storeName;
     }
 
     /**

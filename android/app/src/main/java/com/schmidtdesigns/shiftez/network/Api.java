@@ -3,6 +3,7 @@ package com.schmidtdesigns.shiftez.network;
 import com.schmidtdesigns.shiftez.models.ImageUploadUrl;
 import com.schmidtdesigns.shiftez.models.PostResult;
 import com.schmidtdesigns.shiftez.models.ScheduleResponse;
+import com.schmidtdesigns.shiftez.models.StoreResponse;
 
 import java.util.Map;
 
@@ -13,6 +14,7 @@ import retrofit.http.POST;
 import retrofit.http.Part;
 import retrofit.http.PartMap;
 import retrofit.http.Path;
+import retrofit.http.Query;
 import retrofit.http.QueryMap;
 import retrofit.mime.TypedFile;
 
@@ -40,6 +42,9 @@ public interface Api {
 
     @POST("/api/stores/add")
     PostResult addNewStore(@QueryMap Map<String, String> storeParams);
+
+    @GET("/api/stores/all")
+    StoreResponse getStores(@Query("user_id") String user_id);
 
     // Send the image with its data
     @Multipart

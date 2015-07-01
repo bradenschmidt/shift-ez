@@ -18,26 +18,26 @@ import java.util.List;
 public class StoreAdapter extends ArrayAdapter<Store> {
 
     private int mResource;
-    private List<Store> stores;
+    private List<Store> mStores;
     private Context mContext;
     private int mDropdownResource;
 
     public StoreAdapter(Context context, int resource, int dropdownResource, List<Store> stores) {
         super(context, resource, stores);
         this.mResource = resource;
-        this.stores = stores;
+        this.mStores = stores;
         this.mContext = context;
         this.mDropdownResource = dropdownResource;
     }
 
     @Override
     public int getCount() {
-        return stores.size();
+        return mStores.size();
     }
 
     @Override
     public Store getItem(int position) {
-        return stores.get(position);
+        return mStores.get(position);
     }
 
     @Override
@@ -54,7 +54,7 @@ public class StoreAdapter extends ArrayAdapter<Store> {
 
         TextView storeName = (TextView) convertView.findViewById(R.id.spinner_item_text);
 
-        storeName.setText(stores.get(position).getName());
+        storeName.setText(mStores.get(position).getStoreName());
 
         return storeName;
     }
@@ -66,7 +66,7 @@ public class StoreAdapter extends ArrayAdapter<Store> {
         }
 
         TextView storeName = (TextView) convertView.findViewById(R.id.spinner_dropdown_item_text);
-        storeName.setText(stores.get(position).getName());
+        storeName.setText(mStores.get(position).getStoreName());
 
         return storeName;
     }

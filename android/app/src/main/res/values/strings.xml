@@ -29,4 +29,5 @@
     <string name="profile_setup_button">Finish Profile Setup</string>
     <string name="new_dep">Add a New Department</string>
     <string name="new_store">Add a New Store</string>
+    <string name="no_network">Error: No Network Available</string>
 </resources>

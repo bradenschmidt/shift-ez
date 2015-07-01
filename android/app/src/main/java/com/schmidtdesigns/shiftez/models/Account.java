@@ -10,12 +10,12 @@ import java.util.ArrayList;
 public class Account {
     private String name;
     private String email;
-    private ArrayList<Store> stores;
+    private ArrayList<Store> mStores;
 
     public Account(String name, String email, ArrayList<Store> stores) {
         this.name = name;
         this.email = email;
-        this.stores = stores;
+        this.mStores = stores;
     }
 
     /**
@@ -51,14 +51,14 @@ public class Account {
     }
 
     public ArrayList<Store> getStores() {
-        return stores;
+        return mStores;
     }
 
     public ArrayList<String> getStoresAsStrings() {
         ArrayList<String> storesStr = new ArrayList<>();
 
-        for (Store s : stores) {
-            storesStr.add(s.getName());
+        for (Store s : mStores) {
+            storesStr.add(s.getStoreName());
         }
         return storesStr;
     }
@@ -68,7 +68,7 @@ public class Account {
         return "Account{" +
                 "name='" + name + '\'' +
                 ", email='" + email + '\'' +
-                ", stores=" + stores +
+                ", stores=" + mStores +
                 '}';
     }
 }

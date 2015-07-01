@@ -1,6 +1,5 @@
 package com.schmidtdesigns.shiftez.activities;
 
-import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentSender;
@@ -13,10 +12,13 @@ import android.widget.Toast;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.plus.People;
 import com.google.android.gms.plus.Plus;
 import com.schmidtdesigns.shiftez.Constants;
 import com.schmidtdesigns.shiftez.R;
 import com.schmidtdesigns.shiftez.ShiftEZ;
+import com.schmidtdesigns.shiftez.Utils;
 import com.schmidtdesigns.shiftez.models.Account;
 
 /**
@@ -24,7 +26,7 @@ import com.schmidtdesigns.shiftez.models.Account;
  */
 public abstract class GPlusBaseActivity extends BaseActivity implements
         GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener {
+        GoogleApiClient.OnConnectionFailedListener, ResultCallback<People.LoadPeopleResult> {
 
     private static final String TAG = "GPlusBaseActivity";
     /* RequestCode for resolutions involving sign-in */
@@ -115,21 +117,12 @@ public abstract class GPlusBaseActivity extends BaseActivity implements
         return false;
     }
 
-    private boolean checkForPlayServices() {
-        int state = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
-
-        if (state == ConnectionResult.SUCCESS) {
-            Toast.makeText(this, "SUCCESS", Toast.LENGTH_LONG).show();
-            return true;
-        } else {
-            Dialog dialog = GooglePlayServicesUtil.getErrorDialog(state, this, -1);
-            dialog.show();
-            return false;
-        }
-    }
-
     public boolean login() {
-        if (!checkForPlayServices()) {
+        if (!Utils.isOnline(getApplicationContext())) {
+            Log.e(TAG, "ERROR: No Network Connection.");
+            Toast.makeText(this, "No Network Connection.", Toast.LENGTH_LONG).show();
+            return false;
+        } else if (!Utils.checkForPlayServices(this)) {
             Log.e(TAG, "ERROR: Play Services is not installed.");
             return false;
         } else {
@@ -163,11 +156,22 @@ public abstract class GPlusBaseActivity extends BaseActivity implements
         // establish a service connection to Google Play services.
         Log.d(TAG, "onConnected:" + connectionHint);
 
-        if (ShiftEZ.getInstance().getAccount() == null) {
-            getProfileInformation();
+        Plus.PeopleApi.loadVisible(mGoogleApiClient, null).setResultCallback(this);
+
+        if (Plus.PeopleApi.getCurrentPerson(mGoogleApiClient) != null) {
+            if (ShiftEZ.getInstance().getAccount() == null) {
+                getProfileInformation();
+            } else {
+                Log.i(TAG, "Account is not null.");
+            }
         } else {
-            Log.i(TAG, "Account is not null.");
+            Log.e(TAG, "getCurrentPerson is null");
         }
+    }
+
+    @Override
+    public void onResult(People.LoadPeopleResult result) {
+        Log.e(TAG, "result.getStatus():" + result.getStatus());
     }
 
     @Override
