@@ -20,6 +20,11 @@ Login With Google Plus
 Use Case 2
 View Schedules
 1. Logged In
+2. Account Exists
+3. Get Schedules from Cache while retrieving from network.
+4. Start at favorite store.
+
+
 
 Use Case 3
 View One Schedule
@@ -51,10 +56,27 @@ Add Schedule From Gallery
 
 Use Case 10
 Share Store
+1. User 1 Click share store.
+2. Request new key from server.
+	- With store info
+3. Server creates, stores, and returns key.
+	- Generate Random Key.
+	- Save key with store info to NDB Store.
+	- Return key as JSON.
+4. User 1 sends key with url to User 2.
 
 
 Use Case 11
 Join Store
+1. User 2 Receives message from User 1 containing link with key.
+2. Click link redirects to Web server.
+3. User logs in.
+4. Check expiry (week).
+	4a. Return Error.
+5. Server Retrieves store by key.
+6. Server adds store to user 2 stores.
+7. User 2 App must retrieve new stores from account on server.
+8. User 2 App has to retrieve new schedules.
 
 
 Use Case 12
@@ -74,20 +96,45 @@ Refresh Schedules
 
 
 Use Case 16
-
+Add Store
 
 
 Use Case 17
-
+Add Department
 
 
 Use Case 18
-
+Remove Store
 
 
 Use Case 19
-
+Refresh Stores
 
 
 Use Case 20
+Remove Departments
+
+
+Use Case 20
+
+
+
+Use Case 21
+
+
+
+Use Case 22
+
+
+
+Use Case 23
+
+
+
+Use Case 24
+
+
+
+Use Case 25
+
 
