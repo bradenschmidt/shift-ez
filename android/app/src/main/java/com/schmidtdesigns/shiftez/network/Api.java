@@ -3,6 +3,7 @@ package com.schmidtdesigns.shiftez.network;
 import com.schmidtdesigns.shiftez.models.ImageUploadUrl;
 import com.schmidtdesigns.shiftez.models.PostResult;
 import com.schmidtdesigns.shiftez.models.ScheduleResponse;
+import com.schmidtdesigns.shiftez.models.ShareStore;
 import com.schmidtdesigns.shiftez.models.StoreResponse;
 
 import java.util.Map;
@@ -34,21 +35,31 @@ public interface Api {
 
     // Get the schedules by year with the given params
     @GET("/api/schedules/year/{year}")
-    ScheduleResponse getSchedules(@Path("year") int year, @QueryMap Map<String, String> scheduleParams);
+    ScheduleResponse getSchedules(@Path("year") int year,
+                                  @QueryMap Map<String, String> scheduleParams);
 
     // Get an image upload link
     @GET("/api/upload/link")
     ImageUploadUrl getImageUploadURL();
 
+    // Send the image with its data
+    @Multipart
+    @POST("/{imageUrl}")
+    PostResult uploadImage(@EncodedPath("imageUrl") String imageUrl,
+                           @Part("file") TypedFile image,
+                           @PartMap Map<String, String> imageParams);
+
+
+    ////// STORES ///////
     @POST("/api/stores/add")
     PostResult addNewStore(@QueryMap Map<String, String> storeParams);
 
     @GET("/api/stores/all")
     StoreResponse getStores(@Query("user_id") String user_id);
 
-    // Send the image with its data
-    @Multipart
-    @POST("/{imageUrl}")
-    PostResult uploadImage(@EncodedPath("imageUrl") String imageUrl, @Part("file") TypedFile image, @PartMap Map<String, String> imageParams);
+    @POST("/api/stores/share")
+    ShareStore shareStore(@QueryMap Map<String, String> storeParams);
 
+    @POST("/api/stores/join")
+    PostResult joinStore(@QueryMap Map<String, String> storeParams);
 }

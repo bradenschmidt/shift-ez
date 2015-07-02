@@ -14,8 +14,13 @@ from werkzeug.http import parse_options_header
 
 from models.schedule import Schedule
 from models.store import Store
+from models.sharedStore import SharedStore
 
 import re
+
+import uuid  # For key generator
+
+import datetime  # Key Expiry
 
 
 """
@@ -213,6 +218,63 @@ def addNewStore():
     code = 0
     desc = 'Upload Successful'
 
+    return jsonify(code=code, desc=desc)
+
+
+@app.route('/api/stores/share', methods=['POST'])
+def shareStore():
+    store_name = request.args.get('store')
+    dep = request.args.get('dep')
+
+    # make a random UUID
+    u = uuid.uuid4()
+    key = u.hex
+
+    sharedStore = SharedStore(store_name=store_name, dep=dep, key=key)
+
+    sharedStore.put()
+
+    # Setup results
+    code = 0
+    desc = 'Share Successful. Key valid for 7 days.'
+    return jsonify(code=code, desc=desc, key=key)
+
+
+@app.route('/api/stores/join', methods=['POST'])
+def joinStore():
+    key = request.args.get('key')
+    user_id = request.args.get('user_id')
+
+    shared_stores = SharedStore.query(SharedStore.key == key).fetch(1)
+
+    # Check if a store was returned
+    if len(shared_stores) <= 0:
+        # Setup store key not found error
+        code = 1
+        desc = 'Join Failed: Key Not Found.'
+        return jsonify(code=code, desc=desc)
+
+    shared_store = shared_stores[0]
+
+    print shared_store
+
+    date = shared_store.upload_dateTime
+
+    if (date < (datetime.datetime.now()-datetime.timedelta(days=7))):
+        # Expired
+        code = 2
+        desc = 'Join Failed: Key Too Old (Over 7 Days).'
+        return jsonify(code=code, desc=desc)
+
+    new_store = Store(user_id=user_id,
+                      store=shared_store.store_name,
+                      deps=shared_store.dep)
+
+    new_store.put()
+
+    # Setup results
+    code = 0
+    desc = 'Join Successful'
     return jsonify(code=code, desc=desc)
 
 

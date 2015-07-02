@@ -8,7 +8,7 @@ import com.schmidtdesigns.shiftez.models.StoreResponse;
  */
 public class StoreRetrofitRequest extends RetrofitSpiceRequest<StoreResponse, Api> {
 
-    private String TAG = "ScheduleRetrofitRequest";
+    private String TAG = this.getClass().getSimpleName();
     private String mUserId;
 
     public StoreRetrofitRequest(String userId) {
