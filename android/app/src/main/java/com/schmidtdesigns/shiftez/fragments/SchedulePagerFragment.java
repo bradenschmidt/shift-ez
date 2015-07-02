@@ -50,7 +50,7 @@ import butterknife.OnClick;
 public class SchedulePagerFragment extends BaseFragment {
 
     // Logging tag
-    private static final String TAG = "SchedulePagerFragment";
+    private final String TAG = this.getClass().getSimpleName();
     // The pager and adapter used to show the returned schedules
     @InjectView(R.id.schedule_pager)
     public ViewPager mPager;
