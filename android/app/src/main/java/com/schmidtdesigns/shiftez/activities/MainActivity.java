@@ -32,7 +32,7 @@ import butterknife.InjectView;
 
 public class MainActivity extends GPlusBaseActivity {
 
-    private static final String TAG = "BaseActivity";
+    private final String TAG = this.getClass().getSimpleName();
     @InjectView(R.id.toolbar)
     Toolbar mToolbar;
     private Drawer mDrawer;
@@ -55,8 +55,6 @@ public class MainActivity extends GPlusBaseActivity {
         }
 
         setupDrawer();
-
-        displayView(new SchedulePagerFragment());
     }
 
     private void setupDrawer() {
@@ -87,7 +85,11 @@ public class MainActivity extends GPlusBaseActivity {
                 .withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
                     @Override
                     public boolean onItemClick(AdapterView<?> parent, View view, int position, long id, IDrawerItem drawerItem) {
-                        // do something with the clicked item :D
+                        if (drawerItem instanceof PrimaryDrawerItem) {
+                            PrimaryDrawerItem item = (PrimaryDrawerItem) drawerItem;
+                            displayView(SchedulePagerFragment.newInstance(((Store) item.getTag()).getStoreName(), item.getName()));
+                    }
+                        mDrawer.closeDrawer();
                         return true;
                     }
                 })
@@ -97,11 +99,13 @@ public class MainActivity extends GPlusBaseActivity {
         for (Store s : ShiftEZ.getInstance().getAccount().getStores()) {
             mDrawer.addItem(new SectionDrawerItem().withName(s.getStoreName()));
             for (String dep : s.getDeps()) {
-                mDrawer.addItem(new PrimaryDrawerItem().withName(dep));
+                mDrawer.addItem(new PrimaryDrawerItem().withName(dep).withTag(s));
             }
         }
         mDrawer.addItem(new DividerDrawerItem());
-        mDrawer.addFooterItem(new SecondaryDrawerItem().withName(R.string.drawer_item_settings));
+        mDrawer.addItem(new SecondaryDrawerItem().withName(R.string.drawer_item_settings));
+
+        mDrawer.setSelection(2);
     }
 
     @Override
