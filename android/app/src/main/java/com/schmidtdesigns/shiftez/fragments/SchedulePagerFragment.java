@@ -9,6 +9,7 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityOptionsCompat;
+import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -19,6 +20,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.octo.android.robospice.persistence.DurationInMillis;
@@ -35,6 +37,7 @@ import com.schmidtdesigns.shiftez.network.ScheduleRetrofitRequest;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 import java.util.concurrent.Future;
@@ -50,7 +53,9 @@ import butterknife.OnClick;
 public class SchedulePagerFragment extends BaseFragment {
 
     // Logging tag
-    private final String TAG = this.getClass().getSimpleName();
+    private static final String TAG = BaseFragment.class.getSimpleName();
+    private static final String STORE_PARAM = "store";
+    private static final String DEP_PARAM = "dep";
     // The pager and adapter used to show the returned schedules
     @InjectView(R.id.schedule_pager)
     public ViewPager mPager;
@@ -63,12 +68,35 @@ public class SchedulePagerFragment extends BaseFragment {
     // Failure image to show on schedule retrieval failure
     @InjectView(R.id.failureImage)
     public ImageView mFailureImageView;
+    @InjectView(R.id.emptyText)
+    TextView mEmptyText;
 
     // The image file we create and upload
     private File mImageFile;
+    private String mStore;
+    private String mDep;
 
 
     public SchedulePagerFragment() {
+    }
+
+    public static Fragment newInstance(String store, String dep) {
+        SchedulePagerFragment fragment = new SchedulePagerFragment();
+        Bundle args = new Bundle();
+        args.putString(STORE_PARAM, store);
+        args.putString(DEP_PARAM, dep);
+        Log.d(TAG, "STORE AND DEP: " + store + dep);
+        fragment.setArguments(args);
+        return fragment;
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (getArguments() != null) {
+            mStore = getArguments().getString(STORE_PARAM);
+            mDep = getArguments().getString(DEP_PARAM);
+        }
     }
 
     @Override
@@ -80,8 +108,7 @@ public class SchedulePagerFragment extends BaseFragment {
         setHasOptionsMenu(true);
         ButterKnife.inject(this, rootView);
 
-        int year = 2015;
-        getSchedules(year);
+        getSchedules();
 
         return rootView;
     }
@@ -97,8 +124,8 @@ public class SchedulePagerFragment extends BaseFragment {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_refresh:
-                // TODO USE YEAR
-                refreshSchedules(2015);
+                // TODO Not working
+                refreshSchedules();
                 return true;
             case R.id.action_settings:
                 // TODO Not implemented here
@@ -110,28 +137,37 @@ public class SchedulePagerFragment extends BaseFragment {
         return false;
     }
 
-    public void refreshSchedules(int year) {
-        Future<?> s = getSpiceManager().removeDataFromCache(Schedule.class, Constants.SCHEDULE_KEY_PARAM + year);
+    public void refreshSchedules() {
+        Future<?> s = getSpiceManager().removeDataFromCache(Schedule.class, Constants.SCHEDULE_KEY_PARAM);
         if (s.isDone()) {
-            getSchedules(year);
+            getSchedules();
         }
     }
 
     /**
      * Get the schedules from the server with the given year
-     *
-     * @param year Year of schedules to retrieve
      */
-    private void getSchedules(int year) {
-        Boolean reverse = false;
-        ScheduleRetrofitRequest scheduleRequest = new ScheduleRetrofitRequest(year, reverse);
-        getSpiceManager().execute(scheduleRequest, Constants.SCHEDULE_KEY_PARAM + year, 5 * DurationInMillis.ONE_MINUTE,
+    private void getSchedules() {
+        ScheduleRetrofitRequest scheduleRequest = new ScheduleRetrofitRequest(false);
+        getSpiceManager().execute(scheduleRequest, Constants.SCHEDULE_KEY_PARAM, 5 * DurationInMillis.ONE_MINUTE,
                 new ListScheduleRequestListener());
 
         // TODO ENSURE THIS IS INVALIDATED ON UPLOADS OR NEW CONTENT
         // USE CACHED IF NO NETWORK
         // https://groups.google.com/forum/#!topic/robospice/C1bZGKQeLLc
         //getFromCacheAndLoadFromNetworkIfExpired
+    }
+
+
+    public ArrayList<Schedule> getScheduleByStoreDep(ArrayList<Schedule> schedules,
+                                                     String storeName, String depName) {
+        ArrayList<Schedule> stores = new ArrayList<>();
+        for (Schedule s : schedules) {
+            if (s.getStore().equals(storeName) && s.getDep().equals(depName)) {
+                stores.add(s);
+            }
+        }
+        return stores;
     }
 
     /**
@@ -244,6 +280,12 @@ public class SchedulePagerFragment extends BaseFragment {
         getActivity().sendBroadcast(mediaScanIntent);
     }
 
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        ButterKnife.reset(this);
+    }
+
 
     /**
      * Called on completion of the api request to get the Schedules.
@@ -273,14 +315,20 @@ public class SchedulePagerFragment extends BaseFragment {
             //Log.d(TAG, result.toString());
 
             mProgress.setVisibility(View.GONE);
-            mPager.setVisibility(View.VISIBLE);
             mFab.setVisibility(View.VISIBLE);
 
-            ScheduleAdapter mPagerAdapter = new ScheduleAdapter(getActivity(),
-                    result.getSchedules());
-            mPager.setAdapter(mPagerAdapter);
+            ArrayList<Schedule> schedules = getScheduleByStoreDep(result.getSchedules(), mStore, mDep);
 
-            mPager.setCurrentItem(mPagerAdapter.getCurrentWeekPosition(), true);
+            if (schedules.isEmpty()) {
+                mEmptyText.setVisibility(View.VISIBLE);
+            } else {
+                mPager.setVisibility(View.VISIBLE);
+
+                ScheduleAdapter mPagerAdapter = new ScheduleAdapter(getActivity(), schedules);
+                mPager.setAdapter(mPagerAdapter);
+
+                mPager.setCurrentItem(mPagerAdapter.getCurrentWeekPosition(), true);
+            }
         }
     }
 

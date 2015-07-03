@@ -39,4 +39,7 @@ dependencies {
     compile 'com.google.android.gms:play-services-plus:7.5.0'
     compile 'com.android.support:support-annotations:22.2.0'
     compile 'com.google.android.gms:play-services:7.5.0'
+    compile('com.mikepenz:materialdrawer:3.0.9@aar') {
+        transitive = true
+    }
 }

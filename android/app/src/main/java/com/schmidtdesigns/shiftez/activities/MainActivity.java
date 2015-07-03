@@ -8,31 +8,104 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
 
+import com.mikepenz.materialdrawer.Drawer;
+import com.mikepenz.materialdrawer.DrawerBuilder;
+import com.mikepenz.materialdrawer.accountswitcher.AccountHeader;
+import com.mikepenz.materialdrawer.accountswitcher.AccountHeaderBuilder;
+import com.mikepenz.materialdrawer.model.DividerDrawerItem;
+import com.mikepenz.materialdrawer.model.PrimaryDrawerItem;
+import com.mikepenz.materialdrawer.model.ProfileDrawerItem;
+import com.mikepenz.materialdrawer.model.SecondaryDrawerItem;
+import com.mikepenz.materialdrawer.model.SectionDrawerItem;
+import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem;
+import com.mikepenz.materialdrawer.model.interfaces.IProfile;
 import com.schmidtdesigns.shiftez.R;
+import com.schmidtdesigns.shiftez.ShiftEZ;
 import com.schmidtdesigns.shiftez.fragments.SchedulePagerFragment;
+import com.schmidtdesigns.shiftez.models.Store;
+
+import butterknife.ButterKnife;
+import butterknife.InjectView;
 
 public class MainActivity extends GPlusBaseActivity {
 
-    private static final String TAG = "BaseActivity";
+    private final String TAG = this.getClass().getSimpleName();
+    @InjectView(R.id.toolbar)
+    Toolbar mToolbar;
+    private Drawer mDrawer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        ButterKnife.inject(this);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        if (toolbar != null) {
-            setSupportActionBar(toolbar);
+
+        if (mToolbar != null) {
+            setSupportActionBar(mToolbar);
         }
 
-        if(!isLoggedIn()) {
+        if (!isLoggedIn()) {
             Log.i(TAG, "USER IS NOT LOGGED IN");
             startActivity(new Intent(this, LoginActivity.class));
             finish();
         }
 
-        displayView(new SchedulePagerFragment());
+        setupDrawer();
+    }
+
+    private void setupDrawer() {
+        // Create the AccountHeader
+        AccountHeader headerResult = new AccountHeaderBuilder()
+                .withActivity(this)
+                        //.withHeaderBackground(R.drawable.header)
+                .addProfiles(
+                        new ProfileDrawerItem()
+                                .withName("Mike Penz")
+                                .withEmail("mikepenz@gmail.com")
+                        //.withIcon(getResources().getDrawable(R.drawable.profile))
+                )
+                .withOnAccountHeaderListener(new AccountHeader.OnAccountHeaderListener() {
+                    @Override
+                    public boolean onProfileChanged(View view, IProfile profile, boolean currentProfile) {
+                        return false;
+                    }
+                })
+                .build();
+
+
+        //Now create your drawer and pass the AccountHeader.Result
+        mDrawer = new DrawerBuilder()
+                .withActivity(this)
+                .withToolbar(mToolbar)
+                .withAccountHeader(headerResult)
+                .withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
+                    @Override
+                    public boolean onItemClick(AdapterView<?> parent, View view, int position, long id, IDrawerItem drawerItem) {
+                        if (drawerItem instanceof PrimaryDrawerItem) {
+                            PrimaryDrawerItem item = (PrimaryDrawerItem) drawerItem;
+                            displayView(SchedulePagerFragment.newInstance(((Store) item.getTag()).getStoreName(), item.getName()));
+                    }
+                        mDrawer.closeDrawer();
+                        return true;
+                    }
+                })
+                .build();
+
+        mDrawer.addItem(new SectionDrawerItem().withName(R.string.drawer_header_stores));
+        for (Store s : ShiftEZ.getInstance().getAccount().getStores()) {
+            mDrawer.addItem(new SectionDrawerItem().withName(s.getStoreName()));
+            for (String dep : s.getDeps()) {
+                mDrawer.addItem(new PrimaryDrawerItem().withName(dep).withTag(s));
+            }
+        }
+        mDrawer.addItem(new DividerDrawerItem());
+        mDrawer.addItem(new SecondaryDrawerItem().withName(R.string.drawer_item_settings));
+
+        mDrawer.setSelection(2);
     }
 
     @Override
