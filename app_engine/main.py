@@ -14,6 +14,9 @@ from werkzeug.http import parse_options_header
 
 from models.schedule import Schedule
 from models.store import Store
+from models.account import Account
+
+import json  # get list of deps
 
 import re
 
@@ -98,6 +101,17 @@ def listifySchedules(schedules, reverse):
 def getAllSchedules():
     schedules = Schedule.query().fetch()
     return listifySchedules(schedules, None)
+
+
+def prepAccountForJsonify(accountModel):
+    account = accountModel.to_dict()
+    stores = []
+    for key in account['stores']:
+        store = key.get().to_dict()
+        stores.append(store)
+    account['stores'] = stores
+
+    return account
 
 
 # Pages ######################################################################
@@ -189,47 +203,138 @@ def uploadImage():
 
 
 @app.route('/api/stores/add', methods=['POST'])
-def addNewStore():
-    """Add a new store to a user"""
-    user_id = request.args.get('user_id')
-    store = request.args.get('store')
-    dep = request.args.get('dep')
+def addStore():
+    """Add a new store."""
+    store_name = request.args.get('store')
+    depsJson = request.args.get('deps')
 
-    store = Store.query(ndb.AND(Store.user_id == user_id,
-                                Store.store == store)).fetch(1)
+    deps = json.loads(depsJson)
 
-    if(store):
-        store[0].deps.append(dep)
-        print store
+    stores = Store.query(Store.store_name == store_name).fetch(1)
+
+    if(stores):
+        store = stores[0]
+        print deps
+        for dep in deps:
+            print dep
+            if dep not in store.deps:
+                store.deps.append(dep)
     else:
-        deps = []
-        deps.append(dep)
-        store = Store(store=store,
-                      user_id=user_id,
-                      deps=deps)
+        store = Store(store_name=store_name, deps=deps)
 
-    store[0].put()
+    store.put()
 
     # Setup results
     code = 0
-    desc = 'Upload Successful'
+    desc = 'Add Store Successful'
 
     return jsonify(code=code, desc=desc)
 
 
+@app.route('/api/accounts/<user_id>/stores/add', methods=['POST'])
+def addStoreToAccount(user_id):
+    """Add a new store to a user"""
+    store_name = request.args.get('store')
+    depsJson = request.args.get('deps')
+
+    accounts = Account.query(Account.user_id == user_id).fetch(1)
+
+    if(accounts):
+        account = accounts[0]
+        print account
+    else:
+        # Setup results
+        code = 1
+        desc = 'Account does not exist.'
+
+        return jsonify(code=code, desc=desc)
+
+    stores = Store.query(Store.store_name == store_name).fetch(1)
+
+    if(stores):
+        store = stores[0]
+    else:
+        deps = json.loads(depsJson)
+        store = Store(store_name=store_name, deps=deps)
+
+    account.stores.append(store)
+    account.put()
+
+    # Setup results
+    code = 0
+    desc = 'Store Added to Account Successfully'
+
+    return jsonify(code=code, desc=desc)
+
+
+@app.route('/api/accounts/add', methods=['POST'])
+def addAccount():
+    """Add a new Account"""
+    user_id = request.args.get('user_id')
+    user_name = request.args.get('user_name')
+
+    accounts = Account.query(Account.user_id == user_id).fetch(1)
+
+    if(accounts):
+        # Setup results
+        code = 1
+        desc = 'Account Already Exists'
+        account = prepAccountForJsonify(accounts[0])
+    else:
+        accountModel = Account(user_id=user_id,
+                               user_name=user_name,
+                               stores=[])
+        accountModel.put()
+        account = prepAccountForJsonify(accountModel)
+
+        # Setup results
+        code = 0
+        desc = 'Account Added Successfully'
+
+    return jsonify(code=code, desc=desc, account=account)
+
+
 # GETS  ######################################################################
+@app.route('/api/accounts/<user_id>')
+def getAccount(user_id):
+    """Return the Account Info"""
+
+    accounts = Account.query(Account.user_id == user_id).fetch(1)
+
+    if(accounts):
+        account = prepAccountForJsonify(accounts[0])
+    else:
+        account = None
+
+    return jsonify(account=account)
+
+
 @app.route('/api/stores/all')
 def getStores():
-    """Return all of the users stores"""
+    """Return all of the stores"""
 
-    user_id = request.args.get('user_id')
-
-    stores = Store.query(Store.user_id == user_id).fetch()
+    stores = Store.query().fetch()
 
     # convert to dicts
     stores = [s.to_dict() for s in stores]
 
     return jsonify(stores=stores)
+
+
+@app.route('/api/accounts/<user_id>/stores/all')
+def getAccountsStores(user_id):
+    """Return all of the stores for the given account"""
+
+    accounts = Account.query(Account.user_id == user_id).fetch(1)
+
+    if(accounts):
+        account = accounts[0]
+        stores = []
+        for store_key in account.stores:
+            stores.append(store_key.get().to_dict())
+        return jsonify(stores=stores)
+    else:
+        return jsonify(stores=None)
 
 
 @app.route('/api/upload/link')
@@ -240,13 +345,6 @@ def uploadImageLink():
     upload_url = blobstore.create_upload_url('/api/upload_image')
 
     return jsonify(upload_url=upload_url)
-
-
-@app.route('/api/users/<user_id>')
-def getSchedulesByUser(user_id):
-    """Return the users info    """
-
-    return jsonify(user_id=user_id)
 
 
 @app.route('/api/schedules/all')
