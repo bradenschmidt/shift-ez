@@ -13,9 +13,8 @@ from google.appengine.ext import ndb, blobstore
 from werkzeug.http import parse_options_header
 
 from models.account import Account
-from models.store import Store
-from models.department import Department
-from models.sharedDepartment import SharedDepartment
+from models.storeDepartment import StoreDepartment
+from models.sharedStoreDepartment import SharedStoreDepartment
 from models.schedule import Schedule
 
 import json  # get list of deps
@@ -26,8 +25,8 @@ import datetime  # Key Expiry
 
 
 """
-    Use 'appcfg.py -A shift-ez update app' to deploy on gae
     Use 'dev_appserver.py .' to deploy locally for testing
+    Use 'appcfg.py -A shift-ez update app' to deploy on gae
 """
 
 app = Flask(__name__)
