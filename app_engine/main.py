@@ -23,6 +23,8 @@ import uuid  # For key generator
 
 import datetime  # Key Expiry
 
+from utils.errors import Errors
+
 
 """
     Use 'dev_appserver.py .' to deploy locally for testing
@@ -55,29 +57,6 @@ def store_key(store_name=DEFAULT_STORE_NAME):
     return ndb.Key('Store', store_name)
 
 
-def jsonifySchedules(schedules, reverse):
-    # convert to dicts
-    schedules = [s.to_dict() for s in schedules]
-
-    # sort
-    if(len(schedules) > 0):
-        if(reverse == 'true'):
-            # Sort schedules by year then week with newest schedule first
-            schedules = sorted(schedules, key=itemgetter('week'), reverse=True)
-            schedules = sorted(schedules, key=itemgetter('year'), reverse=True)
-        else:
-            # Sort schedules by year then week with oldest schedule first
-            schedules = sorted(schedules, key=itemgetter('week'))
-            schedules = sorted(schedules, key=itemgetter('year'))
-
-    # Convert blob key to image url for each schedule, the remove blob key
-    for s in schedules:
-        s['image'] = images.get_serving_url(s['image_blob'])
-        del s['image_blob']
-
-    return jsonify(schedules=schedules)
-
-
 def listifySchedules(schedules, reverse):
     # convert to dicts
     schedules = [s.to_dict() for s in schedules]
@@ -101,22 +80,13 @@ def listifySchedules(schedules, reverse):
     return schedules
 
 
+def jsonifySchedules(schedules, reverse):
+    return jsonify(schedules=listifySchedules(schedules, reverse))
+
+
 def getAllSchedules():
     schedules = Schedule.query().fetch()
     return listifySchedules(schedules, None)
-
-
-def prepAccountForJsonify(accountModel):
-    account = accountModel.to_dict()
-    stores = []
-    for store_key in account['stores']:
-        storeObj = store_key.get()
-        if storeObj:
-            store = storeObj.to_dict()
-            stores.append(store)
-    account['stores'] = stores
-
-    return account
 
 
 # Pages ######################################################################
@@ -203,12 +173,12 @@ def uploadImage():
 
 @app.route('/api/stores/add', methods=['POST'])
 def addStore():
-    """Add a new store."""
+    """Add a new store department."""
     user_id = request.args.get('user_id')
     store_name = request.args.get('store_name')
+    dep_name = request.args.get('dep_name')
 
-    store = Store.query(ndb.AND(Store.store_name == store_name,
-                                Store.user_id == user_id)).get()
+    store = StoreDepartment.get(user_id, store_name, dep_name)
 
     if(store):
         # Setup results
@@ -217,8 +187,10 @@ def addStore():
 
         return jsonify(code=code, desc=desc)
     else:
-        store = Store(user_id=user_id, store_name=store_name, deps=[])
-
+        store = StoreDepartment(user_id=user_id,
+                                store_name=store_name,
+                                dep_name=dep_name,
+                                schedules=[])
         store.put()
 
         # Setup results
@@ -228,38 +200,13 @@ def addStore():
     return jsonify(code=code, desc=desc)
 
 
-def addStore2():
-    """Add a new store."""
-    store_name = request.args.get('store')
-    depsJson = request.args.get('deps')
-
-    deps = json.loads(depsJson)
-
-    store = Store.query(Store.store_name == store_name).get()
-
-    if(store):
-        print deps
-        for dep in deps:
-            if dep not in store.deps:
-                store.deps.append(dep)
-    else:
-        store = Store(store_name=store_name, deps=deps)
-
-    store.put()
-
-    # Setup results
-    code = 0
-    desc = 'Add Store Successful'
-
-    return jsonify(code=code, desc=desc)
-
-
 @app.route('/api/accounts/<user_id>/stores/add', methods=['POST'])
 def addStoreToAccount(user_id):
     """Add a store to an account. Create new store if required."""
     store_name = request.args.get('store_name')
+    dep_name = request.args.get('dep_name')
 
-    account = Account.query(Account.user_id == user_id).get()
+    account = Account.get(user_id)
 
     if(not account):
         # Setup results
@@ -268,24 +215,21 @@ def addStoreToAccount(user_id):
 
         return jsonify(code=code, desc=desc)
 
-    exists = False
-    for store_key in account.stores:
-        print store_key
-        store = store_key.get()
-        if store:
-            if store.store_name == store_name:
-                exists = True
+    exists = account.doesStoreExistInAccount(user_id, store_name, dep_name)
 
     if(not exists):
-        store = Store(user_id=user_id, store_name=store_name, deps=[])
+        store = StoreDepartment(user_id=user_id,
+                                store_name=store_name,
+                                dep_name=dep_name,
+                                schedules=[])
         new_store_key = store.put()
 
-        account.stores.append(new_store_key)
+        account.storeDeps.append(new_store_key)
         account.put()
 
         # Setup results
         code = 0
-        desc = 'Store Added to Account Successfully'
+        desc = 'Store Added to Account Successfully.'
     else:
         # Setup results
         code = 0
@@ -300,19 +244,19 @@ def addAccount():
     user_id = request.args.get('user_id')
     user_name = request.args.get('user_name')
 
-    accounts = Account.query(Account.user_id == user_id).fetch(1)
+    account = Account.get(user_id)
 
-    if(accounts):
+    if(account):
         # Setup results
         code = 1
         desc = 'Account Already Exists'
-        account = prepAccountForJsonify(accounts[0])
+        account = account.to_dict_stores()
     else:
-        accountModel = Account(user_id=user_id,
-                               user_name=user_name,
-                               stores=[])
-        accountModel.put()
-        account = prepAccountForJsonify(accountModel)
+        new_account_model = Account(user_id=user_id,
+                                    user_name=user_name,
+                                    storeDeps=[])
+        new_account_model.put()
+        account = new_account_model.to_dict_stores()
 
         # Setup results
         code = 0
@@ -323,6 +267,7 @@ def addAccount():
 
 @app.route('/api/accounts/<user_id>/stores/share', methods=['POST'])
 def shareStore(user_id):
+    created_user_id = request.args.get('created_user_id')
     store_name = request.args.get('store_name')
     dep_name = request.args.get('dep_name')
 
@@ -330,54 +275,72 @@ def shareStore(user_id):
     u = uuid.uuid4()
     key = u.hex
 
-    account = Account.query(Account.user_id == user_id).get()
+    account = Account.get(user_id)
 
-    # if(account):
-    #     for store_key in account.stores:
-    #         if store_key.get().store_name == store_name:
-                # for dep_key
+    if account:
+        store = account.getStoreFromAccount(created_user_id,
+                                            store_name,
+                                            dep_name)
+        if store:
+            store_dep_key = store.key
+            shared_store = SharedStoreDepartment(share_key=key,
+                                                 store_dep_key=store_dep_key)
+            shared_store.put()
 
-    # sharedDepartment = SharedDepartment(key=key, dep_key=dep_key)
+            # Setup results
+            code = 0
+            desc = 'Share Successful. Key valid for 7 days.'
+        else:
+            # Setup results
+            code = 1
+            desc = 'Share Unsuccessful. Store Not Found.'
+            key = None
+    else:
+        # Setup results
+        code = 2
+        desc = 'Share Unsuccessful. Account Not Found.'
+        key = None
 
-    # sharedStore.put()
-
-    # Setup results
-    code = 0
-    desc = 'Share Successful. Key valid for 7 days.'
     return jsonify(code=code, desc=desc, key=key)
 
 
-@app.route('/api/stores/join', methods=['POST'])
-def joinStore():
+@app.route('/api/accounts/<user_id>/stores/join', methods=['POST'])
+def joinStore(user_id):
     key = request.args.get('key')
-    user_id = request.args.get('user_id')
 
-    shared_stores = SharedStore.query(SharedStore.key == key).fetch(1)
+    account = Account.get(user_id)
+    if not account:
+        # Setup account not found error
+        code = Errors.account_not_found
+        desc = 'Join Failed: Account Not Found.'
+        return jsonify(code=code, desc=desc)
 
+    shared_store = SharedStoreDepartment.get(key)
     # Check if a store was returned
-    if len(shared_stores) <= 0:
+    if not shared_store:
         # Setup store key not found error
-        code = 1
+        code = Errors.key_not_found
         desc = 'Join Failed: Key Not Found.'
         return jsonify(code=code, desc=desc)
 
-    shared_store = shared_stores[0]
-
-    print shared_store
-
-    date = shared_store.upload_dateTime
+    date = shared_store.shared_dateTime
 
     if (date < (datetime.datetime.now()-datetime.timedelta(days=7))):
         # Expired
-        code = 2
+        code = Errors.key_too_old
         desc = 'Join Failed: Key Too Old (Over 7 Days).'
         return jsonify(code=code, desc=desc)
 
-    new_store = Store(user_id=user_id,
-                      store=shared_store.store_name,
-                      deps=shared_store.dep)
+    store = shared_store.get(key)
 
-    new_store.put()
+    if not store:
+        # Expired
+        code = Errors.store_not_found
+        desc = 'Join Failed: Store Not Found.'
+        return jsonify(code=code, desc=desc)
+
+    account.storeDeps.append(store.store_dep_key)
+    account.put()
 
     # Setup results
     code = 0
@@ -390,12 +353,12 @@ def joinStore():
 def getAccount(user_id):
     """Return the Account Info"""
 
-    account = Account.query(Account.user_id == user_id).get()
+    account = Account.get(user_id)
 
     if(account):
-        accountDict = prepAccountForJsonify(account)
+        accountDict = account.to_dict_stores()
     else:
-        account = None
+        accountDict = None
 
     return jsonify(account=accountDict)
 
@@ -404,7 +367,7 @@ def getAccount(user_id):
 def getStores():
     """Return all of the stores"""
 
-    stores = Store.query().fetch()
+    stores = StoreDepartment.query().fetch()
 
     # convert to dicts
     stores = [s.to_dict() for s in stores]
@@ -416,18 +379,11 @@ def getStores():
 def getAccountsStores(user_id):
     """Return all of the stores for the given account"""
 
-    account = Account.query(Account.user_id == user_id).get()
+    account = Account.get(user_id)
 
     if(account):
-        stores = []
-        for store_key in account.stores:
-            store = store_key.get()
-            if store:
-                stores.append(store.to_dict())
-            else:
-                logging.info("Store with given key is missing: "
-                             + str(store_key.flat()))
-        return jsonify(stores=stores)
+        accountDict = account.to_dict_stores()
+        return jsonify(stores=accountDict['storeDeps'])
     else:
         return jsonify(stores=None)
 
@@ -448,11 +404,6 @@ def getSchedules(user_id):
     reverse = request.args.get('reverse')
 
     account = Account.query(Account.user_id == user_id).get()
-
-    for store_key in account.stores:
-        store = store_key.get()
-        if store:
-
 
     schedules = Schedule.query(Schedule.user_id == user_id).fetch()
 
