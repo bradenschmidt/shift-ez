@@ -40,6 +40,16 @@ class Account(ndb.Model):
 
         return False
 
+    def getStoreFromAccount(self, _user_id, _store_name, _dep_name):
+        stores = self.getStoreDeps()
+        for store in stores:
+            if store.user_id == _user_id \
+                    and store.store_name == _store_name \
+                    and store.dep_name == _dep_name:
+                return store
+
+        return None
+
     def to_dict_stores(self):
         accountDict = self.to_dict()
 
