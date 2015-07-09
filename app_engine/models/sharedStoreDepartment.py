@@ -12,11 +12,11 @@ class SharedStoreDepartment(ndb.Model):
     dep_key - the key of the Store that has been shared.
     """
     shared_dateTime = ndb.DateTimeProperty(auto_now_add=True)
-    key = ndb.StringProperty(required=True)
+    share_key = ndb.StringProperty(required=True)
     store_dep_key = ndb.KeyProperty(StoreDepartment, required=True)
 
     @staticmethod
-    def get(_key):
+    def get(_share_key):
         sharedStore = SharedStoreDepartment.query(
-                        SharedStoreDepartment.key == _key).get()
+                        SharedStoreDepartment.share_key == _share_key).get()
         return sharedStore
