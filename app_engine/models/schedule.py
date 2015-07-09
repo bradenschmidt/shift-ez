@@ -1,4 +1,5 @@
 from google.appengine.ext import ndb
+# from storeDepartment import StoreDepartment
 
 
 class Schedule(ndb.Model):
@@ -10,9 +11,18 @@ class Schedule(ndb.Model):
     the year
     image_blob - blob key for the image of this schedule.
     """
+    # parent = ndb.KeyProperty(StoreDepartment, required=True)
     upload_user_id = ndb.StringProperty(required=True)
     upload_dateTime = ndb.DateTimeProperty(auto_now_add=True)
     year = ndb.IntegerProperty(required=True)
     week = ndb.IntegerProperty(required=True)
     week_offset = ndb.IntegerProperty(required=True)
     image_blob = ndb.BlobKeyProperty()
+
+    @staticmethod
+    def get(_upload_user_id, _year, _week):
+        schedule = Schedule.query(
+                    ndb.AND(Schedule.year == _year,
+                            Schedule.week == _week,
+                            Schedule.upload_user_id == _upload_user_id)).get()
+        return schedule

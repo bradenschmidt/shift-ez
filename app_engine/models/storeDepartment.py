@@ -1,4 +1,5 @@
 from google.appengine.ext import ndb
+import logging
 from schedule import Schedule
 
 
@@ -16,3 +17,25 @@ class StoreDepartment(ndb.Model):
     dep_name = ndb.StringProperty(required=True)
 
     schedules = ndb.KeyProperty(Schedule, repeated=True)
+
+    @staticmethod
+    def get(_user_id, _store_name, _dep_name):
+        store = StoreDepartment.query(
+                        ndb.AND(StoreDepartment.store_name == _store_name,
+                                StoreDepartment.dep_name == _dep_name,
+                                StoreDepartment.user_id == _user_id)).get()
+        return store
+
+    def getSchedules(self):
+        schedules = []
+        for schedule_key in self.schedules:
+            schedule = schedule_key.get()
+            if schedule:
+                self.schedules.append(schedule)
+            else:
+                logging.info("Schedule with given key is missing: "
+                             + str(schedule_key.flat())
+                             + " from StoreDepartment: " + self.user_id
+                             + " - " + self.store_name
+                             + " - " + self.dep_name)
+        return schedules
