@@ -28,10 +28,11 @@ class StoreDepartment(ndb.Model):
 
     def getSchedules(self):
         schedules = []
+
         for schedule_key in self.schedules:
             schedule = schedule_key.get()
             if schedule:
-                self.schedules.append(schedule)
+                schedules.append(schedule)
             else:
                 logging.info("Schedule with given key is missing: "
                              + str(schedule_key.flat())
@@ -39,3 +40,31 @@ class StoreDepartment(ndb.Model):
                              + " - " + self.store_name
                              + " - " + self.dep_name)
         return schedules
+
+    def getScheduleDicts(self):
+        schedules = []
+        for schedule_key in self.schedules:
+            schedule = schedule_key.get()
+            if schedule:
+                schedules.append(schedule.to_dict_images())
+            else:
+                logging.info("Schedule with given key is missing: "
+                             + str(schedule_key.flat())
+                             + " from StoreDepartment: " + self.user_id
+                             + " - " + self.store_name
+                             + " - " + self.dep_name)
+
+        return schedules
+
+    def to_dict_schedules(self):
+        storeDict = self.to_dict()
+
+        schedules = []
+        for schedule in self.getSchedules():
+            scheduleDict = schedule.to_dict_images()
+            logging.info(scheduleDict)
+            schedules.append(scheduleDict)
+
+        storeDict['schedules'] = schedules
+
+        return storeDict

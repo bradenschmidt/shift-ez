@@ -30,13 +30,10 @@ class Account(ndb.Model):
                              + self.user_id)
         return stores
 
-    def doesStoreExistInAccount(self, _user_id, _store_name, _dep_name):
+    def isStoreInAccount(self, store_to_find):
         stores = self.getStoreDeps()
-        for store in stores:
-            if store.user_id == _user_id \
-                    and store.store_name == _store_name \
-                    and store.dep_name == _dep_name:
-                return True
+        if store_to_find in stores:
+            return True
 
         return False
 
@@ -50,12 +47,36 @@ class Account(ndb.Model):
 
         return None
 
+    def getSchedules(self):
+        stores = self.getStoreDeps()
+
+        schedules = []
+        if stores:
+            for store in stores:
+                store_schedules = store.getSchedules()
+                for schedule in store_schedules:
+                    schedules.append(schedule)
+
+        return schedules
+
+    def getScheduleDicts(self):
+        stores = self.getStoreDeps()
+
+        schedules = []
+        if stores:
+            for store in stores:
+                store_schedules = store.getSchedules()
+                for schedule in store_schedules:
+                    schedules.append(schedule.to_dict_images())
+
+        return schedules
+
     def to_dict_stores(self):
         accountDict = self.to_dict()
 
         stores = []
         for store in self.getStoreDeps():
-            storeDict = store.to_dict()
+            storeDict = store.to_dict_schedules()
             stores.append(storeDict)
         accountDict['storeDeps'] = stores
 
