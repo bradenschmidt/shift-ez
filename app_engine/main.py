@@ -7,7 +7,7 @@ from flask import Flask, jsonify, request
 
 from operator import itemgetter
 
-from google.appengine.api import images  # , users
+# from google.appengine.api import users
 from google.appengine.ext import ndb, blobstore
 
 from werkzeug.http import parse_options_header
@@ -57,10 +57,7 @@ def store_key(store_name=DEFAULT_STORE_NAME):
     return ndb.Key('Store', store_name)
 
 
-def listifySchedules(schedules, reverse):
-    # convert to dicts
-    schedules = [s.to_dict() for s in schedules]
-
+def sortSchedules(schedules, reverse):
     # sort
     if(len(schedules) > 0):
         if(reverse == 'true'):
@@ -72,21 +69,13 @@ def listifySchedules(schedules, reverse):
             schedules = sorted(schedules, key=itemgetter('week'))
             schedules = sorted(schedules, key=itemgetter('year'))
 
-    # Convert blob key to image url for each schedule, the remove blob key
-    for s in schedules:
-        s['image'] = images.get_serving_url(s['image_blob'])
-        del s['image_blob']
-
     return schedules
-
-
-def jsonifySchedules(schedules, reverse):
-    return jsonify(schedules=listifySchedules(schedules, reverse))
 
 
 def getAllSchedules():
     schedules = Schedule.query().fetch()
-    return listifySchedules(schedules, None)
+    schedules = [s.to_dict_images() for s in schedules]
+    return sortSchedules(schedules, None)
 
 
 # Pages ######################################################################
@@ -127,7 +116,7 @@ def page_not_found(e):
 @app.route('/upload/form')
 def uploadImageForm():
     """Show an upload form"""
-    upload_url = blobstore.create_upload_url('/api/upload_image')
+    upload_url = blobstore.create_upload_url('/api/stores/schedules/add')
 
     template_values = {
         'upload_url': upload_url
@@ -140,7 +129,7 @@ def uploadImageForm():
 # API ENDPOINTS  #############################################################
 # POSTS  #####################################################################
 
-@app.route('/api/upload_image', methods=['POST'])
+@app.route('/api/stores/schedules/add', methods=['POST'])
 def uploadImage():
     """ Accept an schedule with info and image"""
     image = request.files['file']
@@ -149,20 +138,34 @@ def uploadImage():
     parsed_header = parse_options_header(header)
     blob_key_str = parsed_header[1]['blob-key']
 
-    logging.info(blob_key_str)
+    created_user_id = request.form.get('created_user_id')
+    store_name = request.form.get('store_name')
+    dep_name = request.form.get('dep_name')
 
     user_id = request.form.get('user_id')
     year = request.form.get('year', type=int)
     week = request.form.get('week', type=int)
     week_offset = request.form.get('week_offset', type=int)
 
-    schedule = Schedule(user_id=user_id,
+    store = StoreDepartment.get(created_user_id, store_name, dep_name)
+
+    if not store:
+        # Setup store not found error
+        code = Errors.store_not_found
+        desc = 'Upload Failed: Store Not Found.'
+        return jsonify(code=code, desc=desc)
+
+    schedule = Schedule(parent=store.key,
+                        upload_user_id=user_id,
                         year=year,
                         week=week,
                         week_offset=week_offset,
                         image_blob=blobstore.BlobKey(blob_key_str))
 
     schedule.put()
+
+    store.schedules.append(schedule.key)
+    store.put()
 
     # Setup results
     code = 0
@@ -202,29 +205,31 @@ def addStore():
 
 @app.route('/api/accounts/<user_id>/stores/add', methods=['POST'])
 def addStoreToAccount(user_id):
-    """Add a store to an account. Create new store if required."""
+    """Add an existing store to an account."""
+    store_user_id = request.args.get('store_user_id')
     store_name = request.args.get('store_name')
     dep_name = request.args.get('dep_name')
 
     account = Account.get(user_id)
-
     if(not account):
         # Setup results
-        code = 1
-        desc = 'Account does not exist.'
+        code = Errors.account_not_found
+        desc = 'Add Store to Account Failed. Account does not exist.'
 
         return jsonify(code=code, desc=desc)
 
-    exists = account.doesStoreExistInAccount(user_id, store_name, dep_name)
+    store = StoreDepartment.get(store_user_id, store_name, dep_name)
+    if not store:
+        # Setup store not found error
+        code = Errors.store_not_found
+        desc = 'Add Store to Account Failed. Store not found.'
+
+        return jsonify(code=code, desc=desc)
+
+    exists = account.isStoreInAccount(store)
 
     if(not exists):
-        store = StoreDepartment(user_id=user_id,
-                                store_name=store_name,
-                                dep_name=dep_name,
-                                schedules=[])
-        new_store_key = store.put()
-
-        account.storeDeps.append(new_store_key)
+        account.storeDeps.append(store.key)
         account.put()
 
         # Setup results
@@ -232,7 +237,7 @@ def addStoreToAccount(user_id):
         desc = 'Store Added to Account Successfully.'
     else:
         # Setup results
-        code = 0
+        code = Errors.store_in_account
         desc = 'Store Already Exists in Account.'
 
     return jsonify(code=code, desc=desc)
@@ -267,6 +272,8 @@ def addAccount():
 
 @app.route('/api/accounts/<user_id>/stores/share', methods=['POST'])
 def shareStore(user_id):
+    """Share Store by adding store to SharedStoreDepartment with key.
+    """
     created_user_id = request.args.get('created_user_id')
     store_name = request.args.get('store_name')
     dep_name = request.args.get('dep_name')
@@ -306,6 +313,9 @@ def shareStore(user_id):
 
 @app.route('/api/accounts/<user_id>/stores/join', methods=['POST'])
 def joinStore(user_id):
+    """Join Store by adding store to users account found in
+    SharedStoreDepartment by provided key.
+    """
     key = request.args.get('key')
 
     account = Account.get(user_id)
@@ -388,110 +398,116 @@ def getAccountsStores(user_id):
         return jsonify(stores=None)
 
 
-@app.route('/api/upload/link')
+@app.route('/api/stores/schedules/link')
 def uploadImageLink():
     """Return a blobstore upload link as json for the client to upload an
     image.
     """
-    upload_url = blobstore.create_upload_url('/api/upload_image')
+    upload_url = blobstore.create_upload_url('/api/stores/schedules/add')
 
     return jsonify(upload_url=upload_url)
 
 
 @app.route('/api/accounts/<user_id>/schedules/all')
 def getSchedules(user_id):
-    """Return all of the users schedules"""
+    """Return all of the users schedules sorted in reverse if specified."""
     reverse = request.args.get('reverse')
 
-    account = Account.query(Account.user_id == user_id).get()
+    account = Account.get(user_id)
+    schedules = []
+    if account:
+        schedules = account.getScheduleDicts()
 
-    schedules = Schedule.query(Schedule.user_id == user_id).fetch()
-
-    return jsonifySchedules(schedules, reverse)
+    return sortSchedules(schedules, reverse)
 
 
-@app.route('/api/schedules/year/<year>')
-def getSchedulesByYear(year):
-    """Return the users schedules for a given year"""
-
-    user_id = request.args.get('user_id')
+@app.route('/api/accounts/<user_id>/schedules/year/<year>')
+def getSchedulesByYear(user_id, year):
+    """Return the users schedules for a given year."""
     reverse = request.args.get('reverse')
 
-    schedules = Schedule.query(ndb.AND(Schedule.user_id == user_id,
-                                       Schedule.year == int(year))).fetch()
+    account = Account.get(user_id)
+    year_schedules = []
+    if account:
+        schedules = account.getSchedules()
+        for schedule in schedules:
+            if schedule.year == int(year):
+                year_schedules.append(schedule.to_dict_images())
 
-    return jsonifySchedules(schedules, reverse)
+    return jsonify(schedules=sortSchedules(year_schedules, reverse))
 
 
-@app.route('/api/schedules/year/<year>/week/<week>')
-def getSchedulesByYearWeek(year, week):
-    """Return the users schedules for a given year and week"""
-
-    user_id = request.args.get('user_id')
+@app.route('/api/accounts/<user_id>/schedules/year/<year>/week/<week>')
+def getSchedulesByYearWeek(user_id, year, week):
+    """Return the users schedules for a given year and week."""
     reverse = request.args.get('reverse')
 
-    schedules = Schedule.query(ndb.AND(Schedule.user_id == user_id,
-                                       Schedule.year == int(year),
-                                       Schedule.week == int(week))).fetch()
+    account = Account.get(user_id)
+    week_schedules = []
+    if account:
+        schedules = account.getSchedules()
+        for schedule in schedules:
+            if schedule.year == int(year) and schedule.week == int(week):
+                week_schedules.append(schedule.to_dict_images())
 
-    return jsonifySchedules(schedules, reverse)
+    return jsonify(schedules=sortSchedules(week_schedules, reverse))
 
 
-@app.route('/api/schedules/year/<year>/store/<store>')
-def getSchedulesByYearStore(year, store):
-    """Return the users schedules for a given year and store"""
-
-    user_id = request.args.get('user_id')
+@app.route('''/api/accounts/<user_id>/stores/<store_name>\
+/dep/<dep_name>/year/<year>''')
+def getSchedulesByYearStore(user_id, store_name, dep_name, year):
+    """Return the users schedules for a given year and store."""
+    store_user_id = request.args.get('store_user_id')
     reverse = request.args.get('reverse')
 
-    schedules = Schedule.query(ndb.AND(Schedule.user_id == user_id,
-                                       Schedule.year == int(year),
-                                       Schedule.store == store)).fetch()
+    store = StoreDepartment.get(store_user_id, store_name, dep_name)
+    account = Account.get(user_id)
+    year_schedules = []
+    if account and store:
+        if account.isStoreInAccount(store):
+            schedules = store.getSchedules()
+            for schedule in schedules:
+                if schedule.year == int(year):
+                    year_schedules.append(schedule.to_dict_images())
 
-    return jsonifySchedules(schedules, reverse)
+    return jsonify(schedules=sortSchedules(year_schedules, reverse))
 
 
-@app.route('/api/schedules/year/<year>/store/<store>/dep/<dep>')
-def getSchedulesByYearStoreDep(year, store, dep):
-    """Return the users schedules for a given year and Store and Dep"""
-
-    user_id = request.args.get('user_id')
+@app.route('''/api/accounts/<user_id>/stores/<store_name>/dep/<dep_name>/\
+year/<year>/week/<week>/''')
+def getSchedulesByYearStoreDep(user_id, store_name, dep_name, year, week):
+    """Return the users schedules for a given year and week and store"""
+    store_user_id = request.args.get('store_user_id')
     reverse = request.args.get('reverse')
 
-    schedules = Schedule.query(ndb.AND(Schedule.user_id == user_id,
-                               Schedule.year == int(year),
-                               Schedule.store == store),
-                               Schedule.dep == dep).fetch()
+    store = StoreDepartment.get(store_user_id, store_name, dep_name)
+    account = Account.get(user_id)
+    year_schedules = []
+    if account and store:
+        if account.isStoreInAccount(store):
+            schedules = store.getSchedules()
+            for schedule in schedules:
+                if schedule.year == int(year) and schedule.week == week:
+                    year_schedules.append(schedule.to_dict_images())
 
-    return jsonifySchedules(schedules, reverse)
+    return jsonify(schedules=sortSchedules(year_schedules, reverse))
 
 
-@app.route('/api/schedules/store/<store>')
-def getSchedulesByStore(store):
+@app.route('/api/accounts/<user_id>/stores/<store_name>/dep/<dep_name>/')
+def getSchedulesByStore(user_id, store_name, dep_name):
     """Return the users schedules for a store"""
 
-    user_id = request.args.get('user_id')
+    store_user_id = request.args.get('store_user_id')
     reverse = request.args.get('reverse')
 
-    schedules = Schedule.query(ndb.AND(Schedule.user_id == user_id,
-                                       Schedule.store == store)).fetch()
+    store = StoreDepartment.get(store_user_id, store_name, dep_name)
+    account = Account.get(user_id)
+    schedules = []
+    if account and store:
+        if account.isStoreInAccount(store):
+            schedules = store.getScheduleDicts()
 
-    return jsonifySchedules(schedules, reverse)
-
-
-@app.route('/api/schedules/store/<store>/dep/<dep>')
-def getSchedulesByStoreDep(store, dep):
-    """Return the users schedules for a given Store and Dep"""
-
-    user_id = request.args.get('user_id')
-    reverse = request.args.get('reverse')
-
-    schedules = Schedule.query(
-                    ndb.AND(Schedule.user_id == user_id,
-                            Schedule.store == store,
-                            Schedule.dep == dep)).fetch()
-
-    return jsonifySchedules(schedules, reverse)
+    return jsonify(schedules=sortSchedules(schedules, reverse))
 
 
 @app.route('/api/help', methods=['GET'])

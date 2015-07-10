@@ -1,5 +1,6 @@
 class Errors():
     account_not_found = 100
-    key_not_found = 101
-    key_too_old = 102
-    store_not_found = 103
+    key_not_found = 201
+    key_too_old = 202
+    store_not_found = 300
+    store_in_account = 101
