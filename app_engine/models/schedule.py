@@ -36,7 +36,7 @@ class Schedule(ndb.Model):
         del scheduleDict['parent']
 
         # Convert blob key to image url for each schedule, the remove blob key
-        scheduleDict['image'] = images.get_serving_url(
+        scheduleDict['image_url'] = images.get_serving_url(
                                             scheduleDict['image_blob'])
         del scheduleDict['image_blob']
 
