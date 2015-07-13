@@ -15,10 +15,12 @@ class Account(ndb.Model):
 
     @staticmethod
     def get(_user_id):
+        """Return the account with the given user_id"""
         account = Account.query(Account.user_id == _user_id).get()
         return account
 
     def getStoreDeps(self):
+        """Get the stores for this account."""
         stores = []
         for store_key in self.storeDeps:
             store = store_key.get()
@@ -31,6 +33,7 @@ class Account(ndb.Model):
         return stores
 
     def isStoreInAccount(self, store_to_find):
+        """Check if a specific store is in this account."""
         stores = self.getStoreDeps()
         if store_to_find in stores:
             return True
@@ -38,6 +41,9 @@ class Account(ndb.Model):
         return False
 
     def getStoreFromAccount(self, _user_id, _store_name, _dep_name):
+        """Get a specific store by the store user id, store name, and dep name
+        from this account.
+        """
         stores = self.getStoreDeps()
         for store in stores:
             if store.user_id == _user_id \
@@ -48,6 +54,9 @@ class Account(ndb.Model):
         return None
 
     def getSchedules(self):
+        """Get all the schedule objects for all the stores the user has
+        one.
+        """
         stores = self.getStoreDeps()
 
         schedules = []
@@ -60,6 +69,7 @@ class Account(ndb.Model):
         return schedules
 
     def getScheduleDicts(self):
+        """Get all the users schedules from all the stores as dicts."""
         stores = self.getStoreDeps()
 
         schedules = []
@@ -72,12 +82,12 @@ class Account(ndb.Model):
         return schedules
 
     def to_dict_stores(self):
+        """Account to_dict with stores included."""
         accountDict = self.to_dict()
 
         stores = []
         for store in self.getStoreDeps():
-            storeDict = store.to_dict_schedules()
-            stores.append(storeDict)
+            stores.append(store.to_dict_schedules())
         accountDict['storeDeps'] = stores
 
         return accountDict
