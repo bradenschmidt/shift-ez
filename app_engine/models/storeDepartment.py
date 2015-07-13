@@ -46,7 +46,10 @@ class StoreDepartment(ndb.Model):
         for schedule_key in self.schedules:
             schedule = schedule_key.get()
             if schedule:
-                schedules.append(schedule.to_dict_images())
+                scheduleDict = schedule.to_dict_images()
+                scheduleDict['store_name'] = self.store_name
+                scheduleDict['dep_name'] = self.dep_name
+                schedules.append(scheduleDict)
             else:
                 logging.info("Schedule with given key is missing: "
                              + str(schedule_key.flat())
@@ -59,11 +62,7 @@ class StoreDepartment(ndb.Model):
     def to_dict_schedules(self):
         storeDict = self.to_dict()
 
-        schedules = []
-        for schedule in self.getSchedules():
-            scheduleDict = schedule.to_dict_images()
-            logging.info(scheduleDict)
-            schedules.append(scheduleDict)
+        schedules = self.getScheduleDicts()
 
         storeDict['schedules'] = schedules
 
