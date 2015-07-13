@@ -1,6 +1,8 @@
 package com.schmidtdesigns.shiftez.models;
 
 import com.google.gson.Gson;
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
 
 import java.util.ArrayList;
 
@@ -8,8 +10,14 @@ import java.util.ArrayList;
  * Created by braden on 15-06-22.
  */
 public class Account {
+    @Expose
+    @SerializedName("user_name")
     private String name;
+    @Expose
+    @SerializedName("user_id")
     private String email;
+    @Expose
+    @SerializedName("storeDeps")
     private ArrayList<Store> mStores;
 
     public Account(String name, String email, ArrayList<Store> stores) {
@@ -70,5 +78,28 @@ public class Account {
                 ", email='" + email + '\'' +
                 ", stores=" + mStores +
                 '}';
+    }
+
+    public static class Response {
+        @Expose
+        private Account account;
+
+        /**
+         *
+         * @return
+         * The account
+         */
+        public Account getAccount() {
+            return account;
+        }
+
+        /**
+         *
+         * @param account
+         * The account
+         */
+        public void setAccount(Account account) {
+            this.account = account;
+        }
     }
 }

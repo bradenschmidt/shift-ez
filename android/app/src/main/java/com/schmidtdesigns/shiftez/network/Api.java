@@ -1,5 +1,6 @@
 package com.schmidtdesigns.shiftez.network;
 
+import com.schmidtdesigns.shiftez.models.Account;
 import com.schmidtdesigns.shiftez.models.ImageUploadUrl;
 import com.schmidtdesigns.shiftez.models.PostResult;
 import com.schmidtdesigns.shiftez.models.ScheduleResponse;
@@ -27,6 +28,14 @@ import retrofit.mime.TypedFile;
  * Created by braden on 15-06-08.
  */
 public interface Api {
+
+    ///// ACCOUNTS /////
+    @POST("/api/accounts/add")
+    PostResult addAccount(@QueryMap Map<String, String> accountParams);
+
+    @GET("/api/accounts/{user_id}")
+    Account.Response getAccount(@Path("user_id") String user_id);
+
 
     ///// Schedules /////
     // Get all the schedules with the given params
