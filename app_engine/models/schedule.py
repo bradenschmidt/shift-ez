@@ -14,6 +14,7 @@ class Schedule(ndb.Model):
     parent = ndb.KeyProperty('StoreDepartment', required=True)
 
     upload_user_id = ndb.StringProperty(required=True)
+    user_name = ndb.StringProperty(required=True)
     upload_dateTime = ndb.DateTimeProperty(auto_now_add=True)
     year = ndb.IntegerProperty(required=True)
     week = ndb.IntegerProperty(required=True)

@@ -138,7 +138,7 @@ def uploadImage():
     parsed_header = parse_options_header(header)
     blob_key_str = parsed_header[1]['blob-key']
 
-    created_user_id = request.form.get('created_user_id')
+    store_user_id = request.form.get('store_user_id')
     store_name = request.form.get('store_name')
     dep_name = request.form.get('dep_name')
 
@@ -147,7 +147,7 @@ def uploadImage():
     week = request.form.get('week', type=int)
     week_offset = request.form.get('week_offset', type=int)
 
-    store = StoreDepartment.get(created_user_id, store_name, dep_name)
+    store = StoreDepartment.get(store_user_id, store_name, dep_name)
 
     if not store:
         # Setup store not found error
@@ -155,8 +155,16 @@ def uploadImage():
         desc = 'Upload Failed: Store Not Found.'
         return jsonify(code=code, desc=desc)
 
+    account = Account.get(user_id)
+    if not account:
+        # Setup store not found error
+        code = Errors.account_not_found
+        desc = 'Upload Failed: Account Not Found.'
+        return jsonify(code=code, desc=desc)
+
     schedule = Schedule(parent=store.key,
                         upload_user_id=user_id,
+                        upload_user_name=account.user_name,
                         year=year,
                         week=week,
                         week_offset=week_offset,
