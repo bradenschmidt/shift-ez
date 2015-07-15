@@ -103,19 +103,7 @@ public class LoginActivity extends GPlusBaseActivity {
             Log.e(TAG, "Person was null.");
             updateUI(false);
         }
-    }
-
-    private class AddAccountRequestListener implements RequestListener<PostAccount> {
-        @Override
-        public void onRequestFailure(SpiceException spiceException) {
-            Log.e(TAG, spiceException.getLocalizedMessage());
-        }
-
-        @Override
-        public void onRequestSuccess(PostAccount postAccount) {
-            Log.i(TAG, "ACCOUNT: " + postAccount);
-            saveAccount(postAccount.getAccount());
-        }
+        // TODO PersonBuffer Data leak
     }
 
     public void saveAccount(Account account) {
@@ -132,5 +120,18 @@ public class LoginActivity extends GPlusBaseActivity {
         editor.apply();
 
         startActivity(new Intent(getApplicationContext(), MainActivity.class));
+    }
+
+    private class AddAccountRequestListener implements RequestListener<PostAccount> {
+        @Override
+        public void onRequestFailure(SpiceException spiceException) {
+            Log.e(TAG, spiceException.getLocalizedMessage());
+        }
+
+        @Override
+        public void onRequestSuccess(PostAccount postAccount) {
+            Log.i(TAG, "ACCOUNT: " + postAccount);
+            saveAccount(postAccount.getAccount());
+        }
     }
 }
