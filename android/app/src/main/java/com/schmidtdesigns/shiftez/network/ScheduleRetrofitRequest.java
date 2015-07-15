@@ -1,41 +1,37 @@
 package com.schmidtdesigns.shiftez.network;
 
 import com.octo.android.robospice.request.retrofit.RetrofitSpiceRequest;
-import com.schmidtdesigns.shiftez.ShiftEZ;
 import com.schmidtdesigns.shiftez.models.ScheduleResponse;
-
-import java.util.HashMap;
 
 /**
  * Created by braden on 15-06-08.
  */
 public class ScheduleRetrofitRequest extends RetrofitSpiceRequest<ScheduleResponse, Api> {
+    private String TAG = this.getClass().getSimpleName();
 
     private final boolean mReverse;
-    private String TAG = "ScheduleRetrofitRequest";
     private int mYear = -1;
+    private String mUserId;
 
-    public ScheduleRetrofitRequest(Boolean reverse) {
+    public ScheduleRetrofitRequest(String userId, Boolean reverse) {
         super(ScheduleResponse.class, Api.class);
+        this.mUserId = userId;
         this.mReverse = reverse;
     }
 
-    public ScheduleRetrofitRequest(int year, Boolean reverse) {
+    public ScheduleRetrofitRequest(String userId, int year, Boolean reverse) {
         super(ScheduleResponse.class, Api.class);
+        this.mUserId = userId;
         this.mYear = year;
         this.mReverse = reverse;
     }
 
     @Override
     public ScheduleResponse loadDataFromNetwork() throws Exception {
-        HashMap<String, String> scheduleParams = new HashMap<>();
-        scheduleParams.put("user_id", ShiftEZ.getInstance().getAccount().getEmail());
-        scheduleParams.put("reverse", String.valueOf(mReverse));
-
         if (mYear == -1) {
-            return getService().getSchedules(scheduleParams);
+            return getService().getSchedules(mUserId, mReverse);
         } else {
-            return getService().getSchedules(mYear, scheduleParams);
+            return getService().getSchedules(mUserId, mYear, mReverse);
         }
     }
 }
