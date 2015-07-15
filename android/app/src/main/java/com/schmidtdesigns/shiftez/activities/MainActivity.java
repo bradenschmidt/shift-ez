@@ -27,6 +27,8 @@ import com.schmidtdesigns.shiftez.ShiftEZ;
 import com.schmidtdesigns.shiftez.fragments.SchedulePagerFragment;
 import com.schmidtdesigns.shiftez.models.Store;
 
+import java.util.ArrayList;
+
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 
@@ -77,35 +79,40 @@ public class MainActivity extends GPlusBaseActivity {
                 .build();
 
 
+        ArrayList<IDrawerItem> items = new ArrayList<>();
+        items.add(new SectionDrawerItem().withName(R.string.drawer_header_stores));
+        ArrayList<Store> stores = ShiftEZ.getInstance().getAccount().getStores();
+        if(stores != null) {
+            for (Store s : stores) {
+                items.add(new PrimaryDrawerItem().withName(s.getStoreName()).withTag(s));
+            }
+        } else {
+            items.add(new PrimaryDrawerItem().withName("No Stores"));
+        }
+        items.add(new DividerDrawerItem());
+        items.add(new SecondaryDrawerItem().withName(R.string.drawer_item_settings));
+
         //Now create your drawer and pass the AccountHeader.Result
         mDrawer = new DrawerBuilder()
                 .withActivity(this)
                 .withToolbar(mToolbar)
                 .withAccountHeader(headerResult)
+                .withDrawerItems(items)
                 .withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
                     @Override
                     public boolean onItemClick(AdapterView<?> parent, View view, int position, long id, IDrawerItem drawerItem) {
                         if (drawerItem instanceof PrimaryDrawerItem) {
                             PrimaryDrawerItem item = (PrimaryDrawerItem) drawerItem;
-                            displayView(SchedulePagerFragment.newInstance(((Store) item.getTag()).getStoreName(), item.getName()));
-                    }
+                            displayView(SchedulePagerFragment.newInstance(((Store) item.getTag()).getStoreName(), ((Store) item.getTag()).getDepName()));
+                        }
                         mDrawer.closeDrawer();
                         return true;
                     }
                 })
                 .build();
 
-        mDrawer.addItem(new SectionDrawerItem().withName(R.string.drawer_header_stores));
-        for (Store s : ShiftEZ.getInstance().getAccount().getStores()) {
-            mDrawer.addItem(new SectionDrawerItem().withName(s.getStoreName()));
-            for (String dep : s.getDeps()) {
-                mDrawer.addItem(new PrimaryDrawerItem().withName(dep).withTag(s));
-            }
-        }
-        mDrawer.addItem(new DividerDrawerItem());
-        mDrawer.addItem(new SecondaryDrawerItem().withName(R.string.drawer_item_settings));
-
-        mDrawer.setSelection(2);
+        //TODO Set selection based on default store
+        mDrawer.setSelection(1);
     }
 
     @Override

@@ -35,10 +35,13 @@ public class Store {
         return storeName;
     }
 
+    public String getDepName() {
+        return depName;
+    }
+
     public List<Schedule> getSchedules() {
         return schedules;
     }
-
 
     @Override
     public String toString() {
