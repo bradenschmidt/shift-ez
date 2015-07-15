@@ -58,7 +58,7 @@ public class ScheduleAdapter extends PagerAdapter {
 
         final Schedule s = mSchedules.get(position);
 
-        Picasso.with(mContext).load(s.getImage()).into(mViewHolder.scheduleImage);
+        Picasso.with(mContext).load(s.getImageUrl()).into(mViewHolder.scheduleImage);
 
         mViewHolder.scheduleImage.setOnClickListener(new View.OnClickListener() {
             @Override

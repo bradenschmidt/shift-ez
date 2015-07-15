@@ -87,10 +87,6 @@ public class Schedule {
 		return userName;
 	}
 
-	public String getImage_url() {
-		return image_url;
-	}
-
 	public Integer getYear() {
 		return year;
 	}
@@ -101,6 +97,21 @@ public class Schedule {
 
 	public String getUploadDateTime() {
 		return uploadDateTime;
+	}
+
+	@Override
+	public String toString() {
+		return "Schedule{" +
+				"userName='" + userName + '\'' +
+				", storeName='" + storeName + '\'' +
+				", depName='" + depName + '\'' +
+				", image_url='" + image_url + '\'' +
+				", uploadDateTime='" + uploadDateTime + '\'' +
+				", uploadUserId='" + uploadUserId + '\'' +
+				", week=" + week +
+				", weekOffset=" + weekOffset +
+				", year=" + year +
+				'}';
 	}
 
 	public static class List extends ArrayList<Schedule> {

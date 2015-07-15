@@ -55,7 +55,7 @@ public class ScheduleActivity extends BaseActivity implements View.OnClickListen
         image.setMaxScale(10F);
 
         Picasso.with(getApplicationContext())
-                .load(mSchedule.getImage())
+                .load(mSchedule.getImageUrl())
                 .into(new Target() {
                     @Override
                     public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
