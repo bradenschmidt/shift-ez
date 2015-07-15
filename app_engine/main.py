@@ -164,7 +164,7 @@ def uploadImage():
 
     schedule = Schedule(parent=store.key,
                         upload_user_id=user_id,
-                        upload_user_name=account.user_name,
+                        user_name=account.user_name,
                         year=year,
                         week=week,
                         week_offset=week_offset,
@@ -426,7 +426,7 @@ def getSchedules(user_id):
     if account:
         schedules = account.getScheduleDicts()
 
-    return sortSchedules(schedules, reverse)
+    return jsonify(schedules=sortSchedules(schedules, reverse))
 
 
 @app.route('/api/accounts/<user_id>/schedules/year/<year>')

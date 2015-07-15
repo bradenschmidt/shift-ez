@@ -75,9 +75,9 @@ class Account(ndb.Model):
         schedules = []
         if stores:
             for store in stores:
-                store_schedules = store.getSchedules()
+                store_schedules = store.getScheduleDicts()
                 for schedule in store_schedules:
-                    schedules.append(schedule.to_dict_images())
+                    schedules.append(schedule)
 
         return schedules
 
