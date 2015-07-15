@@ -14,6 +14,8 @@ public class Constants {
     public static final String UPLOAD_NEW_STORE = "new_store";
     public static final String STORES = "stores";
     public static final String ADD_ACCOUNT_PARAM = "account";
+    public static final String SHARE_KEY_PARAM = "shared_store";
+    public static final String JOIN_KEY_PARAM = "join_store";
     public static String ACCOUNT_PARAM = "account";
     public static String SCHEDULE_KEY_PARAM = "schedules";
 }

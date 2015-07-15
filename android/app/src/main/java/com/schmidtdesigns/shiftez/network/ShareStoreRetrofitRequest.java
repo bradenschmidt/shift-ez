@@ -15,15 +15,16 @@ public class ShareStoreRetrofitRequest extends RetrofitSpiceRequest<ShareStore, 
 
     private String TAG = this.getClass().getSimpleName();
     private Map<String, String> mStoreParams;
+    private String mUserId;
 
-    public ShareStoreRetrofitRequest(Map<String, String> storeParams) {
+    public ShareStoreRetrofitRequest(String userId, Map<String, String> storeParams) {
         super(ShareStore.class, Api.class);
-        mStoreParams = storeParams;
+        this.mUserId = userId;
+        this.mStoreParams = storeParams;
     }
 
     @Override
     public ShareStore loadDataFromNetwork() throws Exception {
-        return getService().shareStore(mStoreParams);
-
+        return getService().shareStore(mUserId, mStoreParams);
     }
 }

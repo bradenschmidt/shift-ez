@@ -282,7 +282,7 @@ def addAccount():
 def shareStore(user_id):
     """Share Store by adding store to SharedStoreDepartment with key.
     """
-    created_user_id = request.args.get('created_user_id')
+    store_user_id = request.args.get('store_user_id')
     store_name = request.args.get('store_name')
     dep_name = request.args.get('dep_name')
 
@@ -293,7 +293,7 @@ def shareStore(user_id):
     account = Account.get(user_id)
 
     if account:
-        store = account.getStoreFromAccount(created_user_id,
+        store = account.getStoreFromAccount(store_user_id,
                                             store_name,
                                             dep_name)
         if store:

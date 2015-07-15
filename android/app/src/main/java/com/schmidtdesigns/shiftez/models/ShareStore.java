@@ -19,13 +19,6 @@ public class ShareStore extends PostResult {
         return key;
     }
 
-    /**
-     * @param key The key
-     */
-    public void setKey(String key) {
-        this.key = key;
-    }
-
     @Override
     public String toString() {
         return ToStringBuilder.reflectionToString(this);

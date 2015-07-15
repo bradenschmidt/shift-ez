@@ -3,8 +3,6 @@ package com.schmidtdesigns.shiftez.network;
 import com.octo.android.robospice.request.retrofit.RetrofitSpiceRequest;
 import com.schmidtdesigns.shiftez.models.PostResult;
 
-import java.util.Map;
-
 /**
  * Retrofit Request to enable a POST to the server with the given user id and key as storeParams.
  * Result codes and desc show error or success.
@@ -15,16 +13,18 @@ import java.util.Map;
 public class JoinStoreRetrofitRequest extends RetrofitSpiceRequest<PostResult, Api> {
 
     private String TAG = this.getClass().getSimpleName();
-    private Map<String, String> mStoreParams;
+    private String mUserId;
+    private String mKey;
 
-    public JoinStoreRetrofitRequest(Map<String, String> storeParams) {
+    public JoinStoreRetrofitRequest(String userId, String key) {
         super(PostResult.class, Api.class);
-        mStoreParams = storeParams;
+        this.mUserId = userId;
+        this.mKey = key;
     }
 
     @Override
     public PostResult loadDataFromNetwork() throws Exception {
-        return getService().shareStore(mStoreParams);
+        return getService().joinStore(mUserId, mKey);
 
     }
 }

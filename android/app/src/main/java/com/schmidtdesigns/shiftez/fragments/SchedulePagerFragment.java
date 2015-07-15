@@ -38,8 +38,12 @@ import com.schmidtdesigns.shiftez.activities.UploadActivity;
 import com.schmidtdesigns.shiftez.adapters.ScheduleAdapter;
 import com.schmidtdesigns.shiftez.models.PostResult;
 import com.schmidtdesigns.shiftez.models.Schedule;
+import com.schmidtdesigns.shiftez.models.ShareStore;
+import com.schmidtdesigns.shiftez.models.Store;
+import com.schmidtdesigns.shiftez.network.JoinStoreRetrofitRequest;
 import com.schmidtdesigns.shiftez.network.NewStoreRetrofitRequest;
 import com.schmidtdesigns.shiftez.network.ScheduleRetrofitRequest;
+import com.schmidtdesigns.shiftez.network.ShareStoreRetrofitRequest;
 
 import java.io.File;
 import java.io.IOException;
@@ -64,6 +68,7 @@ public class SchedulePagerFragment extends BaseFragment {
     private static final String TAG = BaseFragment.class.getSimpleName();
     private static final String STORE_PARAM = "store";
     private static final String DEP_PARAM = "dep";
+    private static final String USER_ID_PARAM = "store_user_id";
     // The pager and adapter used to show the returned schedules
     @InjectView(R.id.schedule_pager)
     public ViewPager mPager;
@@ -83,18 +88,22 @@ public class SchedulePagerFragment extends BaseFragment {
     private File mImageFile;
     private String mStore;
     private String mDep;
+    private String mStoreUserId;
 
 
     public SchedulePagerFragment() {
     }
 
-    public static Fragment newInstance(String store, String dep) {
+    public static Fragment newInstance(Store store) {
         SchedulePagerFragment fragment = new SchedulePagerFragment();
-        Bundle args = new Bundle();
-        args.putString(STORE_PARAM, store);
-        args.putString(DEP_PARAM, dep);
-        Log.d(TAG, "STORE AND DEP: " + store + dep);
-        fragment.setArguments(args);
+        if (store != null) {
+            Bundle args = new Bundle();
+            args.putString(STORE_PARAM, store.getStoreName());
+            args.putString(DEP_PARAM, store.getDepName());
+            args.putString(USER_ID_PARAM, store.getUserId());
+            Log.d(TAG, "STORE: " + store);
+            fragment.setArguments(args);
+        }
         return fragment;
     }
 
@@ -104,6 +113,7 @@ public class SchedulePagerFragment extends BaseFragment {
         if (getArguments() != null) {
             mStore = getArguments().getString(STORE_PARAM);
             mDep = getArguments().getString(DEP_PARAM);
+            mStoreUserId = getArguments().getString(USER_ID_PARAM);
         }
     }
 
@@ -126,6 +136,12 @@ public class SchedulePagerFragment extends BaseFragment {
     }
 
     @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        ButterKnife.reset(this);
+    }
+
+    @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         // Do something that differs the Activity's menu here
         super.onCreateOptionsMenu(menu, inflater);
@@ -140,8 +156,14 @@ public class SchedulePagerFragment extends BaseFragment {
                 refreshSchedules();
                 return true;
             case R.id.action_settings:
-                // TODO Not implemented here
+                // TODO REMOVE
                 return false;
+            case R.id.action_share_store:
+                shareStore();
+                return true;
+            case R.id.action_join_store:
+                joinStore();
+                return true;
             default:
                 break;
         }
@@ -156,6 +178,45 @@ public class SchedulePagerFragment extends BaseFragment {
         }
     }
 
+    private void shareStore() {
+        HashMap<String, String> storeParams = new HashMap<>();
+        storeParams.put("store_name", mStore);
+        storeParams.put("dep_name", mDep);
+        storeParams.put("store_user_id", mStoreUserId);
+
+        ShareStoreRetrofitRequest shareStoreRequest =
+                new ShareStoreRetrofitRequest(ShiftEZ.getInstance().getAccount().getEmail(),
+                        storeParams);
+        getSpiceManager().execute(shareStoreRequest,
+                Constants.SHARE_KEY_PARAM, DurationInMillis.ONE_SECOND,
+                new ShareStoreRequestListener());
+    }
+
+
+    private void joinStore() {
+        final EditText input = new EditText(getActivity());
+
+        new AlertDialog.Builder(getActivity())
+                .setTitle("Join Store")
+                .setMessage("Enter Shared Store Key:")
+                .setView(input)
+                .setPositiveButton("Join", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        Editable key = input.getText();
+                        JoinStoreRetrofitRequest joinStoreRequest =
+                                new JoinStoreRetrofitRequest(ShiftEZ.getInstance().getAccount().getEmail(),
+                                        key.toString());
+                        getSpiceManager().execute(joinStoreRequest,
+                                Constants.JOIN_KEY_PARAM, DurationInMillis.ONE_SECOND,
+                                new JoinStoreRequestListener());
+                    }
+                }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                // DO NOTHING
+            }
+        }).show();
+    }
+
     /**
      * Get the schedules from the server
      */
@@ -163,7 +224,7 @@ public class SchedulePagerFragment extends BaseFragment {
         ScheduleRetrofitRequest scheduleRequest =
                 new ScheduleRetrofitRequest(ShiftEZ.getInstance().getAccount().getEmail(), false);
         getSpiceManager().execute(scheduleRequest,
-                Constants.SCHEDULE_KEY_PARAM, 5 * DurationInMillis.ONE_MINUTE,
+                Constants.SCHEDULE_KEY_PARAM, 5 * DurationInMillis.ONE_SECOND,
                 new ListScheduleRequestListener());
 
         // TODO ENSURE THIS IS INVALIDATED ON UPLOADS OR NEW CONTENT
@@ -294,12 +355,6 @@ public class SchedulePagerFragment extends BaseFragment {
         getActivity().sendBroadcast(mediaScanIntent);
     }
 
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        ButterKnife.reset(this);
-    }
-
     private void showAddStoreDialog() {
         final EditText input = new EditText(getActivity());
 
@@ -348,7 +403,8 @@ public class SchedulePagerFragment extends BaseFragment {
 
         // Upload store and info
         NewStoreRetrofitRequest storeUploadRequest = new NewStoreRetrofitRequest(storeParams);
-        getSpiceManager().execute(storeUploadRequest, Constants.UPLOAD_NEW_STORE, DurationInMillis.ONE_SECOND, new NewStoreUploadListener());
+        getSpiceManager().execute(storeUploadRequest, Constants.UPLOAD_NEW_STORE,
+                DurationInMillis.ONE_SECOND, new NewStoreUploadListener());
     }
 
     /**
@@ -417,4 +473,39 @@ public class SchedulePagerFragment extends BaseFragment {
         }
     }
 
+    private class ShareStoreRequestListener implements RequestListener<ShareStore> {
+        @Override
+        public void onRequestFailure(SpiceException spiceException) {
+            //TODO
+            Log.e(TAG, spiceException.getMessage());
+        }
+
+        @Override
+        public void onRequestSuccess(ShareStore shareStore) {
+            Log.i(TAG, shareStore.toString());
+            Toast.makeText(getActivity(), shareStore.getDesc(), Toast.LENGTH_SHORT).show();
+
+            String key = shareStore.getKey();
+
+            if (key != null) {
+                Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
+                sharingIntent.setType("text/plain");
+                sharingIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, "Shared Store Key");
+                sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, key);
+                startActivity(Intent.createChooser(sharingIntent, getResources().getString(R.string.share_using)));
+            }
+        }
+    }
+
+    private class JoinStoreRequestListener implements RequestListener<PostResult> {
+        @Override
+        public void onRequestFailure(SpiceException spiceException) {
+            Log.e(TAG, spiceException.getMessage());
+        }
+
+        @Override
+        public void onRequestSuccess(PostResult postResult) {
+
+        }
+    }
 }
