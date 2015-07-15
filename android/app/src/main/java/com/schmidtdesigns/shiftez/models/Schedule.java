@@ -132,4 +132,25 @@ public class Schedule {
 			return res.toString();
 		}
 	}
+
+	public class Response {
+
+		@SerializedName("schedules")
+		private Schedule.List schedules;
+
+		public Schedule.List getSchedules() {
+			return schedules;
+		}
+
+		public void setSchedules(Schedule.List schedules) {
+			this.schedules = schedules;
+		}
+
+		@Override
+		public String toString() {
+			return "ScheduleResponse{" +
+					"schedules=" + schedules +
+					'}';
+		}
+	}
 }

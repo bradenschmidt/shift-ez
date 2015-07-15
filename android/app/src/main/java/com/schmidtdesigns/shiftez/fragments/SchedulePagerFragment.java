@@ -38,7 +38,6 @@ import com.schmidtdesigns.shiftez.activities.UploadActivity;
 import com.schmidtdesigns.shiftez.adapters.ScheduleAdapter;
 import com.schmidtdesigns.shiftez.models.PostResult;
 import com.schmidtdesigns.shiftez.models.Schedule;
-import com.schmidtdesigns.shiftez.models.ScheduleResponse;
 import com.schmidtdesigns.shiftez.network.NewStoreRetrofitRequest;
 import com.schmidtdesigns.shiftez.network.ScheduleRetrofitRequest;
 
@@ -301,52 +300,6 @@ public class SchedulePagerFragment extends BaseFragment {
         ButterKnife.reset(this);
     }
 
-
-    /**
-     * Called on completion of the api request to get the Schedules.
-     * Deals with api call failure -
-     * On Success - use the schedules.
-     */
-    public final class ListScheduleRequestListener implements RequestListener<ScheduleResponse> {
-        @Override
-        public void onRequestFailure(SpiceException spiceException) {
-            //TODO SHOW CAUSE
-            // TODO Null exception
-            Log.e(TAG, spiceException.getCause().toString());
-
-            Toast.makeText(getActivity(), "Failed to Retrieve Schedules", Toast.LENGTH_SHORT)
-                    .show();
-            mProgress.setVisibility(View.GONE);
-            mFailureImageView.setVisibility(View.VISIBLE);
-        }
-
-        /**
-         * Display the schedules in the pager, hiding the progress bar and showing the fab
-         *
-         * @param result Schedules in the Datastore
-         */
-        @Override
-        public void onRequestSuccess(final ScheduleResponse result) {
-            Log.d(TAG, result.toString());
-
-            mProgress.setVisibility(View.GONE);
-            mFab.setVisibility(View.VISIBLE);
-
-            ArrayList<Schedule> schedules = getScheduleByStoreDep(result.getSchedules(), mStore, mDep);
-
-            if (schedules.isEmpty()) {
-                mEmptyText.setVisibility(View.VISIBLE);
-            } else {
-                mPager.setVisibility(View.VISIBLE);
-
-                ScheduleAdapter mPagerAdapter = new ScheduleAdapter(getActivity(), schedules);
-                mPager.setAdapter(mPagerAdapter);
-
-                mPager.setCurrentItem(mPagerAdapter.getCurrentWeekPosition(), true);
-            }
-        }
-    }
-
     private void showAddStoreDialog() {
         final EditText input = new EditText(getActivity());
 
@@ -396,6 +349,51 @@ public class SchedulePagerFragment extends BaseFragment {
         // Upload store and info
         NewStoreRetrofitRequest storeUploadRequest = new NewStoreRetrofitRequest(storeParams);
         getSpiceManager().execute(storeUploadRequest, Constants.UPLOAD_NEW_STORE, DurationInMillis.ONE_SECOND, new NewStoreUploadListener());
+    }
+
+    /**
+     * Called on completion of the api request to get the Schedules.
+     * Deals with api call failure -
+     * On Success - use the schedules.
+     */
+    public final class ListScheduleRequestListener implements RequestListener<Schedule.Response> {
+        @Override
+        public void onRequestFailure(SpiceException spiceException) {
+            //TODO SHOW CAUSE
+            // TODO Null exception
+            Log.e(TAG, spiceException.getCause().toString());
+
+            Toast.makeText(getActivity(), "Failed to Retrieve Schedules", Toast.LENGTH_SHORT)
+                    .show();
+            mProgress.setVisibility(View.GONE);
+            mFailureImageView.setVisibility(View.VISIBLE);
+        }
+
+        /**
+         * Display the schedules in the pager, hiding the progress bar and showing the fab
+         *
+         * @param result Schedules in the Datastore
+         */
+        @Override
+        public void onRequestSuccess(final Schedule.Response result) {
+            Log.d(TAG, result.toString());
+
+            mProgress.setVisibility(View.GONE);
+            mFab.setVisibility(View.VISIBLE);
+
+            ArrayList<Schedule> schedules = getScheduleByStoreDep(result.getSchedules(), mStore, mDep);
+
+            if (schedules.isEmpty()) {
+                mEmptyText.setVisibility(View.VISIBLE);
+            } else {
+                mPager.setVisibility(View.VISIBLE);
+
+                ScheduleAdapter mPagerAdapter = new ScheduleAdapter(getActivity(), schedules);
+                mPager.setAdapter(mPagerAdapter);
+
+                mPager.setCurrentItem(mPagerAdapter.getCurrentWeekPosition(), true);
+            }
+        }
     }
 
     private class NewStoreUploadListener implements RequestListener<PostResult> {

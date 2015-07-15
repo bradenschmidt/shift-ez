@@ -4,7 +4,7 @@ import com.schmidtdesigns.shiftez.models.Account;
 import com.schmidtdesigns.shiftez.models.ImageUploadUrl;
 import com.schmidtdesigns.shiftez.models.PostAccount;
 import com.schmidtdesigns.shiftez.models.PostResult;
-import com.schmidtdesigns.shiftez.models.ScheduleResponse;
+import com.schmidtdesigns.shiftez.models.Schedule;
 import com.schmidtdesigns.shiftez.models.ShareStore;
 import com.schmidtdesigns.shiftez.models.StoreResponse;
 
@@ -41,12 +41,12 @@ public interface Api {
     ///// Schedules /////
     // Get all the accounts schedules
     @GET("/api/accounts/{userId}/schedules/all")
-    ScheduleResponse getSchedules(@Path("userId") String userId,
+    Schedule.Response getSchedules(@Path("userId") String userId,
                                   @Query("reverse") boolean reverse);
 
     // Get the accounts schedules by year
     @GET("/api/accounts/{userId}/schedules/year/{year}")
-    ScheduleResponse getSchedules(@Path("userId") String userId,
+    Schedule.Response getSchedules(@Path("userId") String userId,
                                   @Path("year") int year,
                                   @Query("reverse") boolean reverse);
 
