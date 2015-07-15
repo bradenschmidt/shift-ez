@@ -13,6 +13,7 @@ public class Constants {
     public static final int REQUEST_TAKE_PHOTO = 1;
     public static final String UPLOAD_NEW_STORE = "new_store";
     public static final String STORES = "stores";
+    public static final String ADD_ACCOUNT_PARAM = "account";
     public static String ACCOUNT_PARAM = "account";
     public static String SCHEDULE_KEY_PARAM = "schedules";
 }
