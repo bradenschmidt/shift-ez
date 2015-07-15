@@ -9,8 +9,8 @@ public class PostResult {
      * code : 0
      * desc : Upload Successful
      */
-    private int code;
-    private String desc;
+    protected int code;
+    protected String desc;
 
     public int getCode() {
         return code;

@@ -2,6 +2,7 @@ package com.schmidtdesigns.shiftez.network;
 
 import com.schmidtdesigns.shiftez.models.Account;
 import com.schmidtdesigns.shiftez.models.ImageUploadUrl;
+import com.schmidtdesigns.shiftez.models.PostAccount;
 import com.schmidtdesigns.shiftez.models.PostResult;
 import com.schmidtdesigns.shiftez.models.ScheduleResponse;
 import com.schmidtdesigns.shiftez.models.ShareStore;
@@ -31,24 +32,26 @@ public interface Api {
 
     ///// ACCOUNTS /////
     @POST("/api/accounts/add")
-    PostResult addAccount(@QueryMap Map<String, String> accountParams);
+    PostAccount addAccount(@QueryMap Map<String, String> accountParams);
 
     @GET("/api/accounts/{user_id}")
     Account.Response getAccount(@Path("user_id") String user_id);
 
 
     ///// Schedules /////
-    // Get all the schedules with the given params
-    @GET("/api/schedules/all")
-    ScheduleResponse getSchedules(@QueryMap Map<String, String> scheduleParams);
+    // Get all the accounts schedules
+    @GET("/api/accounts/{userId}/schedules/all")
+    ScheduleResponse getSchedules(@Path("userId") String userId,
+                                  @Query("reverse") boolean reverse);
 
-    // Get the schedules by year with the given params
-    @GET("/api/schedules/year/{year}")
-    ScheduleResponse getSchedules(@Path("year") int year,
-                                  @QueryMap Map<String, String> scheduleParams);
+    // Get the accounts schedules by year
+    @GET("/api/accounts/{userId}/schedules/year/{year}")
+    ScheduleResponse getSchedules(@Path("userId") String userId,
+                                  @Path("year") int year,
+                                  @Query("reverse") boolean reverse);
 
     // Get an image upload link
-    @GET("/api/upload/link")
+    @GET("/api/stores/schedules/link")
     ImageUploadUrl getImageUploadURL();
 
     // Send the image with its data
@@ -63,8 +66,8 @@ public interface Api {
     @POST("/api/stores/add")
     PostResult addNewStore(@QueryMap Map<String, String> storeParams);
 
-    @GET("/api/stores/all")
-    StoreResponse getStores(@Query("user_id") String user_id);
+    @GET("api/accounts/{userId}/stores/all")
+    StoreResponse getAccountStores(@Path("user_id") String user_id);
 
     @POST("/api/stores/share")
     ShareStore shareStore(@QueryMap Map<String, String> storeParams);
