@@ -6,7 +6,7 @@ import com.schmidtdesigns.shiftez.models.PostAccount;
 import com.schmidtdesigns.shiftez.models.PostResult;
 import com.schmidtdesigns.shiftez.models.Schedule;
 import com.schmidtdesigns.shiftez.models.ShareStore;
-import com.schmidtdesigns.shiftez.models.StoreResponse;
+import com.schmidtdesigns.shiftez.models.Store;
 
 import java.util.Map;
 
@@ -67,7 +67,7 @@ public interface Api {
     PostResult addNewStore(@QueryMap Map<String, String> storeParams);
 
     @GET("api/accounts/{userId}/stores/all")
-    StoreResponse getAccountStores(@Path("user_id") String user_id);
+    Store.Response getAccountStores(@Path("user_id") String user_id);
 
     @POST("/api/stores/share")
     ShareStore shareStore(@QueryMap Map<String, String> storeParams);

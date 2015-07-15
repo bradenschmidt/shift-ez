@@ -47,4 +47,32 @@ public class Store {
     public String toString() {
         return ToStringBuilder.reflectionToString(this);
     }
+
+    public class Response {
+        @Expose
+        private ArrayList<Store> stores = new ArrayList<>();
+
+        /**
+         *
+         * @return
+         * The stores
+         */
+        public ArrayList<Store> getStores() {
+            return stores;
+        }
+
+        /**
+         *
+         * @param stores
+         * The stores
+         */
+        public void setStores(ArrayList<Store> stores) {
+            this.stores = stores;
+        }
+
+        @Override
+        public String toString() {
+            return ToStringBuilder.reflectionToString(this);
+        }
+    }
 }
