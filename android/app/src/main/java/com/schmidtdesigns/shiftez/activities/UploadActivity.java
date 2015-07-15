@@ -101,24 +101,10 @@ public class UploadActivity extends BaseActivity {
         // Apply the adapter to the spinner
         mHolder.mStoreSpinner.setAdapter(storeAdapter);
         // TODO Set default position to current store
-        //mHolder.mDepSpinner.setSelection();
         mHolder.mStoreSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                mHolder.mDepSpinner.setEnabled(true);
                 mHolder.mUploadButton.setEnabled(true);
-
-                Store store = (Store) mHolder.mStoreSpinner.getSelectedItem();
-
-                // Setup the Departments to use
-                ArrayAdapter<String> depAdapter = new ArrayAdapter<>(getApplicationContext(),
-                        R.layout.spinner_item, store.getDeps());
-                // Specify the layout to use when the list of choices appears
-                depAdapter.setDropDownViewResource(R.layout.spinner_dropdown_item);
-                // Apply the adapter to the spinner
-                mHolder.mDepSpinner.setAdapter(depAdapter);
-                // TODO Set default position to current dep
-                //mHolder.mDepSpinner.setSelection();
             }
 
             @Override
@@ -249,16 +235,12 @@ public class UploadActivity extends BaseActivity {
         public Button mUploadButton;
         @InjectView(R.id.store_spinner)
         Spinner mStoreSpinner;
-        @InjectView(R.id.dep_spinner)
-        Spinner mDepSpinner;
         // Image preview shown
         @InjectView(R.id.schedule_image_preview)
         ImageView mScheduleImagePreview;
 
         ViewHolder(UploadActivity uploadActivity) {
             ButterKnife.inject(this, uploadActivity);
-            // Start as disabled
-            mDepSpinner.setEnabled(false);
         }
     }
 
@@ -288,10 +270,10 @@ public class UploadActivity extends BaseActivity {
             // Collect params from Account and from spinners.
             TypedFile image = new TypedFile("image/*", mImageFile);
             HashMap<String, String> imageParams = new HashMap<>();
-            imageParams.put("store", ((Store) mHolder.mStoreSpinner.getSelectedItem()).getStoreName());
-            imageParams.put("dep", String.valueOf(mHolder.mDepSpinner.getSelectedItem()));
+            imageParams.put("store_user_id", ((Store) mHolder.mStoreSpinner.getSelectedItem()).getUserId());
+            imageParams.put("store_name", ((Store) mHolder.mStoreSpinner.getSelectedItem()).getStoreName());
+            imageParams.put("dep_name", ((Store) mHolder.mStoreSpinner.getSelectedItem()).getDepName());
             imageParams.put("user_id", ShiftEZ.getInstance().getAccount().getEmail());
-            imageParams.put("user_name", ShiftEZ.getInstance().getAccount().getName());
             imageParams.put("week", String.valueOf(mHolder.mWeekSpinner.getSelectedItem()));
             imageParams.put("week_offset", String.valueOf(mHolder.mWeekOffsetSpinner.getSelectedItem()));
             imageParams.put("year", String.valueOf(mHolder.mYearSpinner.getSelectedItem()));
