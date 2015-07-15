@@ -1,6 +1,7 @@
 package com.schmidtdesigns.shiftez.fragments;
 
 import android.app.Activity;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
@@ -11,6 +12,8 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.AlertDialog;
+import android.text.Editable;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -18,20 +21,25 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.octo.android.robospice.exception.NoNetworkException;
 import com.octo.android.robospice.persistence.DurationInMillis;
 import com.octo.android.robospice.persistence.exception.SpiceException;
 import com.octo.android.robospice.request.listener.RequestListener;
 import com.schmidtdesigns.shiftez.Constants;
 import com.schmidtdesigns.shiftez.R;
+import com.schmidtdesigns.shiftez.ShiftEZ;
 import com.schmidtdesigns.shiftez.activities.UploadActivity;
 import com.schmidtdesigns.shiftez.adapters.ScheduleAdapter;
+import com.schmidtdesigns.shiftez.models.PostResult;
 import com.schmidtdesigns.shiftez.models.Schedule;
 import com.schmidtdesigns.shiftez.models.ScheduleResponse;
+import com.schmidtdesigns.shiftez.network.NewStoreRetrofitRequest;
 import com.schmidtdesigns.shiftez.network.ScheduleRetrofitRequest;
 
 import java.io.File;
@@ -39,6 +47,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.concurrent.Future;
 
@@ -108,7 +117,11 @@ public class SchedulePagerFragment extends BaseFragment {
         setHasOptionsMenu(true);
         ButterKnife.inject(this, rootView);
 
-        getSchedules();
+        if(ShiftEZ.getInstance().getAccount().getStores().isEmpty()) {
+            showAddStoreDialog();
+        } else {
+            getSchedules();
+        }
 
         return rootView;
     }
@@ -145,11 +158,13 @@ public class SchedulePagerFragment extends BaseFragment {
     }
 
     /**
-     * Get the schedules from the server with the given year
+     * Get the schedules from the server
      */
     private void getSchedules() {
-        ScheduleRetrofitRequest scheduleRequest = new ScheduleRetrofitRequest(false);
-        getSpiceManager().execute(scheduleRequest, Constants.SCHEDULE_KEY_PARAM, 5 * DurationInMillis.ONE_MINUTE,
+        ScheduleRetrofitRequest scheduleRequest =
+                new ScheduleRetrofitRequest(ShiftEZ.getInstance().getAccount().getEmail(), false);
+        getSpiceManager().execute(scheduleRequest,
+                Constants.SCHEDULE_KEY_PARAM, 5 * DurationInMillis.ONE_MINUTE,
                 new ListScheduleRequestListener());
 
         // TODO ENSURE THIS IS INVALIDATED ON UPLOADS OR NEW CONTENT
@@ -163,7 +178,7 @@ public class SchedulePagerFragment extends BaseFragment {
                                                      String storeName, String depName) {
         ArrayList<Schedule> stores = new ArrayList<>();
         for (Schedule s : schedules) {
-            if (s.getStore().equals(storeName) && s.getDep().equals(depName)) {
+            if (s.getStoreName().equals(storeName) && s.getDepName().equals(depName)) {
                 stores.add(s);
             }
         }
@@ -312,7 +327,7 @@ public class SchedulePagerFragment extends BaseFragment {
          */
         @Override
         public void onRequestSuccess(final ScheduleResponse result) {
-            //Log.d(TAG, result.toString());
+            Log.d(TAG, result.toString());
 
             mProgress.setVisibility(View.GONE);
             mFab.setVisibility(View.VISIBLE);
@@ -329,6 +344,78 @@ public class SchedulePagerFragment extends BaseFragment {
 
                 mPager.setCurrentItem(mPagerAdapter.getCurrentWeekPosition(), true);
             }
+        }
+    }
+
+    private void showAddStoreDialog() {
+        final EditText input = new EditText(getActivity());
+
+        new AlertDialog.Builder(getActivity())
+                .setTitle("Add Store")
+                .setMessage("Enter New Store Name:")
+                .setView(input)
+                .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        Editable storeName = input.getText();
+                        showAddDepDialog(storeName.toString());
+                    }
+                }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                // DO NOTHING
+            }
+        }).show();
+    }
+
+    private void showAddDepDialog(final String storeName) {
+        final EditText input = new EditText(getActivity());
+
+        new AlertDialog.Builder(getActivity())
+                .setTitle("Add Department")
+                .setMessage("Enter New Department Name:")
+                .setView(input)
+                .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        Editable depName = input.getText();
+                        uploadNewStore(storeName, depName.toString());
+                    }
+                }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                // DO NOTHING
+            }
+        }).show();
+    }
+
+    private void uploadNewStore(String storeName, String depName) {
+        HashMap<String, String> storeParams = new HashMap<>();
+        storeParams.put("store_name", storeName);
+        storeParams.put("dep_name", depName);
+        storeParams.put("user_id", ShiftEZ.getInstance().getAccount().getEmail());
+
+        Log.d(TAG, "Uploading new store with params: " + storeParams.toString());
+
+        // Upload store and info
+        NewStoreRetrofitRequest storeUploadRequest = new NewStoreRetrofitRequest(storeParams);
+        getSpiceManager().execute(storeUploadRequest, Constants.UPLOAD_NEW_STORE, DurationInMillis.ONE_SECOND, new NewStoreUploadListener());
+    }
+
+    private class NewStoreUploadListener implements RequestListener<PostResult> {
+
+        @Override
+        public void onRequestFailure(SpiceException spiceException) {
+            Log.e(TAG, spiceException.getMessage());
+
+            //TODO MOVE TO UTILS
+            if (spiceException instanceof NoNetworkException) {
+                Toast.makeText(getActivity(), R.string.no_network, Toast.LENGTH_LONG).show();
+            }
+        }
+
+        @Override
+        public void onRequestSuccess(PostResult postResult) {
+            Log.d(TAG, postResult.toString());
+            // TODO HANDLE DIFFERENT POST RESULTS
+
+            getSchedules();
         }
     }
 
