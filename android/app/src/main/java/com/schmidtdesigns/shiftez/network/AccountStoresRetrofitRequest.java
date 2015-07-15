@@ -6,19 +6,19 @@ import com.schmidtdesigns.shiftez.models.StoreResponse;
 /**
  * Created by braden on 15-06-08.
  */
-public class StoreRetrofitRequest extends RetrofitSpiceRequest<StoreResponse, Api> {
+public class AccountStoresRetrofitRequest extends RetrofitSpiceRequest<StoreResponse, Api> {
 
     private String TAG = this.getClass().getSimpleName();
     private String mUserId;
 
-    public StoreRetrofitRequest(String userId) {
+    public AccountStoresRetrofitRequest(String userId) {
         super(StoreResponse.class, Api.class);
         this.mUserId = userId;
     }
 
     @Override
     public StoreResponse loadDataFromNetwork() throws Exception {
-        return getService().getStores(mUserId);
+        return getService().getAccountStores(mUserId);
 
     }
 }
