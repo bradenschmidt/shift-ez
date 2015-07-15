@@ -70,6 +70,14 @@ public class Store {
             this.stores = stores;
         }
 
+        public ArrayList<Schedule> getAllSchedules() {
+            ArrayList<Schedule> allSchedules = new ArrayList<>();
+            for (Store store : stores) {
+                allSchedules.addAll(store.getSchedules());
+            }
+            return allSchedules;
+        }
+
         @Override
         public String toString() {
             return ToStringBuilder.reflectionToString(this);

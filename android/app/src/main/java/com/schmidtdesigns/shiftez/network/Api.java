@@ -66,15 +66,15 @@ public interface Api {
     @POST("/api/stores/add")
     PostResult addNewStore(@QueryMap Map<String, String> storeParams);
 
-    @GET("api/accounts/{userId}/stores/all")
-    Store.Response getAccountStores(@Path("user_id") String userId);
+    @GET("/api/accounts/{userId}/stores/all")
+    Store.Response getAccountStores(@Path("userId") String userId);
 
-    @POST("/api/accounts/{user_id}/stores/share")
-    ShareStore shareStore(@Path("user_id") String userId,
+    @POST("/api/accounts/{userId}/stores/share")
+    ShareStore shareStore(@Path("userId") String userId,
                           @QueryMap Map<String, String> storeParams);
 
-    @POST("/api/accounts/{user_id}/stores/join")
-    PostResult joinStore(@Path("user_id") String userId,
+    @POST("/api/accounts/{userId}/stores/join")
+    PostResult joinStore(@Path("userId") String userId,
                          @Query("key") String key);
 
 }

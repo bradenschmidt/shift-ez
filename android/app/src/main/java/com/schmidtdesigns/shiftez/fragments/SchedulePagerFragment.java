@@ -34,12 +34,14 @@ import com.octo.android.robospice.request.listener.RequestListener;
 import com.schmidtdesigns.shiftez.Constants;
 import com.schmidtdesigns.shiftez.R;
 import com.schmidtdesigns.shiftez.ShiftEZ;
+import com.schmidtdesigns.shiftez.activities.MainActivity;
 import com.schmidtdesigns.shiftez.activities.UploadActivity;
 import com.schmidtdesigns.shiftez.adapters.ScheduleAdapter;
 import com.schmidtdesigns.shiftez.models.PostResult;
 import com.schmidtdesigns.shiftez.models.Schedule;
 import com.schmidtdesigns.shiftez.models.ShareStore;
 import com.schmidtdesigns.shiftez.models.Store;
+import com.schmidtdesigns.shiftez.network.AccountStoresRetrofitRequest;
 import com.schmidtdesigns.shiftez.network.JoinStoreRetrofitRequest;
 import com.schmidtdesigns.shiftez.network.NewStoreRetrofitRequest;
 import com.schmidtdesigns.shiftez.network.ScheduleRetrofitRequest;
@@ -129,7 +131,7 @@ public class SchedulePagerFragment extends BaseFragment {
         if(ShiftEZ.getInstance().getAccount().getStores().isEmpty()) {
             showAddStoreDialog();
         } else {
-            getSchedules();
+            getStores();
         }
 
         return rootView;
@@ -226,6 +228,22 @@ public class SchedulePagerFragment extends BaseFragment {
         getSpiceManager().execute(scheduleRequest,
                 Constants.SCHEDULE_KEY_PARAM, 5 * DurationInMillis.ONE_SECOND,
                 new ListScheduleRequestListener());
+
+        // TODO ENSURE THIS IS INVALIDATED ON UPLOADS OR NEW CONTENT
+        // USE CACHED IF NO NETWORK
+        // https://groups.google.com/forum/#!topic/robospice/C1bZGKQeLLc
+        //getFromCacheAndLoadFromNetworkIfExpired
+    }
+
+    /**
+     * Get the stores with schedules from the server
+     */
+    private void getStores() {
+        AccountStoresRetrofitRequest storeRequest =
+                new AccountStoresRetrofitRequest(ShiftEZ.getInstance().getAccount().getEmail());
+        getSpiceManager().execute(storeRequest,
+                Constants.SCHEDULE_KEY_PARAM, 5 * DurationInMillis.ONE_SECOND,
+                new StoresRequestListener());
 
         // TODO ENSURE THIS IS INVALIDATED ON UPLOADS OR NEW CONTENT
         // USE CACHED IF NO NETWORK
@@ -505,7 +523,35 @@ public class SchedulePagerFragment extends BaseFragment {
 
         @Override
         public void onRequestSuccess(PostResult postResult) {
+            getStores();
+        }
+    }
 
+    private class StoresRequestListener implements RequestListener<Store.Response> {
+        @Override
+        public void onRequestFailure(SpiceException spiceException) {
+            Log.e(TAG, spiceException.getMessage());
+        }
+
+        @Override
+        public void onRequestSuccess(Store.Response response) {
+            ((MainActivity) getActivity()).updateStores(response.getStores());
+
+            mProgress.setVisibility(View.GONE);
+            mFab.setVisibility(View.VISIBLE);
+
+            ArrayList<Schedule> schedules = getScheduleByStoreDep(response.getAllSchedules(), mStore, mDep);
+
+            if (schedules.isEmpty()) {
+                mEmptyText.setVisibility(View.VISIBLE);
+            } else {
+                mPager.setVisibility(View.VISIBLE);
+
+                ScheduleAdapter mPagerAdapter = new ScheduleAdapter(getActivity(), schedules);
+                mPager.setAdapter(mPagerAdapter);
+
+                mPager.setCurrentItem(mPagerAdapter.getCurrentWeekPosition(), true);
+            }
         }
     }
 }

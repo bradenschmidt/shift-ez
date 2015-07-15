@@ -62,6 +62,10 @@ public class Account {
         return mStores;
     }
 
+    public void setStores(ArrayList<Store> mStores) {
+        this.mStores = mStores;
+    }
+
     public ArrayList<String> getStoresAsStrings() {
         ArrayList<String> storesStr = new ArrayList<>();
 
