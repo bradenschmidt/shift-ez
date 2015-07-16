@@ -6,12 +6,11 @@ import com.google.gson.annotations.SerializedName;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class Store {
 
     @Expose
-    private List<Schedule> schedules = new ArrayList<>();
+    private ArrayList<Schedule> schedules = new ArrayList<>();
     @SerializedName("store_name")
     @Expose
     private String storeName;
@@ -39,7 +38,7 @@ public class Store {
         return depName;
     }
 
-    public List<Schedule> getSchedules() {
+    public ArrayList<Schedule> getSchedules() {
         return schedules;
     }
 

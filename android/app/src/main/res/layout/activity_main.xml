@@ -1,7 +1,7 @@
 <LinearLayout
+    android:id="@+id/main_parent_view"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main_parent_view"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
@@ -12,9 +12,24 @@
         android:id="@+id/toolbar"
         layout="@layout/toolbar"/>
 
+    <ImageView
+        android:id="@+id/failureImage"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_gravity="center|center_vertical"
+        android:contentDescription="@string/failure_image_desc"
+        android:src="@drawable/ic_action_error"
+        android:visibility="gone"/>
+
+    <ProgressBar
+        android:id="@+id/progress"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_gravity="center|center_vertical"/>
+
     <FrameLayout
         android:id="@+id/fragment_container"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
-
+        android:layout_height="match_parent"
+        android:visibility="gone"/>
 </LinearLayout>

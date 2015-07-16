@@ -22,12 +22,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.octo.android.robospice.exception.NoNetworkException;
 import com.octo.android.robospice.persistence.DurationInMillis;
 import com.octo.android.robospice.persistence.exception.SpiceException;
 import com.octo.android.robospice.request.listener.RequestListener;
@@ -41,10 +38,7 @@ import com.schmidtdesigns.shiftez.models.PostResult;
 import com.schmidtdesigns.shiftez.models.Schedule;
 import com.schmidtdesigns.shiftez.models.ShareStore;
 import com.schmidtdesigns.shiftez.models.Store;
-import com.schmidtdesigns.shiftez.network.AccountStoresRetrofitRequest;
 import com.schmidtdesigns.shiftez.network.JoinStoreRetrofitRequest;
-import com.schmidtdesigns.shiftez.network.NewStoreRetrofitRequest;
-import com.schmidtdesigns.shiftez.network.ScheduleRetrofitRequest;
 import com.schmidtdesigns.shiftez.network.ShareStoreRetrofitRequest;
 
 import java.io.File;
@@ -77,19 +71,13 @@ public class SchedulePagerFragment extends BaseFragment {
     // Fab to add schedule
     @InjectView(R.id.fab)
     public View mFab;
-    // Progress bar for loading schedules
-    @InjectView(R.id.progress)
-    public ProgressBar mProgress;
-    // Failure image to show on schedule retrieval failure
-    @InjectView(R.id.failureImage)
-    public ImageView mFailureImageView;
     @InjectView(R.id.emptyText)
     TextView mEmptyText;
 
     // The image file we create and upload
     private File mImageFile;
-    private String mStore;
-    private String mDep;
+    private String mStoreName;
+    private String mDepName;
     private String mStoreUserId;
 
 
@@ -113,8 +101,8 @@ public class SchedulePagerFragment extends BaseFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            mStore = getArguments().getString(STORE_PARAM);
-            mDep = getArguments().getString(DEP_PARAM);
+            mStoreName = getArguments().getString(STORE_PARAM);
+            mDepName = getArguments().getString(DEP_PARAM);
             mStoreUserId = getArguments().getString(USER_ID_PARAM);
         }
     }
@@ -129,9 +117,26 @@ public class SchedulePagerFragment extends BaseFragment {
         ButterKnife.inject(this, rootView);
 
         if(ShiftEZ.getInstance().getAccount().getStores().isEmpty()) {
-            showAddStoreDialog();
+            ((MainActivity) getActivity()).showAddStoreDialog();
         } else {
-            getStores();
+            Store store = ShiftEZ.getInstance().getAccount().getStoreByStoreDep(mStoreName, mDepName);
+
+            if (store != null) {
+                ArrayList<Schedule> schedules = store.getSchedules();
+
+                if (schedules.isEmpty()) {
+                    mEmptyText.setVisibility(View.VISIBLE);
+                } else {
+                    mPager.setVisibility(View.VISIBLE);
+
+                    ScheduleAdapter mPagerAdapter = new ScheduleAdapter(getActivity(), schedules);
+                    mPager.setAdapter(mPagerAdapter);
+
+                    mPager.setCurrentItem(mPagerAdapter.getCurrentWeekPosition(), true);
+                }
+            } else {
+                Log.e(TAG, "Store not found in list of stores for account.");
+            }
         }
 
         return rootView;
@@ -173,17 +178,18 @@ public class SchedulePagerFragment extends BaseFragment {
         return false;
     }
 
+    //TODO
     public void refreshSchedules() {
         Future<?> s = getSpiceManager().removeDataFromCache(Schedule.class, Constants.SCHEDULE_KEY_PARAM);
         if (s.isDone()) {
-            getSchedules();
+            //getSchedules();
         }
     }
 
     private void shareStore() {
         HashMap<String, String> storeParams = new HashMap<>();
-        storeParams.put("store_name", mStore);
-        storeParams.put("dep_name", mDep);
+        storeParams.put("store_name", mStoreName);
+        storeParams.put("dep_name", mDepName);
         storeParams.put("store_user_id", mStoreUserId);
 
         ShareStoreRetrofitRequest shareStoreRequest =
@@ -217,50 +223,6 @@ public class SchedulePagerFragment extends BaseFragment {
                 // DO NOTHING
             }
         }).show();
-    }
-
-    /**
-     * Get the schedules from the server
-     */
-    private void getSchedules() {
-        ScheduleRetrofitRequest scheduleRequest =
-                new ScheduleRetrofitRequest(ShiftEZ.getInstance().getAccount().getEmail(), false);
-        getSpiceManager().execute(scheduleRequest,
-                Constants.SCHEDULE_KEY_PARAM, 5 * DurationInMillis.ONE_SECOND,
-                new ListScheduleRequestListener());
-
-        // TODO ENSURE THIS IS INVALIDATED ON UPLOADS OR NEW CONTENT
-        // USE CACHED IF NO NETWORK
-        // https://groups.google.com/forum/#!topic/robospice/C1bZGKQeLLc
-        //getFromCacheAndLoadFromNetworkIfExpired
-    }
-
-    /**
-     * Get the stores with schedules from the server
-     */
-    private void getStores() {
-        AccountStoresRetrofitRequest storeRequest =
-                new AccountStoresRetrofitRequest(ShiftEZ.getInstance().getAccount().getEmail());
-        getSpiceManager().execute(storeRequest,
-                Constants.SCHEDULE_KEY_PARAM, 5 * DurationInMillis.ONE_SECOND,
-                new StoresRequestListener());
-
-        // TODO ENSURE THIS IS INVALIDATED ON UPLOADS OR NEW CONTENT
-        // USE CACHED IF NO NETWORK
-        // https://groups.google.com/forum/#!topic/robospice/C1bZGKQeLLc
-        //getFromCacheAndLoadFromNetworkIfExpired
-    }
-
-
-    public ArrayList<Schedule> getScheduleByStoreDep(ArrayList<Schedule> schedules,
-                                                     String storeName, String depName) {
-        ArrayList<Schedule> stores = new ArrayList<>();
-        for (Schedule s : schedules) {
-            if (s.getStoreName().equals(storeName) && s.getDepName().equals(depName)) {
-                stores.add(s);
-            }
-        }
-        return stores;
     }
 
     /**
@@ -373,124 +335,6 @@ public class SchedulePagerFragment extends BaseFragment {
         getActivity().sendBroadcast(mediaScanIntent);
     }
 
-    private void showAddStoreDialog() {
-        final EditText input = new EditText(getActivity());
-
-        new AlertDialog.Builder(getActivity())
-                .setTitle("Add Store")
-                .setMessage("Enter New Store Name:")
-                .setView(input)
-                .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        Editable storeName = input.getText();
-                        showAddDepDialog(storeName.toString());
-                    }
-                }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {
-                // DO NOTHING
-            }
-        }).show();
-    }
-
-    private void showAddDepDialog(final String storeName) {
-        final EditText input = new EditText(getActivity());
-
-        new AlertDialog.Builder(getActivity())
-                .setTitle("Add Department")
-                .setMessage("Enter New Department Name:")
-                .setView(input)
-                .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        Editable depName = input.getText();
-                        uploadNewStore(storeName, depName.toString());
-                    }
-                }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {
-                // DO NOTHING
-            }
-        }).show();
-    }
-
-    private void uploadNewStore(String storeName, String depName) {
-        HashMap<String, String> storeParams = new HashMap<>();
-        storeParams.put("store_name", storeName);
-        storeParams.put("dep_name", depName);
-        storeParams.put("user_id", ShiftEZ.getInstance().getAccount().getEmail());
-
-        Log.d(TAG, "Uploading new store with params: " + storeParams.toString());
-
-        // Upload store and info
-        NewStoreRetrofitRequest storeUploadRequest = new NewStoreRetrofitRequest(storeParams);
-        getSpiceManager().execute(storeUploadRequest, Constants.UPLOAD_NEW_STORE,
-                DurationInMillis.ONE_SECOND, new NewStoreUploadListener());
-    }
-
-    /**
-     * Called on completion of the api request to get the Schedules.
-     * Deals with api call failure -
-     * On Success - use the schedules.
-     */
-    public final class ListScheduleRequestListener implements RequestListener<Schedule.Response> {
-        @Override
-        public void onRequestFailure(SpiceException spiceException) {
-            //TODO SHOW CAUSE
-            // TODO Null exception
-            Log.e(TAG, spiceException.getCause().toString());
-
-            Toast.makeText(getActivity(), "Failed to Retrieve Schedules", Toast.LENGTH_SHORT)
-                    .show();
-            mProgress.setVisibility(View.GONE);
-            mFailureImageView.setVisibility(View.VISIBLE);
-        }
-
-        /**
-         * Display the schedules in the pager, hiding the progress bar and showing the fab
-         *
-         * @param result Schedules in the Datastore
-         */
-        @Override
-        public void onRequestSuccess(final Schedule.Response result) {
-            Log.d(TAG, result.toString());
-
-            mProgress.setVisibility(View.GONE);
-            mFab.setVisibility(View.VISIBLE);
-
-            ArrayList<Schedule> schedules = getScheduleByStoreDep(result.getSchedules(), mStore, mDep);
-
-            if (schedules.isEmpty()) {
-                mEmptyText.setVisibility(View.VISIBLE);
-            } else {
-                mPager.setVisibility(View.VISIBLE);
-
-                ScheduleAdapter mPagerAdapter = new ScheduleAdapter(getActivity(), schedules);
-                mPager.setAdapter(mPagerAdapter);
-
-                mPager.setCurrentItem(mPagerAdapter.getCurrentWeekPosition(), true);
-            }
-        }
-    }
-
-    private class NewStoreUploadListener implements RequestListener<PostResult> {
-
-        @Override
-        public void onRequestFailure(SpiceException spiceException) {
-            Log.e(TAG, spiceException.getMessage());
-
-            //TODO MOVE TO UTILS
-            if (spiceException instanceof NoNetworkException) {
-                Toast.makeText(getActivity(), R.string.no_network, Toast.LENGTH_LONG).show();
-            }
-        }
-
-        @Override
-        public void onRequestSuccess(PostResult postResult) {
-            Log.d(TAG, postResult.toString());
-            // TODO HANDLE DIFFERENT POST RESULTS
-
-            getSchedules();
-        }
-    }
-
     private class ShareStoreRequestListener implements RequestListener<ShareStore> {
         @Override
         public void onRequestFailure(SpiceException spiceException) {
@@ -523,35 +367,7 @@ public class SchedulePagerFragment extends BaseFragment {
 
         @Override
         public void onRequestSuccess(PostResult postResult) {
-            getStores();
-        }
-    }
-
-    private class StoresRequestListener implements RequestListener<Store.Response> {
-        @Override
-        public void onRequestFailure(SpiceException spiceException) {
-            Log.e(TAG, spiceException.getMessage());
-        }
-
-        @Override
-        public void onRequestSuccess(Store.Response response) {
-            ((MainActivity) getActivity()).updateStores(response.getStores());
-
-            mProgress.setVisibility(View.GONE);
-            mFab.setVisibility(View.VISIBLE);
-
-            ArrayList<Schedule> schedules = getScheduleByStoreDep(response.getAllSchedules(), mStore, mDep);
-
-            if (schedules.isEmpty()) {
-                mEmptyText.setVisibility(View.VISIBLE);
-            } else {
-                mPager.setVisibility(View.VISIBLE);
-
-                ScheduleAdapter mPagerAdapter = new ScheduleAdapter(getActivity(), schedules);
-                mPager.setAdapter(mPagerAdapter);
-
-                mPager.setCurrentItem(mPagerAdapter.getCurrentWeekPosition(), true);
-            }
+            ((MainActivity) getActivity()).getStores();
         }
     }
 }

@@ -84,6 +84,15 @@ public class Account {
                 '}';
     }
 
+    public Store getStoreByStoreDep(String storeName, String depName) {
+        for (Store store : mStores) {
+            if (store.getStoreName().equals(storeName) && store.getDepName().equals(depName)) {
+                return store;
+            }
+        }
+        return null;
+    }
+
     public static class Response {
         @Expose
         private Account account;

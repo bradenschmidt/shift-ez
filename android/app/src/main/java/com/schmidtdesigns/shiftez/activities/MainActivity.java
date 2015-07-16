@@ -1,15 +1,24 @@
 package com.schmidtdesigns.shiftez.activities;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v7.app.AlertDialog;
+import android.support.v7.internal.view.ContextThemeWrapper;
 import android.support.v7.widget.Toolbar;
+import android.text.Editable;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.EditText;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
+import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import com.mikepenz.materialdrawer.Drawer;
 import com.mikepenz.materialdrawer.DrawerBuilder;
@@ -22,13 +31,22 @@ import com.mikepenz.materialdrawer.model.SecondaryDrawerItem;
 import com.mikepenz.materialdrawer.model.SectionDrawerItem;
 import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem;
 import com.mikepenz.materialdrawer.model.interfaces.IProfile;
+import com.octo.android.robospice.exception.NoNetworkException;
+import com.octo.android.robospice.persistence.DurationInMillis;
+import com.octo.android.robospice.persistence.exception.SpiceException;
+import com.octo.android.robospice.request.listener.RequestListener;
+import com.schmidtdesigns.shiftez.Constants;
 import com.schmidtdesigns.shiftez.R;
 import com.schmidtdesigns.shiftez.ShiftEZ;
 import com.schmidtdesigns.shiftez.fragments.SchedulePagerFragment;
 import com.schmidtdesigns.shiftez.models.Account;
+import com.schmidtdesigns.shiftez.models.PostResult;
 import com.schmidtdesigns.shiftez.models.Store;
+import com.schmidtdesigns.shiftez.network.AccountStoresRetrofitRequest;
+import com.schmidtdesigns.shiftez.network.NewStoreRetrofitRequest;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
@@ -38,6 +56,12 @@ public class MainActivity extends GPlusBaseActivity {
     private final String TAG = this.getClass().getSimpleName();
     @InjectView(R.id.toolbar)
     Toolbar mToolbar;
+    @InjectView(R.id.progress)
+    ProgressBar mProgress;
+    @InjectView(R.id.failureImage)
+    ImageView mFailureImage;
+    @InjectView(R.id.fragment_container)
+    FrameLayout mFragmentContainer;
     private Drawer mDrawer;
 
     @Override
@@ -45,7 +69,6 @@ public class MainActivity extends GPlusBaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.inject(this);
-
 
         if (mToolbar != null) {
             setSupportActionBar(mToolbar);
@@ -58,6 +81,8 @@ public class MainActivity extends GPlusBaseActivity {
         }
 
         setupDrawer();
+
+        getStores();
     }
 
     private void setupDrawer() {
@@ -91,6 +116,10 @@ public class MainActivity extends GPlusBaseActivity {
                         if (drawerItem instanceof PrimaryDrawerItem) {
                             Store store = (Store) drawerItem.getTag();
                             displayView(SchedulePagerFragment.newInstance(store));
+                        } else if (drawerItem instanceof SecondaryDrawerItem) {
+                            if (getString(((SecondaryDrawerItem) drawerItem).getNameRes()).equals(getString(R.string.drawer_item_add_store))) {
+                                showAddStoreDialog();
+                            }
                         }
                         mDrawer.closeDrawer();
                         return true;
@@ -99,9 +128,27 @@ public class MainActivity extends GPlusBaseActivity {
                 .build();
 
         updateDrawerStores();
+    }
 
-        //TODO Set selection based on default store
-        mDrawer.setSelection(1);
+    /**
+     * Get the stores with schedules from the server
+     */
+    public void getStores() {
+        AccountStoresRetrofitRequest storeRequest =
+                new AccountStoresRetrofitRequest(ShiftEZ.getInstance().getAccount().getEmail());
+        //getSpiceManager().execute(storeRequest,
+        //        Constants.SCHEDULE_KEY_PARAM, 5 * DurationInMillis.ONE_SECOND,
+        //        new StoresRequestListener());
+
+        // TODO ENSURE THIS IS INVALIDATED ON UPLOADS OR NEW CONTENT
+        // USE CACHED IF NO NETWORK
+        // https://groups.google.com/forum/#!topic/robospice/C1bZGKQeLLc
+        //getFromCacheAndLoadFromNetworkIfExpired
+
+        getSpiceManager().getFromCacheAndLoadFromNetworkIfExpired(storeRequest,
+                Constants.SCHEDULE_KEY_PARAM,
+                DurationInMillis.ONE_SECOND,
+                new StoresRequestListener());
     }
 
     private void updateDrawerStores() {
@@ -116,10 +163,10 @@ public class MainActivity extends GPlusBaseActivity {
             items.add(new PrimaryDrawerItem().withName("No Stores"));
         }
         items.add(new DividerDrawerItem());
+        items.add(new SecondaryDrawerItem().withName(R.string.drawer_item_add_store));
         items.add(new SecondaryDrawerItem().withName(R.string.drawer_item_settings));
 
         mDrawer.setItems(items);
-
     }
 
     @Override
@@ -176,9 +223,102 @@ public class MainActivity extends GPlusBaseActivity {
         transaction.commit();
     }
 
-    public void updateStores(ArrayList<Store> stores) {
+    public void updateAccountStores(ArrayList<Store> stores) {
         ShiftEZ.getInstance().getAccount().setStores(stores);
         updateDrawerStores();
     }
 
+    public void showAddStoreDialog() {
+        final EditText input = new EditText(getApplicationContext());
+
+        new AlertDialog.Builder(new ContextThemeWrapper(this, R.style.AlertDialog_AppCompat))
+                .setTitle("Add Store")
+                .setMessage("Enter New Store Name:")
+                .setView(input)
+                .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        Editable storeName = input.getText();
+                        showAddDepDialog(storeName.toString());
+                    }
+                }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                // DO NOTHING
+            }
+        }).show();
+    }
+
+    private void showAddDepDialog(final String storeName) {
+        final EditText input = new EditText(getApplicationContext());
+
+        new AlertDialog.Builder(new ContextThemeWrapper(this, R.style.AlertDialog_AppCompat))
+                .setTitle("Add Department")
+                .setMessage("Enter New Department Name:")
+                .setView(input)
+                .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        Editable depName = input.getText();
+                        uploadNewStore(storeName, depName.toString());
+                    }
+                }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                // DO NOTHING
+            }
+        }).show();
+    }
+
+    private void uploadNewStore(String storeName, String depName) {
+        HashMap<String, String> storeParams = new HashMap<>();
+        storeParams.put("store_name", storeName);
+        storeParams.put("dep_name", depName);
+        storeParams.put("user_id", ShiftEZ.getInstance().getAccount().getEmail());
+
+        Log.d(TAG, "Uploading new store with params: " + storeParams.toString());
+
+        // Upload store and info
+        NewStoreRetrofitRequest storeUploadRequest = new NewStoreRetrofitRequest(storeParams);
+        getSpiceManager().execute(storeUploadRequest, Constants.UPLOAD_NEW_STORE,
+                DurationInMillis.ONE_SECOND, new NewStoreUploadListener());
+    }
+
+    private class StoresRequestListener implements RequestListener<Store.Response> {
+        @Override
+        public void onRequestFailure(SpiceException spiceException) {
+            Log.e(TAG, spiceException.getMessage());
+            mProgress.setVisibility(View.GONE);
+            mFailureImage.setVisibility(View.VISIBLE);
+        }
+
+        @Override
+        public void onRequestSuccess(Store.Response response) {
+            Log.d(TAG, response.toString());
+            updateAccountStores(response.getStores());
+
+            mProgress.setVisibility(View.GONE);
+            mFragmentContainer.setVisibility(View.VISIBLE);
+
+            // TODO Default Store
+            mDrawer.setSelection(1);
+        }
+    }
+
+    private class NewStoreUploadListener implements RequestListener<PostResult> {
+
+        @Override
+        public void onRequestFailure(SpiceException spiceException) {
+            Log.e(TAG, spiceException.getMessage());
+
+            //TODO MOVE TO UTILS
+            if (spiceException instanceof NoNetworkException) {
+                Toast.makeText(getApplicationContext(), R.string.no_network, Toast.LENGTH_LONG).show();
+            }
+        }
+
+        @Override
+        public void onRequestSuccess(PostResult postResult) {
+            Log.d(TAG, postResult.toString());
+            // TODO HANDLE DIFFERENT POST RESULTS
+
+            getStores();
+        }
+    }
 }
