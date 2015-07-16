@@ -48,7 +48,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
-import java.util.concurrent.Future;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
@@ -180,10 +179,8 @@ public class SchedulePagerFragment extends BaseFragment {
 
     //TODO
     public void refreshSchedules() {
-        Future<?> s = getSpiceManager().removeDataFromCache(Schedule.class, Constants.SCHEDULE_KEY_PARAM);
-        if (s.isDone()) {
-            //getSchedules();
-        }
+        getSpiceManager().removeDataFromCache(Schedule.class, Constants.SCHEDULE_KEY_PARAM);
+        ((MainActivity) getActivity()).getStores();
     }
 
     private void shareStore() {
