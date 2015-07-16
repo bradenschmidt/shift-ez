@@ -23,10 +23,19 @@
     </style>
 
     <style name="ScheduleTheme" parent="Theme.AppCompat.Light.NoActionBar">
-        <item name="android:textColorPrimary">@color/primary</item>
-        <item name="colorPrimary">@android:color/transparent</item>
+        <item name="android:textColorPrimary">@color/primary_text</item>
+        <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryDark">@color/primary_dark</item>
         <item name="windowActionBarOverlay">true</item>
+    </style>
+
+    <style name="AppCompatAlertDialogStyle" parent="Theme.AppCompat.Light.Dialog.Alert">
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="colorPrimary">@color/primary</item>
+        <item name="android:textColor">@color/primary_text</item>
+        <item name="android:textColorPrimary">@color/primary_text</item>
+        <item name="colorPrimaryDark">@color/primary_dark</item>
+        <item name="android:background">@android:color/background_light</item>
     </style>
 
 </resources>

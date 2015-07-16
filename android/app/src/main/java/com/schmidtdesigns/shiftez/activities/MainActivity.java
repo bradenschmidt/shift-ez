@@ -229,9 +229,9 @@ public class MainActivity extends GPlusBaseActivity {
     }
 
     public void showAddStoreDialog() {
-        final EditText input = new EditText(getApplicationContext());
+        final EditText input = new EditText(new ContextThemeWrapper(this, R.style.AppCompatAlertDialogStyle));
 
-        new AlertDialog.Builder(new ContextThemeWrapper(this, R.style.AlertDialog_AppCompat))
+        new AlertDialog.Builder(new ContextThemeWrapper(this, R.style.AppCompatAlertDialogStyle))
                 .setTitle("Add Store")
                 .setMessage("Enter New Store Name:")
                 .setView(input)
@@ -248,7 +248,7 @@ public class MainActivity extends GPlusBaseActivity {
     }
 
     private void showAddDepDialog(final String storeName) {
-        final EditText input = new EditText(getApplicationContext());
+        final EditText input = new EditText(new ContextThemeWrapper(this, R.style.AppCompatAlertDialogStyle));
 
         new AlertDialog.Builder(new ContextThemeWrapper(this, R.style.AlertDialog_AppCompat))
                 .setTitle("Add Department")
@@ -317,6 +317,8 @@ public class MainActivity extends GPlusBaseActivity {
         public void onRequestSuccess(PostResult postResult) {
             Log.d(TAG, postResult.toString());
             // TODO HANDLE DIFFERENT POST RESULTS
+
+            Toast.makeText(getApplicationContext(), "Store Added", Toast.LENGTH_SHORT).show();
 
             getStores();
         }
