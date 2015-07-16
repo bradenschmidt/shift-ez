@@ -1,5 +1,6 @@
 package com.schmidtdesigns.shiftez.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -309,6 +310,8 @@ public class UploadActivity extends BaseActivity {
             Log.i(TAG, "Image upload successful: " + postResult.toString());
             Toast.makeText(getApplicationContext(), postResult.niceToString(), Toast.LENGTH_LONG).show();
             finish();
+            Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+            startActivity(intent);
         }
     }
 }
