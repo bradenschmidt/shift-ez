@@ -182,39 +182,9 @@ def uploadImage():
     return jsonify(code=code, desc=desc)
 
 
-@app.route('/api/stores/add', methods=['POST'])
-def addStore():
-    """Add a new store department."""
-    user_id = request.args.get('user_id')
-    store_name = request.args.get('store_name')
-    dep_name = request.args.get('dep_name')
-
-    store = StoreDepartment.get(user_id, store_name, dep_name)
-
-    if(store):
-        # Setup results
-        code = 1
-        desc = 'Store Already Exists.'
-
-        return jsonify(code=code, desc=desc)
-    else:
-        store = StoreDepartment(user_id=user_id,
-                                store_name=store_name,
-                                dep_name=dep_name,
-                                schedules=[])
-        store.put()
-
-        # Setup results
-        code = 0
-        desc = 'Store Added Successful'
-
-    return jsonify(code=code, desc=desc)
-
-
 @app.route('/api/accounts/<user_id>/stores/add', methods=['POST'])
 def addStoreToAccount(user_id):
-    """Add an existing store to an account."""
-    store_user_id = request.args.get('store_user_id')
+    """Create a new store and add to an account."""
     store_name = request.args.get('store_name')
     dep_name = request.args.get('dep_name')
 
@@ -226,16 +196,15 @@ def addStoreToAccount(user_id):
 
         return jsonify(code=code, desc=desc)
 
-    store = StoreDepartment.get(store_user_id, store_name, dep_name)
-    if not store:
-        # Setup store not found error
-        code = Errors.store_not_found
-        desc = 'Add Store to Account Failed. Store not found.'
-
-        return jsonify(code=code, desc=desc)
+    store = StoreDepartment.get(user_id, store_name, dep_name)
+    if(not store):
+        store = StoreDepartment(user_id=user_id,
+                                store_name=store_name,
+                                dep_name=dep_name,
+                                schedules=[])
+        store.put()
 
     exists = account.isStoreInAccount(store)
-
     if(not exists):
         account.storeDeps.append(store.key)
         account.put()

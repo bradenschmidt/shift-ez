@@ -4,3 +4,4 @@ class Errors():
     key_too_old = 202
     store_not_found = 300
     store_in_account = 101
+    store_already_exists = 102
