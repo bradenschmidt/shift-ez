@@ -151,6 +151,11 @@ public class MainActivity extends GPlusBaseActivity {
                 new StoresRequestListener());
     }
 
+    public void updateAccountStores(ArrayList<Store> stores) {
+        ShiftEZ.getInstance().getAccount().setStores(stores);
+        updateDrawerStores();
+    }
+
     private void updateDrawerStores() {
         ArrayList<IDrawerItem> items = new ArrayList<>();
         items.add(new SectionDrawerItem().withName(R.string.drawer_header_stores));
@@ -223,11 +228,6 @@ public class MainActivity extends GPlusBaseActivity {
         transaction.commit();
     }
 
-    public void updateAccountStores(ArrayList<Store> stores) {
-        ShiftEZ.getInstance().getAccount().setStores(stores);
-        updateDrawerStores();
-    }
-
     public void showAddStoreDialog() {
         final EditText input = new EditText(getApplicationContext());
 
@@ -270,12 +270,12 @@ public class MainActivity extends GPlusBaseActivity {
         HashMap<String, String> storeParams = new HashMap<>();
         storeParams.put("store_name", storeName);
         storeParams.put("dep_name", depName);
-        storeParams.put("user_id", ShiftEZ.getInstance().getAccount().getEmail());
 
         Log.d(TAG, "Uploading new store with params: " + storeParams.toString());
 
         // Upload store and info
-        NewStoreRetrofitRequest storeUploadRequest = new NewStoreRetrofitRequest(storeParams);
+        NewStoreRetrofitRequest storeUploadRequest = new NewStoreRetrofitRequest(
+                ShiftEZ.getInstance().getAccount().getEmail(), storeParams);
         getSpiceManager().execute(storeUploadRequest, Constants.UPLOAD_NEW_STORE,
                 DurationInMillis.ONE_SECOND, new NewStoreUploadListener());
     }

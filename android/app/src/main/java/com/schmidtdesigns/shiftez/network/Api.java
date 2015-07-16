@@ -63,8 +63,9 @@ public interface Api {
 
 
     ////// STORES ///////
-    @POST("/api/stores/add")
-    PostResult addNewStore(@QueryMap Map<String, String> storeParams);
+    @POST("/api/accounts/{userId}/stores/add")
+    PostResult addNewStore(@Path("userId") String userId,
+                           @QueryMap Map<String, String> storeParams);
 
     @GET("/api/accounts/{userId}/stores/all")
     Store.Response getAccountStores(@Path("userId") String userId);

@@ -10,19 +10,20 @@ import java.util.Map;
  */
 public class NewStoreRetrofitRequest extends RetrofitSpiceRequest<PostResult, Api> {
 
-    private String TAG = "NewStoreRetrofitRequest";
+    private String TAG = this.getClass().getSimpleName();
 
+    private String mUserId;
     private Map<String, String> mStoreParams;
 
-    public NewStoreRetrofitRequest(Map<String, String> storeParams) {
+    public NewStoreRetrofitRequest(String userId, Map<String, String> storeParams) {
         super(PostResult.class, Api.class);
+        this.mUserId = userId;
         this.mStoreParams = storeParams;
-
     }
 
     @Override
     public PostResult loadDataFromNetwork() throws Exception {
 
-        return getService().addNewStore(mStoreParams);
+        return getService().addNewStore(mUserId, mStoreParams);
     }
 }
