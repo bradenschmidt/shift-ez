@@ -38,4 +38,7 @@
     <string name="share_using">Share Using</string>
     <string name="drawer_item_add_store">Add Store</string>
     <string name="action_remove_store">Remove Store</string>
+    <string name="button_profile_revoke">Revoke</string>
+    <string name="button_profile_logout">Logout</string>
+    <string name="activity_profile_title">Profile</string>
 </resources>

@@ -112,12 +112,14 @@ public class MainActivity extends GPlusBaseActivity {
                         new ProfileDrawerItem()
                                 .withName(account.getName())
                                 .withEmail(account.getEmail())
-                        //.withIcon(getResources().getDrawable(R.drawable.profile))
+                        .withIcon(getResources().getDrawable(R.drawable.ic_action_account_circle))
                 )
+                .withSelectionListEnabled(false)
                 .withOnAccountHeaderListener(new AccountHeader.OnAccountHeaderListener() {
                     @Override
                     public boolean onProfileChanged(View view, IProfile profile, boolean currentProfile) {
-                        return false;
+                        startActivity(new Intent(getApplicationContext(), ProfileActivity.class));
+                        return true;
                     }
                 })
                 .build();
@@ -217,12 +219,6 @@ public class MainActivity extends GPlusBaseActivity {
 
         switch (id) {
             case R.id.action_settings:
-                return true;
-            case R.id.action_logout:
-                logout();
-                return true;
-            case R.id.action_revoke:
-                revoke();
                 return true;
             default:
                 Log.e(TAG, "Invalid menu action id received: " + id);
