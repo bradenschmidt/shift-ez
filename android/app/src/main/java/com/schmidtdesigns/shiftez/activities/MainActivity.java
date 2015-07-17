@@ -54,6 +54,7 @@ import butterknife.InjectView;
 public class MainActivity extends GPlusBaseActivity {
 
     private final String TAG = this.getClass().getSimpleName();
+
     @InjectView(R.id.toolbar)
     Toolbar mToolbar;
     @InjectView(R.id.progress)
@@ -62,6 +63,7 @@ public class MainActivity extends GPlusBaseActivity {
     ImageView mFailureImage;
     @InjectView(R.id.fragment_container)
     FrameLayout mFragmentContainer;
+
     private Drawer mDrawer;
     private String mDepName;
     private String mStoreName;
@@ -105,7 +107,7 @@ public class MainActivity extends GPlusBaseActivity {
         // Create the AccountHeader
         AccountHeader headerResult = new AccountHeaderBuilder()
                 .withActivity(this)
-                        //.withHeaderBackground(R.drawable.header)
+                .withHeaderBackground(R.drawable.header_wallpaper)
                 .addProfiles(
                         new ProfileDrawerItem()
                                 .withName(account.getName())
@@ -170,7 +172,7 @@ public class MainActivity extends GPlusBaseActivity {
         if (!stores.isEmpty()) {
             int i = 0;
             for (Store s : stores) {
-                items.add(new PrimaryDrawerItem().withName(s.getStoreName()).withTag(s).withIdentifier(i));
+                items.add(new PrimaryDrawerItem().withName(s.getStoreName()).withTag(s).withIdentifier(i).withIcon(R.drawable.ic_action_business));
                 i++;
                 if (s.getStoreName().equals(mStoreName) && s.getDepName().equals(mDepName)) {
                     mDrawerPos = i;
@@ -180,8 +182,9 @@ public class MainActivity extends GPlusBaseActivity {
             items.add(new PrimaryDrawerItem().withName("No Stores"));
         }
         items.add(new DividerDrawerItem());
-        items.add(new SecondaryDrawerItem().withName(R.string.drawer_item_add_store));
-        items.add(new SecondaryDrawerItem().withName(R.string.drawer_item_settings));
+        items.add(new SecondaryDrawerItem().withName(R.string.drawer_item_add_store).withIcon(R.drawable.ic_action_add_box));
+        items.add(new DividerDrawerItem());
+        items.add(new SecondaryDrawerItem().withName(R.string.drawer_item_settings).withIcon(R.drawable.ic_action_settings));
 
         mDrawer.setItems(items);
         mDrawer.setSelection(mDrawerPos);
