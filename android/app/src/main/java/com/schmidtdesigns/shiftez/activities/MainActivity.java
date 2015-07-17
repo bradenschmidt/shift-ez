@@ -63,6 +63,9 @@ public class MainActivity extends GPlusBaseActivity {
     @InjectView(R.id.fragment_container)
     FrameLayout mFragmentContainer;
     private Drawer mDrawer;
+    private String mDepName;
+    private String mStoreName;
+    private int mDrawerPos = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -165,8 +168,13 @@ public class MainActivity extends GPlusBaseActivity {
         items.add(new SectionDrawerItem().withName(R.string.drawer_header_stores));
         ArrayList<Store> stores = ShiftEZ.getInstance().getAccount().getStores();
         if (!stores.isEmpty()) {
+            int i = 0;
             for (Store s : stores) {
-                items.add(new PrimaryDrawerItem().withName(s.getStoreName()).withTag(s));
+                items.add(new PrimaryDrawerItem().withName(s.getStoreName()).withTag(s).withIdentifier(i));
+                i++;
+                if (s.getStoreName().equals(mStoreName) && s.getDepName().equals(mDepName)) {
+                    mDrawerPos = i;
+                }
             }
         } else {
             items.add(new PrimaryDrawerItem().withName("No Stores"));
@@ -176,6 +184,7 @@ public class MainActivity extends GPlusBaseActivity {
         items.add(new SecondaryDrawerItem().withName(R.string.drawer_item_settings));
 
         mDrawer.setItems(items);
+        mDrawer.setSelection(mDrawerPos);
     }
 
     @Override
@@ -275,6 +284,9 @@ public class MainActivity extends GPlusBaseActivity {
         storeParams.put("store_name", storeName);
         storeParams.put("dep_name", depName);
 
+        mStoreName = storeName;
+        mDepName = depName;
+
         Log.d(TAG, "Uploading new store with params: " + storeParams.toString());
 
         // Upload store and info
@@ -301,7 +313,7 @@ public class MainActivity extends GPlusBaseActivity {
             mFragmentContainer.setVisibility(View.VISIBLE);
 
             // TODO Default Store
-            mDrawer.setSelection(1);
+            mDrawer.setSelection(mDrawerPos);
         }
     }
 
@@ -327,6 +339,7 @@ public class MainActivity extends GPlusBaseActivity {
             getStores();
 
             //TODO set drawer selection to new store.
+
         }
     }
 }
