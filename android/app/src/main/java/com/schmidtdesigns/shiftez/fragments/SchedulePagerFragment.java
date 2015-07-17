@@ -40,6 +40,7 @@ import com.schmidtdesigns.shiftez.models.Schedule;
 import com.schmidtdesigns.shiftez.models.ShareStore;
 import com.schmidtdesigns.shiftez.models.Store;
 import com.schmidtdesigns.shiftez.network.JoinStoreRetrofitRequest;
+import com.schmidtdesigns.shiftez.network.RemoveStoreRetrofitRequest;
 import com.schmidtdesigns.shiftez.network.ShareStoreRetrofitRequest;
 
 import java.io.File;
@@ -171,11 +172,28 @@ public class SchedulePagerFragment extends BaseFragment {
             case R.id.action_join_store:
                 joinStore();
                 return true;
+            case R.id.action_remove_store:
+                removeStore();
+                return true;
             default:
                 break;
         }
 
         return false;
+    }
+
+    private void removeStore() {
+        HashMap<String, String> storeParams = new HashMap<>();
+        storeParams.put("store_name", mStoreName);
+        storeParams.put("dep_name", mDepName);
+        storeParams.put("store_user_id", mStoreUserId);
+
+        RemoveStoreRetrofitRequest removeStoreRequest =
+                new RemoveStoreRetrofitRequest(ShiftEZ.getInstance().getAccount().getEmail(),
+                        storeParams);
+        getSpiceManager().execute(removeStoreRequest,
+                Constants.REMOVE_KEY_PARAM, DurationInMillis.ONE_SECOND,
+                new RemoveStoreRequestListener());
     }
 
     private void shareStore() {
@@ -359,7 +377,23 @@ public class SchedulePagerFragment extends BaseFragment {
 
         @Override
         public void onRequestSuccess(PostResult postResult) {
-            ((MainActivity) getActivity()).getStores();
+            Log.d(TAG, postResult.toString());
+            Toast.makeText(getActivity(), "Store Joined", Toast.LENGTH_SHORT).show();
+            ((MainActivity) getActivity()).refreshStores();
+        }
+    }
+
+    private class RemoveStoreRequestListener implements RequestListener<PostResult> {
+        @Override
+        public void onRequestFailure(SpiceException spiceException) {
+            Log.e(TAG, spiceException.getMessage());
+        }
+
+        @Override
+        public void onRequestSuccess(PostResult postResult) {
+            Log.d(TAG, postResult.toString());
+            Toast.makeText(getActivity(), "Store Removed", Toast.LENGTH_SHORT).show();
+            ((MainActivity) getActivity()).refreshStores();
         }
     }
 }

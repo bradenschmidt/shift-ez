@@ -37,4 +37,5 @@
     <string name="action_join_store">Join Store</string>
     <string name="share_using">Share Using</string>
     <string name="drawer_item_add_store">Add Store</string>
+    <string name="action_remove_store">Remove Store</string>
 </resources>

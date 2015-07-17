@@ -10,6 +10,7 @@ import com.schmidtdesigns.shiftez.models.Store;
 
 import java.util.Map;
 
+import retrofit.http.DELETE;
 import retrofit.http.EncodedPath;
 import retrofit.http.GET;
 import retrofit.http.Multipart;
@@ -34,6 +35,7 @@ public interface Api {
     @POST("/api/accounts/add")
     PostAccount addAccount(@QueryMap Map<String, String> accountParams);
 
+    // Get account info, includes stores with schedules
     @GET("/api/accounts/{user_id}")
     Account.Response getAccount(@Path("user_id") String user_id);
 
@@ -63,19 +65,27 @@ public interface Api {
 
 
     ////// STORES ///////
+    // Add store to the account
     @POST("/api/accounts/{userId}/stores/add")
     PostResult addNewStore(@Path("userId") String userId,
                            @QueryMap Map<String, String> storeParams);
 
+    // Get all the stores of the user
     @GET("/api/accounts/{userId}/stores/all")
     Store.Response getAccountStores(@Path("userId") String userId);
 
+    // Share store to return a key for sending to other users
     @POST("/api/accounts/{userId}/stores/share")
     ShareStore shareStore(@Path("userId") String userId,
                           @QueryMap Map<String, String> storeParams);
 
+    // Join store with given key
     @POST("/api/accounts/{userId}/stores/join")
     PostResult joinStore(@Path("userId") String userId,
                          @Query("key") String key);
 
+    // Remove store from account
+    @DELETE("/api/accounts/{userId}/stores/remove")
+    PostResult removeStore(@Path("userId") String mUserId,
+                           @QueryMap Map<String, String> mStoreParams);
 }

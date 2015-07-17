@@ -18,5 +18,6 @@ public class Constants {
     public static final String JOIN_KEY_PARAM = "join_store";
     public static final String STORE_KEY = "stores";
     public static final String REFRESH_STORES = "refresh_schedules";
+    public static final String REMOVE_KEY_PARAM = "remove_store";
     public static String ACCOUNT_PARAM = "account";
 }
