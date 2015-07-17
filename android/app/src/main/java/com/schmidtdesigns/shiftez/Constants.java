@@ -11,11 +11,12 @@ public class Constants {
 
     // The activity code used when launching camera intent
     public static final int REQUEST_TAKE_PHOTO = 1;
+
     public static final String UPLOAD_NEW_STORE = "new_store";
-    public static final String STORES = "stores";
     public static final String ADD_ACCOUNT_PARAM = "account";
     public static final String SHARE_KEY_PARAM = "shared_store";
     public static final String JOIN_KEY_PARAM = "join_store";
+    public static final String STORE_KEY = "stores";
+    public static final String REFRESH_STORES = "refresh_schedules";
     public static String ACCOUNT_PARAM = "account";
-    public static String SCHEDULE_KEY_PARAM = "schedules";
 }

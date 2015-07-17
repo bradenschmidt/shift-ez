@@ -13,6 +13,7 @@ import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.internal.view.ContextThemeWrapper;
 import android.text.Editable;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -159,7 +160,7 @@ public class SchedulePagerFragment extends BaseFragment {
         switch (item.getItemId()) {
             case R.id.action_refresh:
                 // TODO Not working
-                refreshSchedules();
+                ((MainActivity) getActivity()).refreshStores();
                 return true;
             case R.id.action_settings:
                 // TODO REMOVE
@@ -175,12 +176,6 @@ public class SchedulePagerFragment extends BaseFragment {
         }
 
         return false;
-    }
-
-    //TODO
-    public void refreshSchedules() {
-        getSpiceManager().removeDataFromCache(Schedule.class, Constants.SCHEDULE_KEY_PARAM);
-        ((MainActivity) getActivity()).getStores();
     }
 
     private void shareStore() {
@@ -199,9 +194,9 @@ public class SchedulePagerFragment extends BaseFragment {
 
 
     private void joinStore() {
-        final EditText input = new EditText(getActivity());
+        final EditText input = new EditText(new ContextThemeWrapper(getActivity(), R.style.AppCompatAlertDialogStyle));
 
-        new AlertDialog.Builder(getActivity())
+        new AlertDialog.Builder(new ContextThemeWrapper(getActivity(), R.style.AppCompatAlertDialogStyle))
                 .setTitle("Join Store")
                 .setMessage("Enter Shared Store Key:")
                 .setView(input)

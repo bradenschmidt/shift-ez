@@ -311,6 +311,7 @@ public class UploadActivity extends BaseActivity {
             Toast.makeText(getApplicationContext(), postResult.niceToString(), Toast.LENGTH_LONG).show();
             finish();
             Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+            intent.putExtra(Constants.REFRESH_STORES, true);
             startActivity(intent);
         }
     }

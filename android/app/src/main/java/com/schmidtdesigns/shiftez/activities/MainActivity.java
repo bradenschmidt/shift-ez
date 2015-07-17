@@ -82,6 +82,18 @@ public class MainActivity extends GPlusBaseActivity {
 
         setupDrawer();
 
+        // Get the refresh schedule boolean from the intent
+        Boolean refreshStores = getIntent().getBooleanExtra(Constants.REFRESH_STORES, false);
+        if (refreshStores) {
+            refreshStores();
+        } else {
+            getStores();
+        }
+    }
+
+    //TODO
+    public void refreshStores() {
+        getSpiceManager().removeDataFromCache(Store.Response.class, Constants.STORE_KEY);
         getStores();
     }
 
@@ -136,18 +148,10 @@ public class MainActivity extends GPlusBaseActivity {
     public void getStores() {
         AccountStoresRetrofitRequest storeRequest =
                 new AccountStoresRetrofitRequest(ShiftEZ.getInstance().getAccount().getEmail());
-        //getSpiceManager().execute(storeRequest,
-        //        Constants.SCHEDULE_KEY_PARAM, 5 * DurationInMillis.ONE_SECOND,
-        //        new StoresRequestListener());
-
-        // TODO ENSURE THIS IS INVALIDATED ON UPLOADS OR NEW CONTENT
-        // USE CACHED IF NO NETWORK
-        // https://groups.google.com/forum/#!topic/robospice/C1bZGKQeLLc
-        //getFromCacheAndLoadFromNetworkIfExpired
 
         getSpiceManager().getFromCacheAndLoadFromNetworkIfExpired(storeRequest,
-                Constants.SCHEDULE_KEY_PARAM,
-                DurationInMillis.ONE_SECOND,
+                Constants.STORE_KEY,
+                5 * DurationInMillis.ONE_MINUTE,
                 new StoresRequestListener());
     }
 
@@ -321,6 +325,8 @@ public class MainActivity extends GPlusBaseActivity {
             Toast.makeText(getApplicationContext(), "Store Added", Toast.LENGTH_SHORT).show();
 
             getStores();
+
+            //TODO set drawer selection to new store.
         }
     }
 }

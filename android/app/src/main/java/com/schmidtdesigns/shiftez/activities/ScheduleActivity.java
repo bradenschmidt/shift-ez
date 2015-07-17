@@ -35,8 +35,8 @@ public class ScheduleActivity extends BaseActivity implements View.OnClickListen
         Toolbar toolbar = (Toolbar) findViewById(R.id.schedule_toolbar);
         setupToolbar(toolbar);
 
-        String schedule = getIntent().getStringExtra(Constants.SCHEDULE_PARAM);
         // Get the schedule from the intent
+        String schedule = getIntent().getStringExtra(Constants.SCHEDULE_PARAM);
         if (schedule == null) {
             Log.e(TAG, "Schedule from intent is null");
         }
