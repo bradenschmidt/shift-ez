@@ -17,7 +17,6 @@ from models.storeDepartment import StoreDepartment
 from models.sharedStoreDepartment import SharedStoreDepartment
 from models.schedule import Schedule
 
-import json  # get list of deps
 import re
 import uuid  # For key generator
 
@@ -496,3 +495,43 @@ def help():
             doc = app.view_functions[rule.endpoint].__doc__
             func_list[rule.rule] = re.sub(r"\s+", " ", doc)
     return jsonify(func_list)
+
+
+# ######## DELETES ###########################################################
+@app.route('/api/accounts/<user_id>/stores/remove', methods=['DELETE'])
+def removeStoreFromAccount(user_id):
+    """Remove a store from an account."""
+    store_user_id = request.args.get('store_user_id')
+    store_name = request.args.get('store_name')
+    dep_name = request.args.get('dep_name')
+
+    account = Account.get(user_id)
+    if(not account):
+        # Setup results
+        code = Errors.account_not_found
+        desc = 'Remove Store From Account Failed. Account does not exist.'
+
+        return jsonify(code=code, desc=desc)
+
+    store = StoreDepartment.get(store_user_id, store_name, dep_name)
+    if(not store):
+        # Setup store not found error
+        code = Errors.store_not_found
+        desc = 'Remove Store Failed: Store Not Found.'
+        return jsonify(code=code, desc=desc)
+
+    exists = account.isStoreInAccount(store)
+    if(exists):
+        account.storeDeps.remove(store.key)
+
+        account.put()
+
+        # Setup results
+        code = 0
+        desc = 'Store Removed from Account Successfully.'
+    else:
+        # Setup results
+        code = Errors.store_in_account
+        desc = 'Store Already Exists in Account.'
+
+    return jsonify(code=code, desc=desc)
