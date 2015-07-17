@@ -41,4 +41,9 @@
     <string name="button_profile_revoke">Revoke</string>
     <string name="button_profile_logout">Logout</string>
     <string name="activity_profile_title">Profile</string>
+    <string name="pref_heading_other">Other</string>
+    <string name="pref_item_about_summary">About</string>
+    <string name="pref_item_about">About</string>
+    <string name="pref_heading_launch">Launch Preferences</string>
+    <string name="activity_settings_title">Settings</string>
 </resources>

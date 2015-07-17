@@ -219,12 +219,17 @@ public class MainActivity extends GPlusBaseActivity {
 
         switch (id) {
             case R.id.action_settings:
+                openSettings();
                 return true;
             default:
                 Log.e(TAG, "Invalid menu action id received: " + id);
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void openSettings() {
+        startActivity(new Intent(this, SettingsActivity.class));
     }
 
     public void displayView(Fragment fragment) {
