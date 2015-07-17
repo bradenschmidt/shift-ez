@@ -6,6 +6,8 @@ import com.google.gson.annotations.SerializedName;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
 public class Store {
 
@@ -40,6 +42,23 @@ public class Store {
 
     public ArrayList<Schedule> getSchedules() {
         return schedules;
+    }
+
+    public ArrayList<Schedule> getSortedSchedules() {
+        ArrayList<Schedule> sortedSchedules = schedules;
+        Collections.sort(sortedSchedules, new Comparator<Schedule>() {
+            public int compare(Schedule schedule1, Schedule schedule2) {
+                return schedule1.getYear().compareTo(schedule2.getYear());
+            }
+        });
+        Collections.sort(sortedSchedules, new Comparator<Schedule>() {
+            public int compare(Schedule schedule1, Schedule schedule2) {
+                return schedule1.getWeek().compareTo(schedule2.getWeek());
+            }
+        });
+
+
+        return sortedSchedules;
     }
 
     @Override
