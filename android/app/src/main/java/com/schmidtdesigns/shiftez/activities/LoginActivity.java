@@ -18,6 +18,7 @@ import com.octo.android.robospice.request.listener.RequestListener;
 import com.schmidtdesigns.shiftez.Constants;
 import com.schmidtdesigns.shiftez.R;
 import com.schmidtdesigns.shiftez.ShiftEZ;
+import com.schmidtdesigns.shiftez.Utils;
 import com.schmidtdesigns.shiftez.models.Account;
 import com.schmidtdesigns.shiftez.models.PostAccount;
 import com.schmidtdesigns.shiftez.network.AddAccountRetrofitRequest;
@@ -127,6 +128,7 @@ public class LoginActivity extends GPlusBaseActivity {
         @Override
         public void onRequestFailure(SpiceException spiceException) {
             Log.e(TAG, spiceException.getLocalizedMessage());
+            Utils.spiceErrorCheck(spiceException, getApplicationContext());
         }
 
         @Override

@@ -9,6 +9,8 @@ import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
+import com.octo.android.robospice.exception.NoNetworkException;
+import com.octo.android.robospice.persistence.exception.SpiceException;
 
 import java.util.List;
 
@@ -48,5 +50,11 @@ public class Utils {
                 (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo netInfo = cm.getActiveNetworkInfo();
         return netInfo != null && netInfo.isConnectedOrConnecting();
+    }
+
+    public static void spiceErrorCheck(SpiceException spiceException, Context context) {
+        if (spiceException instanceof NoNetworkException) {
+            Toast.makeText(context, R.string.no_network, Toast.LENGTH_LONG).show();
+        }
     }
 }

@@ -32,6 +32,7 @@ import com.octo.android.robospice.request.listener.RequestListener;
 import com.schmidtdesigns.shiftez.Constants;
 import com.schmidtdesigns.shiftez.R;
 import com.schmidtdesigns.shiftez.ShiftEZ;
+import com.schmidtdesigns.shiftez.Utils;
 import com.schmidtdesigns.shiftez.activities.MainActivity;
 import com.schmidtdesigns.shiftez.activities.UploadActivity;
 import com.schmidtdesigns.shiftez.adapters.ScheduleAdapter;
@@ -373,6 +374,7 @@ public class SchedulePagerFragment extends BaseFragment {
         @Override
         public void onRequestFailure(SpiceException spiceException) {
             Log.e(TAG, spiceException.getMessage());
+            Utils.spiceErrorCheck(spiceException, getActivity());
         }
 
         @Override
@@ -387,6 +389,7 @@ public class SchedulePagerFragment extends BaseFragment {
         @Override
         public void onRequestFailure(SpiceException spiceException) {
             Log.e(TAG, spiceException.getMessage());
+            Utils.spiceErrorCheck(spiceException, getActivity());
         }
 
         @Override
