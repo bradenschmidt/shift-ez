@@ -92,6 +92,7 @@ public class LoginActivity extends GPlusBaseActivity {
             HashMap<String, String> accountParams = new HashMap<>();
             accountParams.put("user_id", email);
             accountParams.put("user_name", person.getDisplayName());
+            accountParams.put("user_image_url", person.getImage().getUrl());
 
             AddAccountRetrofitRequest accountRequest = new AddAccountRetrofitRequest(accountParams);
             getSpiceManager().execute(accountRequest,

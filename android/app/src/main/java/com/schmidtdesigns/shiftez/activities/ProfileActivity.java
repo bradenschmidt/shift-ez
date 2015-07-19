@@ -10,6 +10,7 @@ import android.widget.TextView;
 
 import com.schmidtdesigns.shiftez.R;
 import com.schmidtdesigns.shiftez.ShiftEZ;
+import com.squareup.picasso.Picasso;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
@@ -36,8 +37,7 @@ public class ProfileActivity extends GPlusBaseActivity {
 
         setupToolbar(mToolbar);
 
-        //TODO Profile image
-        //mProfileImage.setImageDrawable();
+        Picasso.with(mProfileImage.getContext()).load(ShiftEZ.getInstance().getAccount().getUserImageUrl()).into(mProfileImage);
         mProfileEmail.setText(ShiftEZ.getInstance().getAccount().getEmail());
         mProfileName.setText(ShiftEZ.getInstance().getAccount().getName());
     }

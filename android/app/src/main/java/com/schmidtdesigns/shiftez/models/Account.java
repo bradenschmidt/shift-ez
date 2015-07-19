@@ -17,6 +17,9 @@ public class Account {
     @SerializedName("user_id")
     private String email;
     @Expose
+    @SerializedName("user_image_url")
+    private String userImageUrl;
+    @Expose
     @SerializedName("storeDeps")
     private ArrayList<Store> mStores;
 
@@ -56,6 +59,10 @@ public class Account {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getUserImageUrl() {
+        return userImageUrl;
     }
 
     public ArrayList<Store> getStores() {

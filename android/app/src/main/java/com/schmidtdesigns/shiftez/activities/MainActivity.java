@@ -96,7 +96,7 @@ public class MainActivity extends GPlusBaseActivity {
         }
     }
 
-    //TODO
+    //TODO TEST
     public void refreshStores() {
         getSpiceManager().removeDataFromCache(Store.Response.class, Constants.STORE_KEY);
         getStores();
@@ -112,7 +112,7 @@ public class MainActivity extends GPlusBaseActivity {
                         new ProfileDrawerItem()
                                 .withName(account.getName())
                                 .withEmail(account.getEmail())
-                        .withIcon(getResources().getDrawable(R.drawable.ic_action_account_circle))
+                                .withIcon((account.getUserImageUrl() != null) ? account.getUserImageUrl() : "" )
                 )
                 .withSelectionListEnabled(false)
                 .withOnAccountHeaderListener(new AccountHeader.OnAccountHeaderListener() {

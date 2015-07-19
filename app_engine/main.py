@@ -224,6 +224,7 @@ def addAccount():
     """Add a new Account"""
     user_id = request.args.get('user_id')
     user_name = request.args.get('user_name')
+    user_image_url = request.args.get('user_image_url')
 
     account = Account.get(user_id)
 
@@ -235,6 +236,7 @@ def addAccount():
     else:
         new_account_model = Account(user_id=user_id,
                                     user_name=user_name,
+                                    user_image_url=user_image_url,
                                     storeDeps=[])
         new_account_model.put()
         account = new_account_model.to_dict_stores()
