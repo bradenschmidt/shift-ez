@@ -1,24 +1,18 @@
 package com.schmidtdesigns.shiftez.activities;
 
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.internal.view.ContextThemeWrapper;
 import android.support.v7.widget.Toolbar;
-import android.text.Editable;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
-import android.widget.Toast;
 
 import com.mikepenz.materialdrawer.Drawer;
 import com.mikepenz.materialdrawer.DrawerBuilder;
@@ -37,16 +31,12 @@ import com.octo.android.robospice.request.listener.RequestListener;
 import com.schmidtdesigns.shiftez.Constants;
 import com.schmidtdesigns.shiftez.R;
 import com.schmidtdesigns.shiftez.ShiftEZ;
-import com.schmidtdesigns.shiftez.Utils;
 import com.schmidtdesigns.shiftez.fragments.SchedulePagerFragment;
 import com.schmidtdesigns.shiftez.models.Account;
-import com.schmidtdesigns.shiftez.models.PostResult;
 import com.schmidtdesigns.shiftez.models.Store;
 import com.schmidtdesigns.shiftez.network.AccountStoresRetrofitRequest;
-import com.schmidtdesigns.shiftez.network.NewStoreRetrofitRequest;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
@@ -137,7 +127,7 @@ public class MainActivity extends BaseActivity {
                             displayView(SchedulePagerFragment.newInstance(store));
                         } else if (drawerItem instanceof SecondaryDrawerItem) {
                             if (getString(((SecondaryDrawerItem) drawerItem).getNameRes()).equals(getString(R.string.drawer_item_add_store))) {
-                                showAddStoreDialog();
+                                startActivity(new Intent(getApplicationContext(), AddStoreActivity.class));
                             }
                         }
                         mDrawer.closeDrawer();
@@ -189,7 +179,6 @@ public class MainActivity extends BaseActivity {
         items.add(new SecondaryDrawerItem().withName(R.string.drawer_item_settings).withIcon(R.drawable.ic_action_settings));
 
         mDrawer.setItems(items);
-        mDrawer.setSelection(mDrawerPos);
     }
 
     @Override
@@ -234,60 +223,7 @@ public class MainActivity extends BaseActivity {
         transaction.commit();
     }
 
-    public void showAddStoreDialog() {
-        final EditText input = new EditText(new ContextThemeWrapper(this, R.style.AppCompatAlertDialogStyle));
 
-        new AlertDialog.Builder(new ContextThemeWrapper(this, R.style.AppCompatAlertDialogStyle))
-                .setTitle("Add Store")
-                .setMessage("Enter New Store Name:")
-                .setView(input)
-                .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        Editable storeName = input.getText();
-                        showAddDepDialog(storeName.toString());
-                    }
-                }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {
-                // DO NOTHING
-            }
-        }).show();
-    }
-
-    private void showAddDepDialog(final String storeName) {
-        final EditText input = new EditText(new ContextThemeWrapper(this, R.style.AppCompatAlertDialogStyle));
-
-        new AlertDialog.Builder(new ContextThemeWrapper(this, R.style.AlertDialog_AppCompat))
-                .setTitle("Add Department")
-                .setMessage("Enter New Department Name:")
-                .setView(input)
-                .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        Editable depName = input.getText();
-                        uploadNewStore(storeName, depName.toString());
-                    }
-                }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {
-                // DO NOTHING
-            }
-        }).show();
-    }
-
-    private void uploadNewStore(String storeName, String depName) {
-        HashMap<String, String> storeParams = new HashMap<>();
-        storeParams.put("store_name", storeName);
-        storeParams.put("dep_name", depName);
-
-        mStoreName = storeName;
-        mDepName = depName;
-
-        Log.d(TAG, "Uploading new store with params: " + storeParams.toString());
-
-        // Upload store and info
-        NewStoreRetrofitRequest storeUploadRequest = new NewStoreRetrofitRequest(
-                ShiftEZ.getInstance().getAccount().getEmail(), storeParams);
-        getSpiceManager().execute(storeUploadRequest, Constants.UPLOAD_NEW_STORE,
-                DurationInMillis.ONE_SECOND, new NewStoreUploadListener());
-    }
 
     private class StoresRequestListener implements RequestListener<Store.Response> {
         @Override
@@ -307,29 +243,6 @@ public class MainActivity extends BaseActivity {
 
             // TODO Default Store
             mDrawer.setSelection(mDrawerPos);
-        }
-    }
-
-    private class NewStoreUploadListener implements RequestListener<PostResult> {
-
-        @Override
-        public void onRequestFailure(SpiceException spiceException) {
-            Log.e(TAG, spiceException.getMessage());
-
-            Utils.spiceErrorCheck(spiceException, getApplicationContext());
-        }
-
-        @Override
-        public void onRequestSuccess(PostResult postResult) {
-            Log.d(TAG, postResult.toString());
-            // TODO HANDLE DIFFERENT POST RESULTS
-
-            Toast.makeText(getApplicationContext(), "Store Added", Toast.LENGTH_SHORT).show();
-
-            refreshStores();
-
-            //TODO set drawer selection to new store.
-
         }
     }
 }

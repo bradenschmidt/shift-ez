@@ -46,4 +46,9 @@
     <string name="pref_item_about">About</string>
     <string name="pref_heading_launch">Launch Preferences</string>
     <string name="activity_settings_title">Settings</string>
+    <string name="add_store_button">Add Store</string>
+    <string name="store_title">Store Name</string>
+    <string name="dep_title">Department Name</string>
+    <string name="activity_add_store_title">Add Store</string>
+    <string name="schedule_share_icon">Share Schedule</string>
 </resources>

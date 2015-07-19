@@ -33,6 +33,7 @@ import com.schmidtdesigns.shiftez.Constants;
 import com.schmidtdesigns.shiftez.R;
 import com.schmidtdesigns.shiftez.ShiftEZ;
 import com.schmidtdesigns.shiftez.Utils;
+import com.schmidtdesigns.shiftez.activities.AddStoreActivity;
 import com.schmidtdesigns.shiftez.activities.MainActivity;
 import com.schmidtdesigns.shiftez.activities.UploadActivity;
 import com.schmidtdesigns.shiftez.adapters.ScheduleAdapter;
@@ -119,7 +120,7 @@ public class SchedulePagerFragment extends BaseFragment {
         ButterKnife.inject(this, rootView);
 
         if(ShiftEZ.getInstance().getAccount().getStores().isEmpty()) {
-            ((MainActivity) getActivity()).showAddStoreDialog();
+            startActivity(new Intent(getActivity(), AddStoreActivity.class));
         } else {
             Store store = ShiftEZ.getInstance().getAccount().getStoreByStoreDep(mStoreName, mDepName);
 
