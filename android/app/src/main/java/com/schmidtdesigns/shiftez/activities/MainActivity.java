@@ -31,13 +31,13 @@ import com.mikepenz.materialdrawer.model.SecondaryDrawerItem;
 import com.mikepenz.materialdrawer.model.SectionDrawerItem;
 import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem;
 import com.mikepenz.materialdrawer.model.interfaces.IProfile;
-import com.octo.android.robospice.exception.NoNetworkException;
 import com.octo.android.robospice.persistence.DurationInMillis;
 import com.octo.android.robospice.persistence.exception.SpiceException;
 import com.octo.android.robospice.request.listener.RequestListener;
 import com.schmidtdesigns.shiftez.Constants;
 import com.schmidtdesigns.shiftez.R;
 import com.schmidtdesigns.shiftez.ShiftEZ;
+import com.schmidtdesigns.shiftez.Utils;
 import com.schmidtdesigns.shiftez.fragments.SchedulePagerFragment;
 import com.schmidtdesigns.shiftez.models.Account;
 import com.schmidtdesigns.shiftez.models.PostResult;
@@ -316,10 +316,7 @@ public class MainActivity extends BaseActivity {
         public void onRequestFailure(SpiceException spiceException) {
             Log.e(TAG, spiceException.getMessage());
 
-            //TODO MOVE TO UTILS
-            if (spiceException instanceof NoNetworkException) {
-                Toast.makeText(getApplicationContext(), R.string.no_network, Toast.LENGTH_LONG).show();
-            }
+            Utils.spiceErrorCheck(spiceException, getApplicationContext());
         }
 
         @Override
@@ -329,7 +326,7 @@ public class MainActivity extends BaseActivity {
 
             Toast.makeText(getApplicationContext(), "Store Added", Toast.LENGTH_SHORT).show();
 
-            getStores();
+            refreshStores();
 
             //TODO set drawer selection to new store.
 
