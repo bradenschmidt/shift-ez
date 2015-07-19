@@ -19,7 +19,6 @@ import com.schmidtdesigns.shiftez.Constants;
 import com.schmidtdesigns.shiftez.R;
 import com.schmidtdesigns.shiftez.ShiftEZ;
 import com.schmidtdesigns.shiftez.Utils;
-import com.schmidtdesigns.shiftez.models.Account;
 
 /**
  * Created by braden on 15-06-09.
@@ -91,30 +90,6 @@ public abstract class GPlusBaseActivity extends BaseActivity implements
         super.onSaveInstanceState(outState);
         outState.putBoolean(KEY_IS_RESOLVING, mIsResolving);
         outState.putBoolean(KEY_SHOULD_RESOLVE, mIsResolving);
-    }
-
-    public boolean isLoggedIn() {
-        boolean isAccountNotNull = ShiftEZ.getInstance().getAccount() != null;
-
-        Log.i(TAG, "Is User Logged in: " + isAccountNotNull);
-
-        if (isAccountNotNull) {
-            Log.i(TAG, "Account Info: " + ShiftEZ.getInstance().getAccount().toString());
-            return true;
-        } else {
-            // Attempt to recover account data from prefs
-            SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
-
-            String accountString = sharedPrefs.getString(Constants.ACCOUNT_PARAM, null);
-            ShiftEZ shiftEZ = ShiftEZ.getInstance();
-            if (shiftEZ != null && accountString != null) {
-                // Recover using cache pref data
-                shiftEZ.setAccount(Account.deserializeFromJson(accountString));
-                return true;
-            }
-        }
-
-        return false;
     }
 
     public boolean login() {

@@ -51,7 +51,7 @@ import java.util.HashMap;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 
-public class MainActivity extends GPlusBaseActivity {
+public class MainActivity extends BaseActivity {
 
     private final String TAG = this.getClass().getSimpleName();
 
@@ -190,17 +190,6 @@ public class MainActivity extends GPlusBaseActivity {
 
         mDrawer.setItems(items);
         mDrawer.setSelection(mDrawerPos);
-    }
-
-    @Override
-    public void updateUI(boolean result) {
-        //TODO
-        Log.i(TAG, "Update UI Needed.");
-    }
-
-    @Override
-    public void getProfileInformation() {
-        //TODO
     }
 
     @Override
