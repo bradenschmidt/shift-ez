@@ -35,7 +35,7 @@
     <string name="empty_schedules_view">No Schedules For This Department Yet!\n Add one by pressing the Plus Button.</string>
     <string name="action_share_store">Share Store</string>
     <string name="action_join_store">Join Store</string>
-    <string name="share_using">Share Using</string>
+    <string name="share_using">Share Store Using</string>
     <string name="drawer_item_add_store">Add Store</string>
     <string name="action_remove_store">Remove Store</string>
     <string name="button_profile_revoke">Revoke</string>
@@ -51,4 +51,6 @@
     <string name="dep_title">Department Name</string>
     <string name="activity_add_store_title">Add Store</string>
     <string name="schedule_share_icon">Share Schedule</string>
+    <string name="share_schedule_using">Share Schedule Using</string>
+    <string name="schedule_update_icon">Update Schedule</string>
 </resources>
