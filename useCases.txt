@@ -81,14 +81,27 @@ Join Store
 
 Use Case 12
 Settings
+1.Open Settings from drawer.
+2. Starts the Settings Activity.
+3a. Set default store.
+3b. Show about screen.
+3c. Show libs used
 
 
 Use Case 13
 Logout
+1. User selects revoke from profile view.
+2. Gplus logout called.
+3. Wipe SharedPrefs.
+4. Send user to Login Screen.
 
 
 Use Case 14
 Revoke
+1. User selects revoke from profile view.
+2. Gplus revoke called.
+3. Wipe SharedPrefs.
+4. Send user to Login Screen.
 
 
 Use Case 15
@@ -96,15 +109,14 @@ Refresh Schedules
 
 
 Use Case 16
-Add Store
+Add Store with Department
 
 
 Use Case 17
-Add Department
+Remove Store with Department
 
 
 Use Case 18
-Remove Store
 
 
 Use Case 19
@@ -112,7 +124,6 @@ Refresh Stores
 
 
 Use Case 20
-Remove Departments
 
 
 Use Case 20

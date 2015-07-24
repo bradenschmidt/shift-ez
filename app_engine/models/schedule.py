@@ -24,20 +24,20 @@ class Schedule(ndb.Model):
     @staticmethod
     def get(_upload_user_id, _year, _week):
         schedule = Schedule.query(
-                    ndb.AND(Schedule.year == _year,
-                            Schedule.week == _week,
-                            Schedule.upload_user_id == _upload_user_id)).get()
+            ndb.AND(Schedule.year == _year,
+                    Schedule.week == _week,
+                    Schedule.upload_user_id == _upload_user_id)).get()
         return schedule
 
     def to_dict_images(self):
-        scheduleDict = self.to_dict()
+        schedule_dict = self.to_dict()
 
         # Remove parent key
-        del scheduleDict['parent']
+        del schedule_dict['parent']
 
         # Convert blob key to image url for each schedule, the remove blob key
-        scheduleDict['image_url'] = images.get_serving_url(
-                                            scheduleDict['image_blob'])
-        del scheduleDict['image_blob']
+        schedule_dict['image_url'] = images.get_serving_url(
+            schedule_dict['image_blob'])
+        del schedule_dict['image_blob']
 
-        return scheduleDict
+        return schedule_dict

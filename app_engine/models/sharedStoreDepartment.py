@@ -1,4 +1,5 @@
 from google.appengine.ext import ndb
+
 from storeDepartment import StoreDepartment
 
 
@@ -17,6 +18,6 @@ class SharedStoreDepartment(ndb.Model):
 
     @staticmethod
     def get(_share_key):
-        sharedStore = SharedStoreDepartment.query(
-                        SharedStoreDepartment.share_key == _share_key).get()
-        return sharedStore
+        shared_store = SharedStoreDepartment.query(
+            SharedStoreDepartment.share_key == _share_key).get()
+        return shared_store

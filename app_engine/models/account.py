@@ -1,5 +1,7 @@
-from google.appengine.ext import ndb
 import logging
+
+from google.appengine.ext import ndb
+
 from storeDepartment import StoreDepartment
 
 
@@ -12,7 +14,7 @@ class Account(ndb.Model):
     user_id = ndb.StringProperty(required=True)
     user_name = ndb.StringProperty(required=True)
     user_image_url = ndb.StringProperty(required=True)
-    storeDeps = ndb.KeyProperty(StoreDepartment, repeated=True)
+    store_deps = ndb.KeyProperty(StoreDepartment, repeated=True)
 
     @staticmethod
     def get(_user_id):
@@ -20,10 +22,12 @@ class Account(ndb.Model):
         account = Account.query(Account.user_id == _user_id).get()
         return account
 
-    def getStoreDeps(self):
-        """Get the stores for this account."""
+    def get_store_deps(self):
+        """Get the stores for this account.
+        :rtype : List
+        """
         stores = []
-        for store_key in self.storeDeps:
+        for store_key in self.store_deps:
             store = store_key.get()
             if store:
                 stores.append(store)
@@ -33,19 +37,21 @@ class Account(ndb.Model):
                              + self.user_id)
         return stores
 
-    def isStoreInAccount(self, store_to_find):
-        """Check if a specific store is in this account."""
-        stores = self.getStoreDeps()
+    def is_store_in_account(self, store_to_find):
+        """Check if a specific store is in this account.
+        :rtype : Boolean
+        """
+        stores = self.get_store_deps()
         if store_to_find in stores:
             return True
 
         return False
 
-    def getStoreFromAccount(self, _user_id, _store_name, _dep_name):
+    def get_store_from_account(self, _user_id, _store_name, _dep_name):
         """Get a specific store by the store user id, store name, and dep name
         from this account.
         """
-        stores = self.getStoreDeps()
+        stores = self.get_store_deps()
         for store in stores:
             if store.user_id == _user_id \
                     and store.store_name == _store_name \
@@ -54,11 +60,11 @@ class Account(ndb.Model):
 
         return None
 
-    def getSchedules(self):
+    def get_schedules(self):
         """Get all the schedule objects for all the stores the user has
         one.
         """
-        stores = self.getStoreDeps()
+        stores = self.get_store_deps()
 
         schedules = []
         if stores:
@@ -69,9 +75,9 @@ class Account(ndb.Model):
 
         return schedules
 
-    def getScheduleDicts(self):
+    def get_schedule_dicts(self):
         """Get all the users schedules from all the stores as dicts."""
-        stores = self.getStoreDeps()
+        stores = self.get_store_deps()
 
         schedules = []
         if stores:
@@ -84,11 +90,11 @@ class Account(ndb.Model):
 
     def to_dict_stores(self):
         """Account to_dict with stores included."""
-        accountDict = self.to_dict()
+        account_dict = self.to_dict()
 
         stores = []
-        for store in self.getStoreDeps():
+        for store in self.get_store_deps():
             stores.append(store.to_dict_schedules())
-        accountDict['storeDeps'] = stores
+        account_dict['storeDeps'] = stores
 
-        return accountDict
+        return account_dict

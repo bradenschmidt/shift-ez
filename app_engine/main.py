@@ -1,11 +1,8 @@
 import os
-import logging
+from operator import itemgetter
 
 import jinja2
-
 from flask import Flask, jsonify, request
-
-from operator import itemgetter
 
 # from google.appengine.api import users
 from google.appengine.ext import ndb, blobstore
@@ -56,10 +53,10 @@ def store_key(store_name=DEFAULT_STORE_NAME):
     return ndb.Key('Store', store_name)
 
 
-def sortSchedules(schedules, reverse):
+def sort_schedules(schedules, reverse):
     # sort
-    if(len(schedules) > 0):
-        if(reverse == 'true'):
+    if len(schedules) > 0:
+        if reverse == 'true':
             # Sort schedules by year then week with newest schedule first
             schedules = sorted(schedules, key=itemgetter('week'), reverse=True)
             schedules = sorted(schedules, key=itemgetter('year'), reverse=True)
@@ -71,10 +68,10 @@ def sortSchedules(schedules, reverse):
     return schedules
 
 
-def getAllSchedules():
+def get_all_schedules():
     schedules = Schedule.query().fetch()
     schedules = [s.to_dict_images() for s in schedules]
-    return sortSchedules(schedules, None)
+    return sort_schedules(schedules, None)
 
 
 # Pages ######################################################################
@@ -90,7 +87,7 @@ def index():
     #     url = users.create_login_url('')
     #     url_linktext = 'Login'
 
-    schedules = getAllSchedules()
+    schedules = get_all_schedules()
 
     template_values = {
         'schedules': schedules
@@ -113,7 +110,7 @@ def page_not_found(e):
 
 
 @app.route('/upload/form')
-def uploadImageForm():
+def upload_image_form():
     """Show an upload form"""
     upload_url = blobstore.create_upload_url('/api/stores/schedules/add')
 
@@ -129,7 +126,7 @@ def uploadImageForm():
 # POSTS  #####################################################################
 
 @app.route('/api/stores/schedules/add', methods=['POST'])
-def uploadImage():
+def upload_image():
     """ Accept an schedule with info and image"""
     image = request.files['file']
 
@@ -182,13 +179,13 @@ def uploadImage():
 
 
 @app.route('/api/accounts/<user_id>/stores/add', methods=['POST'])
-def addStoreToAccount(user_id):
+def add_store_to_account(user_id):
     """Create a new store and add to an account."""
     store_name = request.args.get('store_name')
     dep_name = request.args.get('dep_name')
 
     account = Account.get(user_id)
-    if(not account):
+    if not account:
         # Setup results
         code = Errors.account_not_found
         desc = 'Add Store to Account Failed. Account does not exist.'
@@ -196,7 +193,7 @@ def addStoreToAccount(user_id):
         return jsonify(code=code, desc=desc)
 
     store = StoreDepartment.get(user_id, store_name, dep_name)
-    if(not store):
+    if not store:
         store = StoreDepartment(user_id=user_id,
                                 store_name=store_name,
                                 dep_name=dep_name,
@@ -204,8 +201,8 @@ def addStoreToAccount(user_id):
         store.put()
 
     exists = account.isStoreInAccount(store)
-    if(not exists):
-        account.storeDeps.append(store.key)
+    if not exists:
+        account.store_deps.append(store.key)
         account.put()
 
         # Setup results
@@ -220,7 +217,7 @@ def addStoreToAccount(user_id):
 
 
 @app.route('/api/accounts/add', methods=['POST'])
-def addAccount():
+def add_account():
     """Add a new Account"""
     user_id = request.args.get('user_id')
     user_name = request.args.get('user_name')
@@ -228,7 +225,7 @@ def addAccount():
 
     account = Account.get(user_id)
 
-    if(account):
+    if account:
         # Setup results
         code = 1
         desc = 'Account Already Exists'
@@ -237,7 +234,7 @@ def addAccount():
         new_account_model = Account(user_id=user_id,
                                     user_name=user_name,
                                     user_image_url=user_image_url,
-                                    storeDeps=[])
+                                    store_deps=[])
         new_account_model.put()
         account = new_account_model.to_dict_stores()
 
@@ -249,7 +246,7 @@ def addAccount():
 
 
 @app.route('/api/accounts/<user_id>/stores/share', methods=['POST'])
-def shareStore(user_id):
+def share_store(user_id):
     """Share Store by adding store to SharedStoreDepartment with key.
     """
     store_user_id = request.args.get('store_user_id')
@@ -290,7 +287,7 @@ def shareStore(user_id):
 
 
 @app.route('/api/accounts/<user_id>/stores/join', methods=['POST'])
-def joinStore(user_id):
+def join_store(user_id):
     """Join Store by adding store to users account found in
     SharedStoreDepartment by provided key.
     """
@@ -313,7 +310,7 @@ def joinStore(user_id):
 
     date = shared_store.shared_dateTime
 
-    if (date < (datetime.datetime.now()-datetime.timedelta(days=7))):
+    if date < (datetime.datetime.now() - datetime.timedelta(days=7)):
         # Expired
         code = Errors.key_too_old
         desc = 'Join Failed: Key Too Old (Over 7 Days).'
@@ -327,7 +324,7 @@ def joinStore(user_id):
         desc = 'Join Failed: Store Not Found.'
         return jsonify(code=code, desc=desc)
 
-    account.storeDeps.append(store.store_dep_key)
+    account.store_deps.append(store.store_dep_key)
     account.put()
 
     # Setup results
@@ -338,21 +335,21 @@ def joinStore(user_id):
 
 # GETS  ######################################################################
 @app.route('/api/accounts/<user_id>')
-def getAccount(user_id):
+def get_account(user_id):
     """Return the Account Info"""
 
     account = Account.get(user_id)
 
-    if(account):
-        accountDict = account.to_dict_stores()
+    if account:
+        account_dict = account.to_dict_stores()
     else:
-        accountDict = None
+        account_dict = None
 
-    return jsonify(account=accountDict)
+    return jsonify(account=account_dict)
 
 
 @app.route('/api/stores/all')
-def getStores():
+def get_stores():
     """Return all of the stores"""
 
     stores = StoreDepartment.query().fetch()
@@ -364,20 +361,20 @@ def getStores():
 
 
 @app.route('/api/accounts/<user_id>/stores/all')
-def getAccountsStores(user_id):
+def get_accounts_stores(user_id):
     """Return all of the stores for the given account"""
 
     account = Account.get(user_id)
 
-    if(account):
-        accountDict = account.to_dict_stores()
-        return jsonify(stores=accountDict['storeDeps'])
+    if account:
+        account_dict = account.to_dict_stores()
+        return jsonify(stores=account_dict['store_deps'])
     else:
         return jsonify(stores=None)
 
 
 @app.route('/api/stores/schedules/link')
-def uploadImageLink():
+def upload_image_link():
     """Return a blobstore upload link as json for the client to upload an
     image.
     """
@@ -387,7 +384,7 @@ def uploadImageLink():
 
 
 @app.route('/api/accounts/<user_id>/schedules/all')
-def getSchedules(user_id):
+def get_schedules(user_id):
     """Return all of the users schedules sorted in reverse if specified."""
     reverse = request.args.get('reverse')
 
@@ -396,11 +393,11 @@ def getSchedules(user_id):
     if account:
         schedules = account.getScheduleDicts()
 
-    return jsonify(schedules=sortSchedules(schedules, reverse))
+    return jsonify(schedules=sort_schedules(schedules, reverse))
 
 
 @app.route('/api/accounts/<user_id>/schedules/year/<year>')
-def getSchedulesByYear(user_id, year):
+def get_schedules_by_year(user_id, year):
     """Return the users schedules for a given year."""
     reverse = request.args.get('reverse')
 
@@ -412,11 +409,11 @@ def getSchedulesByYear(user_id, year):
             if schedule.year == int(year):
                 year_schedules.append(schedule.to_dict_images())
 
-    return jsonify(schedules=sortSchedules(year_schedules, reverse))
+    return jsonify(schedules=sort_schedules(year_schedules, reverse))
 
 
 @app.route('/api/accounts/<user_id>/schedules/year/<year>/week/<week>')
-def getSchedulesByYearWeek(user_id, year, week):
+def get_schedules_by_year_week(user_id, year, week):
     """Return the users schedules for a given year and week."""
     reverse = request.args.get('reverse')
 
@@ -428,12 +425,12 @@ def getSchedulesByYearWeek(user_id, year, week):
             if schedule.year == int(year) and schedule.week == int(week):
                 week_schedules.append(schedule.to_dict_images())
 
-    return jsonify(schedules=sortSchedules(week_schedules, reverse))
+    return jsonify(schedules=sort_schedules(week_schedules, reverse))
 
 
 @app.route('''/api/accounts/<user_id>/stores/<store_name>\
 /dep/<dep_name>/year/<year>''')
-def getSchedulesByYearStore(user_id, store_name, dep_name, year):
+def get_schedules_by_year_store(user_id, store_name, dep_name, year):
     """Return the users schedules for a given year and store."""
     store_user_id = request.args.get('store_user_id')
     reverse = request.args.get('reverse')
@@ -448,12 +445,12 @@ def getSchedulesByYearStore(user_id, store_name, dep_name, year):
                 if schedule.year == int(year):
                     year_schedules.append(schedule.to_dict_images())
 
-    return jsonify(schedules=sortSchedules(year_schedules, reverse))
+    return jsonify(schedules=sort_schedules(year_schedules, reverse))
 
 
 @app.route('''/api/accounts/<user_id>/stores/<store_name>/dep/<dep_name>/\
 year/<year>/week/<week>/''')
-def getSchedulesByYearStoreDep(user_id, store_name, dep_name, year, week):
+def get_schedules_by_year_store_dep(user_id, store_name, dep_name, year, week):
     """Return the users schedules for a given year and week and store"""
     store_user_id = request.args.get('store_user_id')
     reverse = request.args.get('reverse')
@@ -468,11 +465,11 @@ def getSchedulesByYearStoreDep(user_id, store_name, dep_name, year, week):
                 if schedule.year == int(year) and schedule.week == week:
                     year_schedules.append(schedule.to_dict_images())
 
-    return jsonify(schedules=sortSchedules(year_schedules, reverse))
+    return jsonify(schedules=sort_schedules(year_schedules, reverse))
 
 
 @app.route('/api/accounts/<user_id>/stores/<store_name>/dep/<dep_name>/')
-def getSchedulesByStore(user_id, store_name, dep_name):
+def get_schedules_by_store(user_id, store_name, dep_name):
     """Return the users schedules for a store"""
 
     store_user_id = request.args.get('store_user_id')
@@ -485,11 +482,11 @@ def getSchedulesByStore(user_id, store_name, dep_name):
         if account.isStoreInAccount(store):
             schedules = store.getScheduleDicts()
 
-    return jsonify(schedules=sortSchedules(schedules, reverse))
+    return jsonify(schedules=sort_schedules(schedules, reverse))
 
 
 @app.route('/api/help', methods=['GET'])
-def help():
+def api_help():
     """Print available functions."""
     func_list = {}
     for rule in app.url_map.iter_rules():
@@ -501,14 +498,14 @@ def help():
 
 # ######## DELETES ###########################################################
 @app.route('/api/accounts/<user_id>/stores/remove', methods=['DELETE'])
-def removeStoreFromAccount(user_id):
+def remove_store_from_account(user_id):
     """Remove a store from an account."""
     store_user_id = request.args.get('store_user_id')
     store_name = request.args.get('store_name')
     dep_name = request.args.get('dep_name')
 
     account = Account.get(user_id)
-    if(not account):
+    if not account:
         # Setup results
         code = Errors.account_not_found
         desc = 'Remove Store From Account Failed. Account does not exist.'
@@ -516,15 +513,15 @@ def removeStoreFromAccount(user_id):
         return jsonify(code=code, desc=desc)
 
     store = StoreDepartment.get(store_user_id, store_name, dep_name)
-    if(not store):
+    if not store:
         # Setup store not found error
         code = Errors.store_not_found
         desc = 'Remove Store Failed: Store Not Found.'
         return jsonify(code=code, desc=desc)
 
     exists = account.isStoreInAccount(store)
-    if(exists):
-        account.storeDeps.remove(store.key)
+    if exists:
+        account.store_deps.remove(store.key)
 
         account.put()
 
