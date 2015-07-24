@@ -18,6 +18,7 @@ class StoreDepartment(ndb.Model):
     store_name = ndb.StringProperty(required=True)
     dep_name = ndb.StringProperty(required=True)
 
+    # TODO solve multiple object access problem
     schedules = ndb.KeyProperty(Schedule, repeated=True)
 
     @staticmethod

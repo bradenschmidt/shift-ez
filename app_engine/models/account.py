@@ -14,6 +14,7 @@ class Account(ndb.Model):
     user_id = ndb.StringProperty(required=True)
     user_name = ndb.StringProperty(required=True)
     user_image_url = ndb.StringProperty(required=True)
+    # TODO solve multiple object access problem
     store_deps = ndb.KeyProperty(StoreDepartment, repeated=True)
 
     @staticmethod
