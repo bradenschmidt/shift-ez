@@ -70,7 +70,7 @@ class Account(ndb.Model):
         schedules = []
         if stores:
             for store in stores:
-                store_schedules = store.getSchedules()
+                store_schedules = store.get_schedules()
                 for schedule in store_schedules:
                     schedules.append(schedule)
 
@@ -83,7 +83,7 @@ class Account(ndb.Model):
         schedules = []
         if stores:
             for store in stores:
-                store_schedules = store.getScheduleDicts()
+                store_schedules = store.get_schedule_dicts()
                 for schedule in store_schedules:
                     schedules.append(schedule)
 
@@ -96,6 +96,6 @@ class Account(ndb.Model):
         stores = []
         for store in self.get_store_deps():
             stores.append(store.to_dict_schedules())
-        account_dict['storeDeps'] = stores
+        account_dict['store_deps'] = stores
 
         return account_dict

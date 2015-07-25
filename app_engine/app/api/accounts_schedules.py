@@ -99,7 +99,7 @@ def get_schedules(user_id):
     account = Account.get(user_id)
     schedules = []
     if account:
-        schedules = account.getScheduleDicts()
+        schedules = account.get_schedule_dicts()
 
     return jsonify(schedules=sort_schedules(schedules, reverse))
 

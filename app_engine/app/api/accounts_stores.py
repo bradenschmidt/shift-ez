@@ -35,7 +35,7 @@ def add_store_to_account(user_id):
                                 schedules=[])
         store.put()
 
-    exists = account.isStoreInAccount(store)
+    exists = account.is_store_in_account(store)
     if not exists:
         account.store_deps.append(store.key)
         account.put()
@@ -66,9 +66,9 @@ def share_store(user_id):
     account = Account.get(user_id)
 
     if account:
-        store = account.getStoreFromAccount(store_user_id,
-                                            store_name,
-                                            dep_name)
+        store = account.get_store_from_account(store_user_id,
+                                               store_name,
+                                               dep_name)
         if store:
             store_dep_key = store.key
             shared_store = SharedStoreDepartment(share_key=key,
@@ -163,8 +163,8 @@ def get_schedules_by_year_store(user_id, store_name, dep_name, year):
     account = Account.get(user_id)
     year_schedules = []
     if account and store:
-        if account.isStoreInAccount(store):
-            schedules = store.getSchedules()
+        if account.is_store_in_account(store):
+            schedules = store.get_schedules()
             for schedule in schedules:
                 if schedule.year == int(year):
                     year_schedules.append(schedule.to_dict_images())
@@ -182,7 +182,7 @@ def get_schedules_by_year_store_dep(user_id, store_name, dep_name, year, week):
     account = Account.get(user_id)
     year_schedules = []
     if account and store:
-        if account.isStoreInAccount(store):
+        if account.is_store_in_account(store):
             schedules = store.getSchedules()
             for schedule in schedules:
                 if schedule.year == int(year) and schedule.week == week:
@@ -202,7 +202,7 @@ def get_schedules_by_store(user_id, store_name, dep_name):
     account = Account.get(user_id)
     schedules = []
     if account and store:
-        if account.isStoreInAccount(store):
+        if account.is_store_in_account(store):
             schedules = store.getScheduleDicts()
 
     return jsonify(schedules=sort_schedules(schedules, reverse))
@@ -231,7 +231,7 @@ def remove_store_from_account(user_id):
         desc = 'Remove Store Failed: Store Not Found.'
         return jsonify(code=code, desc=desc)
 
-    exists = account.isStoreInAccount(store)
+    exists = account.is_store_in_account(store)
     if exists:
         account.store_deps.remove(store.key)
 

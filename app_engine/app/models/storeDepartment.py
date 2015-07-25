@@ -65,7 +65,7 @@ class StoreDepartment(ndb.Model):
     def to_dict_schedules(self):
         store_dict = self.to_dict()
 
-        schedules = self.getScheduleDicts()
+        schedules = self.get_schedule_dicts()
 
         store_dict['schedules'] = schedules
 

@@ -36,7 +36,7 @@ def add_account():
 
 
 # GETS #############################################################
-@accounts.route('/info')
+@accounts.route('')
 def get_account(user_id):
     """Return the Account Info"""
 

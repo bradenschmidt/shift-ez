@@ -15,7 +15,7 @@ def get_stores():
     stores = StoreDepartment.query().fetch()
 
     # convert to dicts
-    stores = [s.to_dict() for s in stores]
+    stores = [s.to_dict_schedules() for s in stores]
 
     return jsonify(stores=stores)
 
