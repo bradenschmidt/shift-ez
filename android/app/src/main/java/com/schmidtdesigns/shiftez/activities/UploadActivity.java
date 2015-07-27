@@ -334,8 +334,8 @@ public class UploadActivity extends BaseActivity {
     @OnClick(R.id.schedule_upload_button)
     public void uploadImage() {
         // Get an image upload url
-        ImageUploadUrlRetrofitRequest imageUploadUrlRequest = new ImageUploadUrlRetrofitRequest();
-        getSpiceManager().execute(imageUploadUrlRequest, "imageuploadurl", DurationInMillis.ONE_SECOND, new ImageUploadUrlListener());
+        ImageUploadUrlRetrofitRequest imageUploadUrlRequest = new ImageUploadUrlRetrofitRequest(ShiftEZ.getInstance().getAccount().getEmail());
+        getSpiceManager().execute(imageUploadUrlRequest, Constants.IMAGE_UPLOAD_LINK, DurationInMillis.ONE_SECOND, new ImageUploadUrlListener());
 
     }
 
@@ -409,7 +409,6 @@ public class UploadActivity extends BaseActivity {
             imageParams.put("store_user_id", ((Store) mHolder.mStoreSpinner.getSelectedItem()).getUserId());
             imageParams.put("store_name", ((Store) mHolder.mStoreSpinner.getSelectedItem()).getStoreName());
             imageParams.put("dep_name", ((Store) mHolder.mStoreSpinner.getSelectedItem()).getDepName());
-            imageParams.put("user_id", ShiftEZ.getInstance().getAccount().getEmail());
             imageParams.put("week", String.valueOf(mHolder.mWeekSpinner.getSelectedItem()));
             imageParams.put("week_offset", String.valueOf(mHolder.mWeekOffsetSpinner.getSelectedItem()));
             imageParams.put("year", String.valueOf(mHolder.mYearSpinner.getSelectedItem()));
@@ -417,8 +416,8 @@ public class UploadActivity extends BaseActivity {
             Log.d(TAG, "Uploading image with params: " + imageParams.toString());
 
             // Upload image and info
-            ImageUploadRetrofitRequest imageUploadRequest = new ImageUploadRetrofitRequest(imageUploadUrl, image, imageParams);
-            getSpiceManager().execute(imageUploadRequest, "imageupload", DurationInMillis.ONE_SECOND, new ImageUploadListener());
+            ImageUploadRetrofitRequest imageUploadRequest = new ImageUploadRetrofitRequest(imageUploadUrl, ShiftEZ.getInstance().getAccount().getEmail(), image, imageParams);
+            getSpiceManager().execute(imageUploadRequest, Constants.IMAGE_UPLOAD, DurationInMillis.ONE_SECOND, new ImageUploadListener());
 
         }
     }

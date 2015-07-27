@@ -8,16 +8,17 @@ import com.schmidtdesigns.shiftez.models.ImageUploadUrl;
  */
 public class ImageUploadUrlRetrofitRequest extends RetrofitSpiceRequest<ImageUploadUrl, Api> {
 
-    private String TAG = "ImageUploadURLRetrofitRequest";
+    private String TAG = this.getClass().getSimpleName();
+    private String mUserId;
 
-    public ImageUploadUrlRetrofitRequest() {
+    public ImageUploadUrlRetrofitRequest(String userId) {
         super(ImageUploadUrl.class, Api.class);
 
+        mUserId = userId;
     }
 
     @Override
     public ImageUploadUrl loadDataFromNetwork() throws Exception {
-
-        return getService().getImageUploadURL();
+        return getService().getImageUploadURL(mUserId);
     }
 }

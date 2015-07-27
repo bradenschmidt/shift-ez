@@ -32,12 +32,13 @@ import retrofit.mime.TypedFile;
 public interface Api {
 
     ///// ACCOUNTS /////
-    @POST("/api/accounts/add")
-    PostAccount addAccount(@QueryMap Map<String, String> accountParams);
+    @POST("/api/accounts/{userId/add")
+    PostAccount addAccount(@Path("userId") String userId,
+                           @QueryMap Map<String, String> accountParams);
 
     // Get account info, includes stores with schedules
-    @GET("/api/accounts/{user_id}")
-    Account.Response getAccount(@Path("user_id") String user_id);
+    @GET("/api/accounts/{userId}")
+    Account.Response getAccount(@Path("userId") String userId);
 
 
     ///// Schedules /////
@@ -53,13 +54,14 @@ public interface Api {
                                   @Query("reverse") boolean reverse);
 
     // Get an image upload link
-    @GET("/api/stores/schedules/link")
-    ImageUploadUrl getImageUploadURL();
+    @GET("/api/accounts/{userId}/schedules/link")
+    ImageUploadUrl getImageUploadURL(@Path("userId") String userId);
 
     // Send the image with its data
     @Multipart
     @POST("/{imageUrl}")
     PostResult uploadImage(@EncodedPath("imageUrl") String imageUrl,
+                           @Query("user_id") String userId,
                            @Part("file") TypedFile image,
                            @PartMap Map<String, String> imageParams);
 
@@ -86,6 +88,6 @@ public interface Api {
 
     // Remove store from account
     @DELETE("/api/accounts/{userId}/stores/remove")
-    PostResult removeStore(@Path("userId") String mUserId,
+    PostResult removeStore(@Path("userId") String userId,
                            @QueryMap Map<String, String> mStoreParams);
 }

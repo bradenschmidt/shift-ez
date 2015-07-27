@@ -95,9 +95,9 @@ public class LoginActivity extends GPlusBaseActivity {
             accountParams.put("user_name", person.getDisplayName());
             accountParams.put("user_image_url", person.getImage().getUrl());
 
-            AddAccountRetrofitRequest accountRequest = new AddAccountRetrofitRequest(accountParams);
+            AddAccountRetrofitRequest accountRequest = new AddAccountRetrofitRequest(accountParams, ShiftEZ.getInstance().getAccount().getEmail());
             getSpiceManager().execute(accountRequest,
-                    Constants.ADD_ACCOUNT_PARAM,
+                    Constants.ADD_ACCOUNT_KEY,
                     5 * DurationInMillis.ONE_MINUTE,
                     new AddAccountRequestListener());
 

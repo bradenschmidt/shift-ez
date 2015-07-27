@@ -13,22 +13,26 @@ import retrofit.mime.TypedFile;
  */
 public class ImageUploadRetrofitRequest extends RetrofitSpiceRequest<PostResult, Api> {
 
-    private String TAG = "ImageUploadRetrofitRequest";
+    private String TAG = this.getClass().getSimpleName();
 
     private Map<String, String> mImageParams;
     private TypedFile mImage;
     private ImageUploadUrl mImageUploadUrl;
+    private String mUserId;
 
-    public ImageUploadRetrofitRequest(ImageUploadUrl imageUploadUrl, TypedFile image, Map<String, String> imageParams) {
+    public ImageUploadRetrofitRequest(ImageUploadUrl imageUploadUrl,
+                                      String userId,
+                                      TypedFile image,
+                                      Map<String, String> imageParams) {
         super(PostResult.class, Api.class);
         this.mImageParams = imageParams;
         this.mImage = image;
         this.mImageUploadUrl = imageUploadUrl;
+        this.mUserId = userId;
     }
 
     @Override
     public PostResult loadDataFromNetwork() throws Exception {
-
-        return getService().uploadImage(mImageUploadUrl.getPath(), mImage, mImageParams);
+        return getService().uploadImage(mImageUploadUrl.getPath(), mUserId, mImage, mImageParams);
     }
 }

@@ -12,16 +12,17 @@ public class AddAccountRetrofitRequest extends RetrofitSpiceRequest<PostAccount,
     private String TAG = this.getClass().getSimpleName();
 
     private Map<String, String> mAccountParams;
+    private String mUserId;
 
-    public AddAccountRetrofitRequest(Map<String, String> accountParams) {
+    public AddAccountRetrofitRequest(Map<String, String> accountParams, String userId) {
         super(PostAccount.class, Api.class);
         this.mAccountParams = accountParams;
+        mUserId = userId;
     }
 
     @Override
     public PostAccount loadDataFromNetwork() throws Exception {
-
-        return getService().addAccount(mAccountParams);
+        return getService().addAccount(mUserId, mAccountParams);
     }
 
 }

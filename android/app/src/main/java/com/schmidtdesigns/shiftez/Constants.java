@@ -19,5 +19,8 @@ public class Constants {
     public static final String STORE_KEY = "stores";
     public static final String REFRESH_STORES = "refresh_schedules";
     public static final String REMOVE_KEY_PARAM = "remove_store";
-    public static String ACCOUNT_PARAM = "account";
+    public static final String IMAGE_UPLOAD_LINK = "image_upload_link";
+    public static final String ACCOUNT_PARAM = "account";
+    public static final String IMAGE_UPLOAD = "image_upload";
+    public static final String ADD_ACCOUNT_KEY = "add_account";
 }
