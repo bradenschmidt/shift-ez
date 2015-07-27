@@ -416,7 +416,7 @@ public class UploadActivity extends BaseActivity {
             Log.d(TAG, "Uploading image with params: " + imageParams.toString());
 
             // Upload image and info
-            ImageUploadRetrofitRequest imageUploadRequest = new ImageUploadRetrofitRequest(imageUploadUrl, ShiftEZ.getInstance().getAccount().getEmail(), image, imageParams);
+            ImageUploadRetrofitRequest imageUploadRequest = new ImageUploadRetrofitRequest(imageUploadUrl, image, imageParams);
             getSpiceManager().execute(imageUploadRequest, Constants.IMAGE_UPLOAD, DurationInMillis.ONE_SECOND, new ImageUploadListener());
 
         }

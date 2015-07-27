@@ -61,7 +61,6 @@ public interface Api {
     @Multipart
     @POST("/{imageUrl}")
     PostResult uploadImage(@EncodedPath("imageUrl") String imageUrl,
-                           @Query("user_id") String userId,
                            @Part("file") TypedFile image,
                            @PartMap Map<String, String> imageParams);
 

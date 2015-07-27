@@ -18,21 +18,18 @@ public class ImageUploadRetrofitRequest extends RetrofitSpiceRequest<PostResult,
     private Map<String, String> mImageParams;
     private TypedFile mImage;
     private ImageUploadUrl mImageUploadUrl;
-    private String mUserId;
 
     public ImageUploadRetrofitRequest(ImageUploadUrl imageUploadUrl,
-                                      String userId,
                                       TypedFile image,
                                       Map<String, String> imageParams) {
         super(PostResult.class, Api.class);
         this.mImageParams = imageParams;
         this.mImage = image;
         this.mImageUploadUrl = imageUploadUrl;
-        this.mUserId = userId;
     }
 
     @Override
     public PostResult loadDataFromNetwork() throws Exception {
-        return getService().uploadImage(mImageUploadUrl.getPath(), mUserId, mImage, mImageParams);
+        return getService().uploadImage(mImageUploadUrl.getPath(), mImage, mImageParams);
     }
 }
