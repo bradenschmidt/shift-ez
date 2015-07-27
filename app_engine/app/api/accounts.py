@@ -7,9 +7,8 @@ accounts = Blueprint("accounts", __name__, )
 
 # POSTS ##########################
 @accounts.route('/add', methods=['POST'])
-def add_account():
+def add_account(user_id):
     """Add a new Account"""
-    user_id = request.args.get('user_id')
     user_name = request.args.get('user_name')
     user_image_url = request.args.get('user_image_url')
 
