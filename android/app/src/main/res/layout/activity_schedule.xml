@@ -12,22 +12,25 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_gravity="center"
-        android:transitionName="@string/schedule_image_transition">
+        android:transitionName="@string/schedule_image_transition"/>
 
-    </com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView><android.support.v7.widget.Toolbar android:id="@+id/schedule_toolbar"
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/schedule_toolbar"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@color/transparent_black"
         android:minHeight="?attr/actionBarSize"
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-        app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"/>
 
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true">
+        android:layout_alignParentStart="true"
+        android:background="@color/transparent_black">
 
         <LinearLayout
             android:layout_width="wrap_content"
@@ -38,25 +41,31 @@
                 android:id="@+id/schedule_info_button"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
+                android:layout_marginLeft="5dp"
+                android:layout_marginRight="5dp"
                 android:background="?android:attr/selectableItemBackground"
                 android:contentDescription="@string/schedule_info_icon"
-                android:src="@drawable/ic_action_info" />
+                android:src="@drawable/ic_action_info"/>
 
             <ImageButton
                 android:id="@+id/schedule_share_button"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
+                android:layout_marginLeft="5dp"
+                android:layout_marginRight="5dp"
                 android:background="?android:attr/selectableItemBackground"
                 android:contentDescription="@string/schedule_share_icon"
-                android:src="@drawable/ic_action_send" />
+                android:src="@drawable/ic_action_send"/>
 
             <ImageButton
                 android:id="@+id/schedule_update_button"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
+                android:layout_marginLeft="5dp"
+                android:layout_marginRight="5dp"
                 android:background="?android:attr/selectableItemBackground"
                 android:contentDescription="@string/schedule_update_icon"
-                android:src="@drawable/ic_action_redo" />
+                android:src="@drawable/ic_action_redo"/>
         </LinearLayout>
 
     </RelativeLayout>
