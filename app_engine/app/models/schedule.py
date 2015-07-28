@@ -22,10 +22,11 @@ class Schedule(ndb.Model):
     image_blob = ndb.BlobKeyProperty()
 
     @staticmethod
-    def get(_upload_user_id, _year, _week):
+    def get(_upload_user_id, _year, _week, _week_offset):
         schedule = Schedule.query(
             ndb.AND(Schedule.year == _year,
                     Schedule.week == _week,
+                    Schedule.week_offset == _week_offset,
                     Schedule.upload_user_id == _upload_user_id)).get()
         return schedule
 

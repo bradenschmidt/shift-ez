@@ -41,6 +41,7 @@ def upload_image(user_id):
     store_name = request.form.get('store_name')
     dep_name = request.form.get('dep_name')
 
+    upload_user_id = request.form.get('upload_user_id')
     year = request.form.get('year', type=int)
     week = request.form.get('week', type=int)
     week_offset = request.form.get('week_offset', type=int)
@@ -60,22 +61,37 @@ def upload_image(user_id):
         desc = 'Upload Failed: Account Not Found.'
         return jsonify(code=code, desc=desc)
 
-    schedule = Schedule(parent=store.key,
-                        upload_user_id=user_id,
-                        user_name=account.user_name,
-                        year=year,
-                        week=week,
-                        week_offset=week_offset,
-                        image_blob=blobstore.BlobKey(blob_key_str))
+    schedule = store.has_schedule(upload_user_id, year, week, week_offset)
+    if schedule:
+        # Update schedule
+        schedule.image_blob = blobstore.BlobKey(blob_key_str)
+        schedule.upload_user_id = user_id
+        schedule.user_name = account.user_name
 
-    schedule.put()
+        schedule.put()
 
-    store.schedules.append(schedule.key)
-    store.put()
+        # Setup results
+        code = 0
+        desc = 'Upload Successful. Store Updated'
+    else:
+        # No schedule found so make new one and add to store
+        schedule = Schedule(parent=store.key,
+                            upload_user_id=user_id,
+                            user_name=account.user_name,
+                            year=year,
+                            week=week,
+                            week_offset=week_offset,
+                            image_blob=blobstore.BlobKey(blob_key_str))
+        schedule.put()
 
-    # Setup results
-    code = 0
-    desc = 'Upload Successful'
+        store.schedules.append(schedule.key)
+        store.put()
+
+        # Setup results
+        code = 0
+        desc = 'Upload Successful'
+
+
 
     return jsonify(code=code, desc=desc)
 

@@ -29,6 +29,16 @@ class StoreDepartment(ndb.Model):
                     StoreDepartment.user_id == _user_id)).get()
         return store
 
+    def has_schedule(self, upload_user_id, year, week, week_offset):
+        for schedule_key in self.schedules:
+            schedule = schedule_key.get()
+            if schedule:
+                if schedule.upload_user_id == upload_user_id and schedule.year == year \
+                        and schedule.week == week and schedule.week_offset == week_offset:
+                    return schedule
+
+        return None
+
     def get_schedules(self):
         schedules = []
 
@@ -52,6 +62,7 @@ class StoreDepartment(ndb.Model):
                 schedule_dict = schedule.to_dict_images()
                 schedule_dict['store_name'] = self.store_name
                 schedule_dict['dep_name'] = self.dep_name
+                schedule_dict['store_user_id'] = self.user_id
                 schedules.append(schedule_dict)
             else:
                 logging.info("Schedule with given key is missing: "
