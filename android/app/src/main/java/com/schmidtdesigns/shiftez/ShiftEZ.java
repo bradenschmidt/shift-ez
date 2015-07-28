@@ -6,15 +6,19 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.widget.ImageView;
 
+import com.crashlytics.android.Crashlytics;
 import com.mikepenz.materialdrawer.util.DrawerImageLoader;
 import com.schmidtdesigns.shiftez.models.Account;
 import com.squareup.picasso.Picasso;
+
+import io.fabric.sdk.android.Fabric;
 
 /**
  * Created by braden on 15-06-22.
  */
 public class ShiftEZ extends Application {
     private static ShiftEZ singleInstance = null;
+    private Account account;
 
     public static ShiftEZ getInstance()
     {
@@ -24,6 +28,7 @@ public class ShiftEZ extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        Fabric.with(this, new Crashlytics());
         singleInstance = this;
         DrawerImageLoader.init(new DrawerImageLoader.IDrawerImageLoader() {
             @Override
@@ -43,8 +48,6 @@ public class ShiftEZ extends Application {
             }
         });
     }
-
-    private Account account;
 
     public Account getAccount() {
         return account;

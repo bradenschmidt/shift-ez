@@ -99,6 +99,9 @@
             android:name=".network.RetrofitSpiceService"
             android:exported="false" />
 
+        <meta-data
+            android:name="io.fabric.ApiKey"
+            android:value="c2a5e34cedcebc4d5bd0fbc75cb9f24e2e0c4f3d"/>
     </application>
 
 </manifest>
