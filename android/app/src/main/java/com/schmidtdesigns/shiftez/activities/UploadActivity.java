@@ -62,6 +62,7 @@ public class UploadActivity extends BaseActivity {
     private ViewHolder mHolder;
     private Schedule mSchedule;
 
+    @SuppressWarnings("ButterKnifeInjectNotCalled")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
