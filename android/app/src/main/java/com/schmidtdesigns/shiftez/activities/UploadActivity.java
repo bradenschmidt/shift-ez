@@ -406,12 +406,23 @@ public class UploadActivity extends BaseActivity {
             // Collect params from Account and from spinners.
             TypedFile image = new TypedFile("image/*", mImageFile);
             HashMap<String, String> imageParams = new HashMap<>();
-            imageParams.put("store_user_id", ((Store) mHolder.mStoreSpinner.getSelectedItem()).getUserId());
-            imageParams.put("store_name", ((Store) mHolder.mStoreSpinner.getSelectedItem()).getStoreName());
-            imageParams.put("dep_name", ((Store) mHolder.mStoreSpinner.getSelectedItem()).getDepName());
-            imageParams.put("week", String.valueOf(mHolder.mWeekSpinner.getSelectedItem()));
-            imageParams.put("week_offset", String.valueOf(mHolder.mWeekOffsetSpinner.getSelectedItem()));
-            imageParams.put("year", String.valueOf(mHolder.mYearSpinner.getSelectedItem()));
+
+            if (mSchedule != null) {
+                imageParams.put("store_user_id", mSchedule.getStoreUserId());
+                imageParams.put("store_name", mSchedule.getStoreName());
+                imageParams.put("dep_name", mSchedule.getDepName());
+                imageParams.put("week", String.valueOf(mSchedule.getWeek()));
+                imageParams.put("week_offset", String.valueOf(mSchedule.getWeekOffset()));
+                imageParams.put("year", String.valueOf(mSchedule.getYear()));
+                imageParams.put("upload_user_id", mSchedule.getUploadUserId());
+            } else {
+                imageParams.put("store_user_id", ((Store) mHolder.mStoreSpinner.getSelectedItem()).getUserId());
+                imageParams.put("store_name", ((Store) mHolder.mStoreSpinner.getSelectedItem()).getStoreName());
+                imageParams.put("dep_name", ((Store) mHolder.mStoreSpinner.getSelectedItem()).getDepName());
+                imageParams.put("week", String.valueOf(mHolder.mWeekSpinner.getSelectedItem()));
+                imageParams.put("week_offset", String.valueOf(mHolder.mWeekOffsetSpinner.getSelectedItem()));
+                imageParams.put("year", String.valueOf(mHolder.mYearSpinner.getSelectedItem()));
+            }
 
             Log.d(TAG, "Uploading image with params: " + imageParams.toString());
 

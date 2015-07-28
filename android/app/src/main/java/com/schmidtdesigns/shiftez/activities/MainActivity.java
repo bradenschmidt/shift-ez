@@ -223,8 +223,6 @@ public class MainActivity extends BaseActivity {
         transaction.commit();
     }
 
-
-
     private class StoresRequestListener implements RequestListener<Store.Response> {
         @Override
         public void onRequestFailure(SpiceException spiceException) {

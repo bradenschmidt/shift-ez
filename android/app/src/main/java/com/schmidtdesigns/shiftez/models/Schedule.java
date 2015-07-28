@@ -15,6 +15,9 @@ public class Schedule {
 	@SerializedName("user_name")
 	@Expose
 	private String userName;
+	@SerializedName("store_user_id")
+	@Expose
+	private String storeUserId;
 	@SerializedName("store_name")
 	@Expose
 	private String storeName;
@@ -99,6 +102,10 @@ public class Schedule {
 		return uploadDateTime;
 	}
 
+	public String getStoreUserId() {
+		return storeUserId;
+	}
+
 	@Override
 	public String toString() {
 		return "Schedule{" +
@@ -134,7 +141,6 @@ public class Schedule {
 	}
 
 	public class Response {
-
 		@SerializedName("schedules")
 		private Schedule.List schedules;
 
