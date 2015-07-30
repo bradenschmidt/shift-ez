@@ -183,7 +183,7 @@ def get_schedules_by_year_store_dep(user_id, store_name, dep_name, year, week):
     year_schedules = []
     if account and store:
         if account.is_store_in_account(store):
-            schedules = store.getSchedules()
+            schedules = store.get_schedules()
             for schedule in schedules:
                 if schedule.year == int(year) and schedule.week == week:
                     year_schedules.append(schedule.to_dict_images())
@@ -192,10 +192,12 @@ def get_schedules_by_year_store_dep(user_id, store_name, dep_name, year, week):
 
 
 @accounts_stores.route('/<store_name>/dep/<dep_name>/')
-def get_schedules_by_store(user_id, store_name, dep_name):
+def get_schedules_by_store(user_id, store_name, dep_name, store_user_id=None):
     """Return the users schedules for a store"""
 
-    store_user_id = request.args.get('store_user_id')
+    if not store_user_id:
+        store_user_id = request.args.get('store_user_id')
+
     reverse = request.args.get('reverse')
 
     store = StoreDepartment.get(store_user_id, store_name, dep_name)
@@ -203,7 +205,7 @@ def get_schedules_by_store(user_id, store_name, dep_name):
     schedules = []
     if account and store:
         if account.is_store_in_account(store):
-            schedules = store.getScheduleDicts()
+            schedules = store.get_schedule_dicts()
 
     return jsonify(schedules=sort_schedules(schedules, reverse))
 

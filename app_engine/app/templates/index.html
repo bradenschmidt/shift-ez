@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+{% autoescape true %}
+<html>
+<head>
+    <link href="/static/stylesheets/vertical-responsive-menu.min.css" rel="stylesheet">
+
+    <link href="/static/stylesheets/stylesheet.css" rel="stylesheet" type="text/css">
+    <script src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+
+</head>
+
+<body>
+
+<header class="header clearfix">
+    <button type="button" id="toggleMenu" class="toggle_menu">
+        <i class="fa fa-bars"></i>
+    </button>
+    <h1>Shift EZ</h1>
+</header>
+
+<nav class="vertical_nav">
+
+    <ul id="js-menu" class="menu">
+
+        <li class="menu--item">
+            <span class="menu--label section">Stores</span>
+        </li>
+
+        {% for store in stores %}
+            <li class="menu--item">
+
+                <label class="menu--link" title="{{ store.store_name }}">
+                    <img class="menu--icon" src="/static/images/ic_action_add_box.png"/>
+                    <span class="menu--label">{{ store.store_name }}</span>
+                </label>
+
+            </li>
+        {% endfor %}
+
+        <li class="menu--item separator">
+
+            <label class="menu--link" title="Add Store">
+                <img class="menu--icon" src="/static/images/ic_action_add_box.png"/>
+                <span class="menu--label">Add Store</span>
+            </label>
+
+        </li>
+
+        <li class="menu--item separator">
+
+            <label class="menu--link" title="Settings">
+                <img class="menu--icon" src="/static/images/ic_action_add_box.png"/>
+                <span class="menu--label">Settings</span>
+            </label>
+
+        </li>
+
+    </ul>
+
+    <button id="collapse_menu" class="collapse_menu">
+        <i class="collapse_menu--icon"></i>
+        <span class="collapse_menu--label">Collapse Menu</span>
+    </button>
+
+</nav>
+
+<div class="wrapper">
+
+    <table>
+
+        {% for schedule in schedules %}
+            <tr>
+
+                <table>
+                    <tr>
+                        <td>Store: {{ schedule.store_name }}</td>
+                        <td>Department: {{ schedule.dep_name }}</td>
+                        <td>Year: {{ schedule.year }}</td>
+                        <td>Week: {{ schedule.week }}</td>
+                        <td>Uploader: {{ schedule.user_name }} ({{ schedule.upload_user_id }})</td>
+                        <td>Date: {{ schedule.upload_dateTime }}</td>
+                    </tr>
+                    <tr>
+                        <td class="schedule_image" colspan="6"><img src="{{ schedule.image_url }}"></td>
+                    </tr>
+                </table>
+            </tr>
+
+        {% endfor %}
+
+    </table>
+</div>
+<script src="/static/scripts/vertical-responsive-menu.min.js"></script>
+</body>
+</html>
+{% endautoescape %}
