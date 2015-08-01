@@ -1,7 +1,13 @@
 function hideAllSchedules() {
     $(".schedules").hide()
 }
-$(document).ready(hideAllSchedules());
+
+function initializeFunction() {
+    hideAllSchedules();
+    showStoreSchedulesByIndex(0);
+}
+
+$(document).ready(initializeFunction);
 
 $(".store").click(function () {
     hideAllSchedules();
@@ -10,7 +16,11 @@ $(".store").click(function () {
 
     var storeNum = store.substr(5);
 
+    showStoreSchedulesByIndex(storeNum)
+});
+
+function showStoreSchedulesByIndex(storeNum) {
     var scheduleNum = '#schedules' + storeNum;
 
     $(scheduleNum).show()
-});
+}

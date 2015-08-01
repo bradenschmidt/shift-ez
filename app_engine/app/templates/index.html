@@ -5,7 +5,7 @@
     <link href="/static/stylesheets/vertical-responsive-menu.min.css" rel="stylesheet">
 
     <link href="/static/stylesheets/stylesheet.css" rel="stylesheet" type="text/css">
-    <script src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+    <script src="/static/scripts/jquery.min.js"></script>
 
 </head>
 
@@ -71,14 +71,22 @@
         <div class="schedules" id="{{ 'schedules' + loop.index0|string }}">
 
             {% for schedule in store['schedules'] %}
-                <table>
+                <table class="schedule">
                     <tr>
-                        <td>Store: {{ schedule.store_name }}</td>
-                        <td>Department: {{ schedule.dep_name }}</td>
-                        <td>Year: {{ schedule.year }}</td>
-                        <td>Week: {{ schedule.week }}</td>
-                        <td>Uploader: {{ schedule.user_name }} ({{ schedule.upload_user_id }})</td>
-                        <td>Date: {{ schedule.upload_dateTime }}</td>
+                        <th>Store:</th>
+                        <th>Department:</th>
+                        <th>Year:</th>
+                        <th>Week:</th>
+                        <th>Uploader:</th>
+                        <th>Date:</th>
+                    </tr>
+                    <tr>
+                        <td>{{ schedule.store_name }}</td>
+                        <td>{{ schedule.dep_name }}</td>
+                        <td>{{ schedule.year }}</td>
+                        <td>{{ schedule.week }}</td>
+                        <td>{{ schedule.user_name }} ({{ schedule.upload_user_id }})</td>
+                        <td>{{ schedule.upload_dateTime }}</td>
                     </tr>
                     <tr>
                         <td class="schedule_image" colspan="6"><img src="{{ schedule.image_url }}"></td>
