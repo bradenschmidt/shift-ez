@@ -4,6 +4,7 @@ from pprint import pprint
 
 import jinja2
 from flask import Flask
+
 from google.appengine.ext import blobstore
 
 from app.api.accounts import accounts
@@ -50,7 +51,7 @@ def get_json_response(view_name, *args, **kwargs):
 
 # Pages ######################################################################
 @app.route('/stores/<store_name>/dep/<dep_name>')
-def index(store_name, dep_name):
+def store_template(store_name, dep_name):
     """Serve the homepage."""
 
     # user = users.get_current_user()
@@ -73,6 +74,32 @@ def index(store_name, dep_name):
 
     template_values = {
         'schedules': store['schedules'],
+        'stores': stores['stores']
+    }
+
+    template = JINJA_ENVIRONMENT.get_template('app/templates/index.html')
+    return template.render(template_values)
+
+
+@app.route('/')
+def index():
+    """Serve the homepage."""
+
+    # user = users.get_current_user()
+    # if user:
+    #     url = users.create_logout_url('')
+    #     url_linktext = 'Logout'
+    # else:
+    #     url = users.create_login_url('')
+    #     url_linktext = 'Login'
+
+    user_id = "bradenschmidt@gmail.com"
+    resp = get_accounts_stores(user_id)
+    stores = json.loads(resp.data)
+
+    pprint(stores)
+
+    template_values = {
         'stores': stores['stores']
     }
 
