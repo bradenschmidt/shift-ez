@@ -154,3 +154,7 @@ header h1 {
   padding-top: 10px;
   text-align: center;
 }
+
+.store > a {
+  text-decoration: none;
+}

@@ -3,6 +3,7 @@ import os
 from pprint import pprint
 
 import jinja2
+
 from flask import Flask
 
 from google.appengine.ext import blobstore
@@ -77,7 +78,7 @@ def store_template(store_name, dep_name):
         'stores': stores['stores']
     }
 
-    template = JINJA_ENVIRONMENT.get_template('app/templates/index.html')
+    template = JINJA_ENVIRONMENT.get_template('app/templates/store.html')
     return template.render(template_values)
 
 
