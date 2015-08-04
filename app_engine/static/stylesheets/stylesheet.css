@@ -1,14 +1,21 @@
 table, th, td {
-    border: 1px solid black;
+  border: 1px solid black;
+}
+
+td {
+  padding: 5px;
+  text-align: center;
 }
 
 table {
-    margin: 0px auto;
-    width: 75%
+  margin: 0 auto;
+  width: 100%;
+  border: solid slategrey 1px;
+  border-collapse: collapse;
 }
 
 img {
-	width: 75%
+  width: 100%
 }
 
 .schedule_image {
@@ -67,6 +74,14 @@ header h1 {
   clear: both;
 }
 
+.vertical_nav {
+  width: 250px;
+}
+
+.vertical_nav__minify {
+  width: 50px;
+}
+
 /* Small devices (tablets)
 ==========================*/
 @media (min-width: 768px) {
@@ -96,22 +111,46 @@ header h1 {
     margin-left: 50px;
   }
 
-}
+  .vertical_nav {
+    width: 250px;
+  }
 
-.vertical_nav {
-  width: 250px;
+  .vertical_nav__minify {
+    width: 50px;
+  }
 }
 
 .separator {
-  border-top: 1px solid #afafaf;
+  border-top: 1px solid #909090;
 }
 
 .section {
   margin-left: 10px;
 }
 
-i.menu--icon {
-  background: url("/static/images/ic_action_add_box.png");
-  background-position: center;
-  background-repeat: no-repeat;
+.menu--label.dep {
+  padding-left: 70px;
+  line-height: 15px;
+  height: 20px;
+  padding-top: 2px;
+  color: #9b9b9b;
+  font-size: 0.86em;
+}
+
+.menu--label {
+  height: 30px;
+  padding-bottom: 0;
+}
+
+.menu--label.section {
+  font-size: 1.1em;
+}
+
+.menu--item.store {
+  height: 50px;
+}
+
+#wPaginate {
+  padding-top: 10px;
+  text-align: center;
 }

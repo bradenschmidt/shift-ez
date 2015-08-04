@@ -2,11 +2,12 @@
 {% autoescape true %}
 <html>
 <head>
+    <link rel="Stylesheet" type="text/css" href="/static/stylesheets/wPaginate.css"/>
+
     <link href="/static/stylesheets/vertical-responsive-menu.min.css" rel="stylesheet">
 
     <link href="/static/stylesheets/stylesheet.css" rel="stylesheet" type="text/css">
     <script src="/static/scripts/jquery.min.js"></script>
-
 </head>
 
 <body>
@@ -31,7 +32,8 @@
 
                 <label class="menu--link" title="{{ store.store_name }}">
                     <img class="menu--icon" src="/static/images/ic_action_business.png"/>
-                    <span class="menu--label">{{ store.store_name }}</span>
+                    <span class="menu--label store">{{ store.store_name }}</span>
+                    <span class="menu--label dep">{{ store.dep_name }}</span>
                 </label>
 
             </li>
@@ -66,12 +68,15 @@
 
 <div class="wrapper">
 
+    <span id="prevButton">Prev</span>
+
     {% for store in stores %}
 
-        <div class="schedules" id="{{ 'schedules' + loop.index0|string }}">
+        <div class="schedules {{ 'schedules' + loop.index0|string }}">
 
             {% for schedule in store['schedules'] %}
-                <table class="schedule">
+                <table class="schedule {{ 'schedule' + loop.index0|string }}"
+                       id="{{ 'current' if (loop.index0 == 0) else '' }}">
                     <tr>
                         <th>Store:</th>
                         <th>Department:</th>
@@ -96,8 +101,12 @@
 
         </div>
     {% endfor %}
+
+    <span id="nextButton">Next</span>
+
 </div>
 <script src="/static/scripts/vertical-responsive-menu.min.js"></script>
+<script type="text/javascript" src="/static/scripts/wPaginate.js"></script>
 <script src="/static/scripts/index.js"></script>
 </body>
 </html>
