@@ -180,3 +180,7 @@ header h1 {
 #emptyTable {
   width: 100%;
 }
+
+#loginNeeded {
+  text-align: center;
+}

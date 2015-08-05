@@ -2,10 +2,10 @@ import json
 import os
 from pprint import pprint
 
+from google.appengine.api import users
+from google.appengine.ext.webapp.util import login_required
 import jinja2
-
-from flask import Flask
-
+from flask import Flask, request
 from google.appengine.ext import blobstore
 
 from app.api.accounts import accounts
@@ -51,31 +51,38 @@ def get_json_response(view_name, *args, **kwargs):
 
 
 # Pages ######################################################################
+@login_required
 @app.route('/stores/<store_name>/dep/<dep_name>')
 def store_template(store_name, dep_name):
     """Serve the homepage."""
 
-    # user = users.get_current_user()
-    # if user:
-    #     url = users.create_logout_url('')
-    #     url_linktext = 'Logout'
-    # else:
-    #     url = users.create_login_url('')
-    #     url_linktext = 'Login'
+    store = None
+    stores = []
 
-    user_id = "bradenschmidt@gmail.com"
-    resp = get_accounts_stores(user_id)
-    stores = json.loads(resp.data)
+    user = users.get_current_user()
 
-    resp_store = get_schedules_by_store(user_id, store_name, dep_name, store_user_id=user_id)
-    store = json.loads(resp_store.data)
+    if user:
+        url = users.create_logout_url(request.path)
+        url_linktext = 'Logout'
+        user_id = user.email()
+        resp = get_accounts_stores(user_id)
+        stores = json.loads(resp.data)
 
-    # pprint(stores['stores'])
-    pprint(store)
+        resp_store = get_schedules_by_store(user_id, store_name, dep_name, store_user_id=user_id)
+        store = json.loads(resp_store.data)
+    else:
+        url = users.create_login_url(request.path)
+        url_linktext = 'Login'
+        user = None
+
+    print "user: " + str(user)
 
     template_values = {
-        'schedules': store['schedules'],
-        'stores': stores['stores']
+        'schedules': store,
+        'stores': stores,
+        'url': url,
+        'url_linktext': url_linktext,
+        'user': user
     }
 
     template = JINJA_ENVIRONMENT.get_template('app/templates/store.html')
