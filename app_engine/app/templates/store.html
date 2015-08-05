@@ -68,38 +68,50 @@
 
 <div class="wrapper">
 
-    <span id="prevButton">Prev</span>
+    <div id="leftColumn" class="sideDivs">
+        <span id="prevButton" class="buttons"><</span>
+    </div>
 
     <div class="schedules">
-
-        {% for schedule in schedules %}
-            <table class="schedule {{ 'schedule' + loop.index0|string }}"
-                   id="{{ 'current' if (loop.index0 == 0) else '' }}">
-                <tr>
-                    <th>Store:</th>
-                    <th>Department:</th>
-                    <th>Year:</th>
-                    <th>Week:</th>
-                    <th>Uploader:</th>
-                    <th>Date:</th>
-                </tr>
-                <tr>
-                    <td>{{ schedule.store_name }}</td>
-                    <td>{{ schedule.dep_name }}</td>
-                    <td>{{ schedule.year }}</td>
-                    <td>{{ schedule.week }}</td>
-                    <td>{{ schedule.user_name }} ({{ schedule.upload_user_id }})</td>
-                    <td>{{ schedule.upload_dateTime }}</td>
-                </tr>
-                <tr>
-                    <td class="schedule_image" colspan="6"><img src="{{ schedule.image_url }}"></td>
-                </tr>
+        {% if schedules|length > 0 %}
+            {% for schedule in schedules %}
+                <table class="schedule {{ 'schedule' + loop.index0|string }}"
+                       id="{{ 'current' if (loop.index0 == 0) else '' }}">
+                    <tr>
+                        <th>Store:</th>
+                        <th>Department:</th>
+                        <th>Year:</th>
+                        <th>Week:</th>
+                        <th>Uploader:</th>
+                        <th>Date:</th>
+                    </tr>
+                    <tr>
+                        <td>{{ schedule.store_name }}</td>
+                        <td>{{ schedule.dep_name }}</td>
+                        <td>{{ schedule.year }}</td>
+                        <td>{{ schedule.week }}</td>
+                        <td>{{ schedule.user_name }} ({{ schedule.upload_user_id }})</td>
+                        <td>{{ schedule.upload_dateTime }}</td>
+                    </tr>
+                    <tr>
+                        <td class="schedule_image" colspan="6"><img src="{{ schedule.image_url }}"></td>
+                    </tr>
+                </table>
+            {% endfor %}
+        {% else %}
+            <table id="emptyTable">
+                <td>
+                    <span id="empty">No Schedules</span>
+                </td>
             </table>
-        {% endfor %}
+
+        {% endif %}
 
     </div>
 
-    <span id="nextButton">Next</span>
+    <div id="rightColumn" class="sideDivs">
+        <span id="nextButton" class="buttons">></span>
+    </div>
 
 </div>
 <script src="/static/scripts/vertical-responsive-menu.min.js"></script>
