@@ -1,3 +1,7 @@
+a {
+  text-decoration: none;
+}
+
 table, th, td {
   border: 1px solid black;
 }
@@ -166,9 +170,17 @@ header h1 {
 
 .buttons {
   text-align: center;
-  background: #00afff;
-  padding: 10px;
+  padding: 1px;
   cursor: pointer;
+}
+
+.buttons:hover {
+  background: #ddd;
+}
+
+.buttons img {
+  height: 50px;
+  width: 50px;
 }
 
 #empty {
@@ -183,4 +195,14 @@ header h1 {
 
 #loginNeeded {
   text-align: center;
+}
+
+.noStores {
+  margin-left: 50px;
+}
+
+#logout {
+  float: right;
+  text-decoration: none;
+  color: #333;
 }

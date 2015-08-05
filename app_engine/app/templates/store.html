@@ -15,7 +15,7 @@
         <i class="fa fa-bars"></i>
     </button>
     <h1>Shift EZ</h1>
-    <a href="{{ url|safe }}">{{ url_linktext }}</a>
+    <a id="logout" href="{{ url|safe }}"><h1>{{ url_linktext }}</h1></a>
 </header>
 
 <nav class="vertical_nav">
@@ -26,33 +26,39 @@
             <span class="menu--label section">Stores</span>
         </li>
 
-        {% for store in stores['stores'] %}
-            <li class="menu--item store" id="{{ 'store' + loop.index0|string }}">
+        {% if user %}
+            {% for store in stores['stores'] %}
+                <li class="menu--item store" id="{{ 'store' + loop.index0|string }}">
 
-                <a href="/stores/{{ store.store_name }}/dep/{{ store.dep_name }}">
-                    <label class="menu--link" title="{{ store.store_name }}">
-                        <img class="menu--icon" src="/static/images/ic_action_business.png"/>
-                        <span class="menu--label store">{{ store.store_name }}</span>
-                        <span class="menu--label dep">{{ store.dep_name }}</span>
+                    <a href="/stores/{{ store.store_name }}/dep/{{ store.dep_name }}">
+                        <label class="menu--link" title="{{ store.store_name }}">
+                            <img class="menu--icon" src="/static/images/ic_action_business.png"/>
+                            <span class="menu--label store">{{ store.store_name }}</span>
+                            <span class="menu--label dep">{{ store.dep_name }}</span>
+                        </label>
+                    </a>
+
+                </li>
+            {% endfor %}
+
+            <li class="menu--item separator">
+                <a href="#">
+                    <label class="menu--link" title="Add Store">
+                        <img class="menu--icon" src="/static/images/ic_action_add_box.png"/>
+                        <span class="menu--label">Add Store</span>
                     </label>
                 </a>
-
             </li>
-        {% endfor %}
-
-        <li class="menu--item separator">
-
-            <label class="menu--link" title="Add Store">
-                <img class="menu--icon" src="/static/images/ic_action_add_box.png"/>
-                <span class="menu--label">Add Store</span>
-            </label>
-
-        </li>
+        {% else %}
+            <li class="menu--item">
+                <span class="menu--label noStores">No Stores</span>
+            </li>
+        {% endif %}
 
         <li class="menu--item separator">
 
             <label class="menu--link" title="Settings">
-                <img class="menu--icon" src="/static/images/ic_action_add_box.png"/>
+                <img class="menu--icon" src="/static/images/ic_action_settings.png"/>
                 <span class="menu--label">Settings</span>
             </label>
 
@@ -61,7 +67,7 @@
     </ul>
 
     <button id="collapse_menu" class="collapse_menu">
-        <i class="collapse_menu--icon"></i>
+        <img class="collapse_menu--icon" src="/static/images/ic_keyboard_arrow_left_black.png"/>
         <span class="collapse_menu--label">Collapse Menu</span>
     </button>
 
@@ -70,9 +76,10 @@
 <div class="wrapper">
 
     {% if user %}
-
         <div id="leftColumn" class="sideDivs">
-            <span id="prevButton" class="buttons"><</span>
+            <div class="buttons">
+                <img id="prevButton" src="/static/images/ic_keyboard_arrow_left_black.png">
+            </div>
         </div>
 
         <div class="schedules">
@@ -113,10 +120,12 @@
         </div>
 
         <div id="rightColumn" class="sideDivs">
-            <span id="nextButton" class="buttons">></span>
+            <div class="buttons">
+                <img id="nextButton" src="/static/images/ic_keyboard_arrow_right_black.png">
+            </div>
         </div>
     {% else %}
-        <span id="loginNeeded">Please Login</span>
+        <span id="loginNeeded">Please <a href="{{ url|safe }}">Login</a></span>
     {% endif %}
 
 </div>
