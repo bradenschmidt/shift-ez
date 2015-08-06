@@ -5,13 +5,18 @@ from pprint import pprint
 from google.appengine.api import users
 from google.appengine.ext.webapp.util import login_required
 import jinja2
-from flask import Flask, request
+
+from flask import Flask, request, flash
+
 from google.appengine.ext import blobstore
+
+from werkzeug.utils import redirect
 
 from app.api.accounts import accounts
 from app.api.accounts_schedules import accounts_schedules, sort_schedules
 from app.api.accounts_stores import accounts_stores, get_accounts_stores, get_schedules_by_store
 from app.api.api import my_api
+from app.forms.AddStoreForm import AddStoreForm
 from app.models.schedule import Schedule
 
 """
@@ -52,7 +57,7 @@ def get_json_response(view_name, *args, **kwargs):
 
 # Pages ######################################################################
 @login_required
-@app.route('/stores/<store_name>/dep/<dep_name>')
+@app.route('/stores/<store_name>/dep/<dep_name>', methods=['GET', 'POST'])
 def store_template(store_name, dep_name):
     """Serve the homepage."""
 
@@ -75,14 +80,19 @@ def store_template(store_name, dep_name):
         url_linktext = 'Login'
         user = None
 
-    print "user: " + str(user)
+    form = AddStoreForm()
+
+    if form.validate():
+        flash('Successfully added store')
+        return redirect('/success')
 
     template_values = {
         'schedules': store,
         'stores': stores,
         'url': url,
         'url_linktext': url_linktext,
-        'user': user
+        'user': user,
+        'add_store_form': form
     }
 
     template = JINJA_ENVIRONMENT.get_template('app/templates/store.html')
