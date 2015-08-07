@@ -16,8 +16,8 @@ accounts_stores = Blueprint("accounts_stores", __name__)
 @accounts_stores.route('/add', methods=['POST'])
 def add_store_to_account(user_id):
     """Create a new store and add to an account."""
-    store_name = request.args.get('store_name')
-    dep_name = request.args.get('dep_name')
+    store_name = request.form.get('store_name')
+    dep_name = request.form.get('dep_name')
 
     account = Account.get(user_id)
     if not account:
