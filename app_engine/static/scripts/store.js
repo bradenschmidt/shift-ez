@@ -46,6 +46,23 @@ function showSchedule(prev, i) {
             prev.attr('id', '');
         }
     }
-
-
 }
+
+$("#form").validate({
+    submitHandler: function (form) {
+
+        var loc = $("#loc").val();
+        var store_name = $("#store_name").val();
+        var dep_name = $("#dep_name").val();
+
+        $.post(loc, {store_name: store_name, dep_name: dep_name})
+            .done(function (data) {
+                alert("Data Loaded: " + data.responseText);
+            })
+            .fail(function (data) {
+                alert(data.statusText)
+                console.log(data);
+            })
+        ;
+    }
+});

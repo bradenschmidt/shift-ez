@@ -3,24 +3,12 @@
 <html>
 <head>
     <link href="/static/stylesheets/vertical-responsive-menu.min.css" rel="stylesheet">
-    <link href="/static/stylesheets/adaptive-modal.css" rel="stylesheet">
+    <link href="/static/stylesheets/jquery.modal.css" rel="stylesheet">
 
     <link href="/static/stylesheets/stylesheet.css" rel="stylesheet" type="text/css">
+
     <script src="/static/scripts/jquery.min.js"></script>
 </head>
-
-{% macro with_errors(field) %}
-    <div class="form_field">
-        {% if field.errors %}
-            {% set css_class = 'has_error ' + kwargs.pop('class', '') %}
-            {{ field(class=css_class, **kwargs) }}
-            <ul class="errors">{% for error in field.errors %}
-                <li>{{ error|e }}</li>{% endfor %}</ul>
-        {% else %}
-            {{ field(f**kwargs) }}
-        {% endif %}
-    </div>
-{% endmacro %}
 
 <body>
 
@@ -56,8 +44,7 @@
             {% endfor %}
 
             <li class="menu--item separator">
-                <a href="#form" data-toggle="adaptive-modal"
-                   style="background: #E8704E; color: white; font-weight: bold">
+                <a href="#formDiv" rel="modal:open">
                     <label class="menu--link" title="Add Store">
                         <img class="menu--icon" src="/static/images/ic_action_add_box.png"/>
                         <span class="menu--label">Add Store</span>
@@ -145,24 +132,21 @@
 
 </div>
 
-
-<form id="form" method="POST" action="/">
-    <div>Store Name: {{ add_store_form.store_name(class="css_class") }}</div>
-    {% if add_store_form.store_name.errors %}
-        <ul class="errors">{% for error in add_store_form.store_name.errors %}
-            <li>{{ error }}</li>{% endfor %}</ul>
-    {% endif %}
-    <div>{{ add_store_form.dep_name.label }}: {{ add_store_form.dep_name(class="css_class") }}</div>
-    {% if add_store_form.dep_name.errors %}
-        <ul class="errors">{% for error in add_store_form.dep_name.errors %}
-            <li>{{ error }}</li>{% endfor %}</ul>
-    {% endif %}
-    <input type="submit" value="Add Store"/>
-</form>
+<div id="formDiv" class="modal">
+    <form id="form">
+        <input id="loc" type="text" hidden required value="/api/accounts/{{ user.email() }}/stores/add" title="loc"/>
+        <label for="store_name">Store Name:</label><br/>
+        <input type="text" name="store_name" id="store_name" required/><br/>
+        <label for="dep_name">Dep Name:</label><br/>
+        <input type="text" name="dep_name" id="dep_name" required/><br/>
+        <button id="addStore" type="submit">Add Store</button>
+    </form>
+</div>
 
 
+<script src="/static/scripts/jquery.validate.min.js"></script>
 <script src="/static/scripts/vertical-responsive-menu.min.js"></script>
-<script src="/static/scripts/jquery.adaptive-modal.js"></script>
+<script src="/static/scripts/jquery.modal.min.js"></script>
 <script src="/static/scripts/store.js"></script>
 </body>
 </html>
