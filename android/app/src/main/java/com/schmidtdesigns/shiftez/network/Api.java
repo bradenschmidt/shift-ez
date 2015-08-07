@@ -10,16 +10,7 @@ import com.schmidtdesigns.shiftez.models.Store;
 
 import java.util.Map;
 
-import retrofit.http.DELETE;
-import retrofit.http.EncodedPath;
-import retrofit.http.GET;
-import retrofit.http.Multipart;
-import retrofit.http.POST;
-import retrofit.http.Part;
-import retrofit.http.PartMap;
-import retrofit.http.Path;
-import retrofit.http.Query;
-import retrofit.http.QueryMap;
+import retrofit.http.*;
 import retrofit.mime.TypedFile;
 
 /**
@@ -67,9 +58,10 @@ public interface Api {
 
     ////// STORES ///////
     // Add store to the account
+    @FormUrlEncoded
     @POST("/api/accounts/{userId}/stores/add")
     PostResult addNewStore(@Path("userId") String userId,
-                           @QueryMap Map<String, String> storeParams);
+                           @FieldMap Map<String, String> storeParams);
 
     // Get all the stores of the user
     @GET("/api/accounts/{userId}/stores/all")
