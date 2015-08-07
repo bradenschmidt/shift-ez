@@ -50,17 +50,21 @@ function showSchedule(prev, i) {
 
 $("#form").validate({
     submitHandler: function (form) {
-
         var loc = $("#loc").val();
         var store_name = $("#store_name").val();
         var dep_name = $("#dep_name").val();
 
         $.post(loc, {store_name: store_name, dep_name: dep_name})
             .done(function (data) {
-                alert("Data Loaded: " + data.responseText);
+                console.log(data);
+
+                alert(data.desc);
+                if (data.code == 0) {
+                    location.reload();
+                }
             })
             .fail(function (data) {
-                alert(data.statusText)
+                alert("Store Add failed: " + data.statusText)
                 console.log(data);
             })
         ;
