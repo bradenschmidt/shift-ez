@@ -5,7 +5,6 @@ from pprint import pprint
 from google.appengine.api import users
 from google.appengine.ext.webapp.util import login_required
 import jinja2
-
 from flask import Flask, request
 from google.appengine.ext import blobstore
 
@@ -53,7 +52,7 @@ def get_json_response(view_name, *args, **kwargs):
 
 # Pages ######################################################################
 @login_required
-@app.route('/stores/<store_name>/dep/<dep_name>', methods=['GET', 'POST'])
+@app.route('/stores/<store_name>/dep/<dep_name>', methods=['GET'])
 def store_template(store_name, dep_name):
     """Serve the homepage."""
 
@@ -75,6 +74,10 @@ def store_template(store_name, dep_name):
         url = users.create_login_url(request.path)
         url_linktext = 'Login'
         user = None
+
+    print user
+    print store
+    print stores
 
     template_values = {
         'schedules': store,

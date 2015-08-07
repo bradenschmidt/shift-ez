@@ -29,19 +29,25 @@
         </li>
 
         {% if user %}
-            {% for store in stores['stores'] %}
-                <li class="menu--item store" id="{{ 'store' + loop.index0|string }}">
+            {% if stores['stores']|length > 0 %}
+                {% for store in stores['stores'] %}
+                    <li class="menu--item store" id="{{ 'store' + loop.index0|string }}">
 
-                    <a href="/stores/{{ store.store_name }}/dep/{{ store.dep_name }}">
-                        <label class="menu--link" title="{{ store.store_name }}">
-                            <img class="menu--icon" src="/static/images/ic_action_business.png"/>
-                            <span class="menu--label store">{{ store.store_name }}</span>
-                            <span class="menu--label dep">{{ store.dep_name }}</span>
-                        </label>
-                    </a>
+                        <a href="/stores/{{ store.store_name }}/dep/{{ store.dep_name }}">
+                            <label class="menu--link" title="{{ store.store_name }}">
+                                <img class="menu--icon" src="/static/images/ic_action_business.png"/>
+                                <span class="menu--label store">{{ store.store_name }}</span>
+                                <span class="menu--label dep">{{ store.dep_name }}</span>
+                            </label>
+                        </a>
 
+                    </li>
+                {% endfor %}
+            {% else %}
+                <li class="menu--item">
+                    <span class="menu--label noStores">No Stores</span>
                 </li>
-            {% endfor %}
+            {% endif %}
 
             <li class="menu--item separator">
                 <a href="#formDiv" rel="modal:open">
@@ -51,11 +57,8 @@
                     </label>
                 </a>
             </li>
-        {% else %}
-            <li class="menu--item">
-                <span class="menu--label noStores">No Stores</span>
-            </li>
         {% endif %}
+
 
         <li class="menu--item separator">
 
@@ -132,17 +135,19 @@
 
 </div>
 
-<div id="formDiv" class="modal">
-    <form id="form">
-        <input id="loc" type="text" hidden required value="/api/accounts/{{ user.email() }}/stores/add" title="loc"/>
-        <label for="store_name">Store Name:</label><br/>
-        <input type="text" name="store_name" id="store_name" required/><br/>
-        <label for="dep_name">Dep Name:</label><br/>
-        <input type="text" name="dep_name" id="dep_name" required/><br/>
-        <button id="addStore" type="submit">Add Store</button>
-    </form>
-</div>
-
+{% if user %}
+    <div id="formDiv" class="modal">
+        <form id="form">
+            <input id="loc" type="text" hidden required value="/api/accounts/{{ user.email() }}/stores/add"
+                   title="loc"/>
+            <label for="store_name">Store Name:</label><br/>
+            <input type="text" name="store_name" id="store_name" required/><br/>
+            <label for="dep_name">Dep Name:</label><br/>
+            <input type="text" name="dep_name" id="dep_name" required/><br/>
+            <button id="addStore" type="submit">Add Store</button>
+        </form>
+    </div>
+{% endif %}
 
 <script src="/static/scripts/jquery.validate.min.js"></script>
 <script src="/static/scripts/vertical-responsive-menu.min.js"></script>

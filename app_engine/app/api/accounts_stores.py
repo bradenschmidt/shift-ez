@@ -150,7 +150,7 @@ def get_accounts_stores(user_id):
         account_dict = account.to_dict_stores()
         return jsonify(stores=account_dict['store_deps'])
     else:
-        return jsonify(stores=None)
+        return jsonify(stores=[])
 
 
 @accounts_stores.route('/<store_name>/dep/<dep_name>/year/<year>')
