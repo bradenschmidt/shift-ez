@@ -17,16 +17,20 @@ table {
   border-collapse: collapse;
 }
 
-img {
-  width: 100%
+.scheduleImage {
+  text-align: center;
+  max-height: 100%;
 }
 
-.schedule_image {
-	text-align: center;
+.scheduleImage img {
+  max-height: 100%;
+  max-width: 100%;
+  width: auto;
 }
 
 html {
   font-size: 16px;
+  height: 100%;
 }
 
 body {
@@ -35,6 +39,7 @@ body {
   font-size: 0.875rem;
   line-height: 1.42857143;
   color: #333;
+  height: 100%;
 }
 
 header {
@@ -158,6 +163,10 @@ header h1 {
   width: 80%;
   vertical-align: middle;
   height: 90%;
+}
+
+.schedule {
+  max-height: 100%;
 }
 
 .sideDivs {

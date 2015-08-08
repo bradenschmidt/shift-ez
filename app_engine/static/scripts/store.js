@@ -64,7 +64,6 @@ $("#addScheduleForm").validate({
         var data = new FormData();
 
         $.each(params, function(key, val) {
-            console.log(key);
             data.append(key, val);
         });
 
