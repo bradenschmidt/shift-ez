@@ -202,12 +202,12 @@ def get_schedules_by_store(user_id, store_name, dep_name, store_user_id=None):
 
     store = StoreDepartment.get(store_user_id, store_name, dep_name)
     account = Account.get(user_id)
-    schedules = []
     if account and store:
         if account.is_store_in_account(store):
             schedules = store.get_schedule_dicts()
+            return jsonify(schedules=sort_schedules(schedules, reverse))
 
-    return jsonify(schedules=sort_schedules(schedules, reverse))
+    return None
 
 
 # DELETES ###########################################################

@@ -71,24 +71,24 @@ def store_template(store_name, dep_name):
         resp = get_accounts_stores(user_id)
         stores = json.loads(resp.data)
 
-        upload_url = blobstore.create_upload_url('/api/accounts/' + user.email() + '/schedules/add')
-
         resp_store = get_schedules_by_store(user_id, store_name, dep_name, store_user_id=user_id)
-        store = json.loads(resp_store.data)
+
+        if not resp_store:
+            # Store Did not exist
+            store = None
+        else:
+            upload_url = blobstore.create_upload_url('/api/accounts/' + user.email() + '/schedules/add')
+            store = json.loads(resp_store.data)
     else:
         url = users.create_login_url(request.path)
         url_linktext = 'Login'
         user = None
 
-    print user.email()
-    print store
-    print stores
-
     template_values = {
         'store': store,
         'stores': stores,
-        'url': url,
-        'url_linktext': url_linktext,
+        'login_url': url,
+        'login_url_linktext': url_linktext,
         'user': user,
         'upload_url': upload_url,
         'store_name': store_name,

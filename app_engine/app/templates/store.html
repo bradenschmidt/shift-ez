@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-{% autoescape true %}
+{% autoescape on %}
 <html>
 <head>
     <link href="/static/stylesheets/vertical-responsive-menu.min.css" rel="stylesheet">
@@ -11,6 +11,8 @@
 
     <link rel="import" href="/static/bower_components/core-icons/core-icons.html">
     <link rel="import" href="/static/bower_components/paper-fab/paper-fab.html">
+
+    <title>Shift EZ</title>
 </head>
 
 <body>
@@ -20,12 +22,14 @@
         <i class="fa fa-bars"></i>
     </button>
     <h1>Shift EZ</h1>
-    <a id="logout" href="{{ url|safe }}"><h1>{{ url_linktext }}</h1></a>
+    <a id="login" href="{{ login_url|safe }}"><h1>{{ login_url_linktext }}</h1></a>
 </header>
 
-<a href="#addScheduleFormDiv" rel="modal:open">
-    <paper-fab id="fab" icon="add"></paper-fab>
-</a>
+{% if user and store %}
+    <a href="#addScheduleFormDiv" rel="modal:open">
+        <paper-fab id="fab" icon="add"></paper-fab>
+    </a>
+{% endif %}
 
 <nav class="vertical_nav">
 
@@ -38,7 +42,7 @@
         {% if user %}
             {% if stores['stores']|length > 0 %}
                 {% for store in stores['stores'] %}
-                    <li class="menu--item store" id="{{ 'store' + loop.index0|string }}">
+                    <li class="menu--item store" id="store{{ loop.index0|string }}">
 
                         <a href="/stores/{{ store.store_name }}/dep/{{ store.dep_name }}">
                             <label class="menu--link" title="{{ store.store_name }}">
@@ -88,56 +92,60 @@
 <div class="wrapper">
 
     {% if user %}
-        <div id="leftColumn" class="sideDivs">
-            <div class="buttons">
-                <img id="prevButton" src="/static/images/ic_keyboard_arrow_left_black.png">
+        {% if store %}
+            <div id="leftColumn" class="sideDivs">
+                <div class="buttons">
+                    <img id="prevButton" src="/static/images/ic_keyboard_arrow_left_black.png">
+                </div>
             </div>
-        </div>
 
-        <div class="schedules">
-            {% if store['schedules']|length > 0 %}
-                {% for schedule in store['schedules'] %}
-                    <table class="schedule {{ 'schedule' + loop.index0|string }}"
-                           id="{{ 'current' if (loop.index0 == 0) else '' }}">
-                        <tr>
-                            <th>Store:</th>
-                            <th>Department:</th>
-                            <th>Year:</th>
-                            <th>Week:</th>
-                            <th>Uploader:</th>
-                            <th>Date:</th>
-                        </tr>
-                        <tr>
-                            <td>{{ schedule.store_name }}</td>
-                            <td>{{ schedule.dep_name }}</td>
-                            <td>{{ schedule.year }}</td>
-                            <td>{{ schedule.week }}</td>
-                            <td>{{ schedule.user_name }} ({{ schedule.upload_user_id }})</td>
-                            <td>{{ schedule.upload_dateTime }}</td>
-                        </tr>
-                        <tr>
-                            <td class="schedule_image" colspan="6"><img src="{{ schedule.image_url }}"></td>
-                        </tr>
+            <div class="schedules">
+                {% if store['schedules']|length > 0 %}
+                    {% for schedule in store['schedules'] %}
+                        <table class="schedule schedule{{ loop.index0|string }}"
+                               id="{{ 'current' if (loop.index0 == 0) else '' }}">
+                            <tr>
+                                <th>Store:</th>
+                                <th>Department:</th>
+                                <th>Year:</th>
+                                <th>Week:</th>
+                                <th>Uploader:</th>
+                                <th>Date:</th>
+                            </tr>
+                            <tr>
+                                <td>{{ schedule.store_name }}</td>
+                                <td>{{ schedule.dep_name }}</td>
+                                <td>{{ schedule.year }}</td>
+                                <td>{{ schedule.week }}</td>
+                                <td>{{ schedule.user_name }} ({{ schedule.upload_user_id }})</td>
+                                <td>{{ schedule.upload_dateTime }}</td>
+                            </tr>
+                            <tr>
+                                <td class="schedule_image" colspan="6"><img src="{{ schedule.image_url }}"></td>
+                            </tr>
+                        </table>
+                    {% endfor %}
+                {% else %}
+                    <table id="emptyTable">
+                        <td>
+                            <span id="empty">No Schedules</span>
+                        </td>
                     </table>
-                {% endfor %}
-            {% else %}
-                <table id="emptyTable">
-                    <td>
-                        <span id="empty">No Schedules</span>
-                    </td>
-                </table>
 
-            {% endif %}
+                {% endif %}
 
-        </div>
-
-        <div id="rightColumn" class="sideDivs">
-            <div class="buttons">
-                <img id="nextButton" src="/static/images/ic_keyboard_arrow_right_black.png">
             </div>
-        </div>
+
+            <div id="rightColumn" class="sideDivs">
+                <div class="buttons">
+                    <img id="nextButton" src="/static/images/ic_keyboard_arrow_right_black.png">
+                </div>
+            </div>
+        {% else %}
+            <span id="badStore">Invalid Store. Select another.</span>
+        {% endif %}
     {% else %}
-        <span id="loginNeeded">Please <a href="{{ url|safe }}">Login</a></span>
+        <span id="loginNeeded">Please <a href="{{ login_url|safe }}">Login</a></span>
     {% endif %}
 
 </div>
