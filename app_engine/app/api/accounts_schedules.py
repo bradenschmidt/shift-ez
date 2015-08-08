@@ -91,8 +91,6 @@ def upload_image(user_id):
         code = 0
         desc = 'Upload Successful'
 
-
-
     return jsonify(code=code, desc=desc)
 
 

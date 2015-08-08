@@ -207,6 +207,12 @@ header h1 {
   color: #333;
 }
 
-#form {
+.form {
   text-align: center;
+}
+
+#fab{
+  position: absolute;
+  bottom: 5%;
+  right: 5%;
 }

@@ -56,10 +56,13 @@ def get_json_response(view_name, *args, **kwargs):
 def store_template(store_name, dep_name):
     """Serve the homepage."""
 
+    upload_url = None
     store = None
     stores = []
 
     user = users.get_current_user()
+
+    store_user_id = user.email()
 
     if user:
         url = users.create_logout_url(request.path)
@@ -68,6 +71,8 @@ def store_template(store_name, dep_name):
         resp = get_accounts_stores(user_id)
         stores = json.loads(resp.data)
 
+        upload_url = blobstore.create_upload_url('/api/accounts/' + user.email() + '/schedules/add')
+
         resp_store = get_schedules_by_store(user_id, store_name, dep_name, store_user_id=user_id)
         store = json.loads(resp_store.data)
     else:
@@ -75,16 +80,21 @@ def store_template(store_name, dep_name):
         url_linktext = 'Login'
         user = None
 
-    print user
+    print user.email()
     print store
     print stores
 
     template_values = {
-        'schedules': store,
+        'store': store,
         'stores': stores,
         'url': url,
         'url_linktext': url_linktext,
-        'user': user
+        'user': user,
+        'upload_url': upload_url,
+        'store_name': store_name,
+        'dep_name': dep_name,
+        'store_user_id': store_user_id,
+        'request': request
     }
 
     template = JINJA_ENVIRONMENT.get_template('app/templates/store.html')

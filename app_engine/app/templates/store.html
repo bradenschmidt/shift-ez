@@ -8,6 +8,9 @@
     <link href="/static/stylesheets/stylesheet.css" rel="stylesheet" type="text/css">
 
     <script src="/static/scripts/jquery.min.js"></script>
+
+    <link rel="import" href="/static/bower_components/core-icons/core-icons.html">
+    <link rel="import" href="/static/bower_components/paper-fab/paper-fab.html">
 </head>
 
 <body>
@@ -19,6 +22,10 @@
     <h1>Shift EZ</h1>
     <a id="logout" href="{{ url|safe }}"><h1>{{ url_linktext }}</h1></a>
 </header>
+
+<a href="#addScheduleFormDiv" rel="modal:open">
+    <paper-fab id="fab" icon="add"></paper-fab>
+</a>
 
 <nav class="vertical_nav">
 
@@ -50,7 +57,7 @@
             {% endif %}
 
             <li class="menu--item separator">
-                <a href="#formDiv" rel="modal:open">
+                <a href="#addStoreFormDiv" rel="modal:open">
                     <label class="menu--link" title="Add Store">
                         <img class="menu--icon" src="/static/images/ic_action_add_box.png"/>
                         <span class="menu--label">Add Store</span>
@@ -88,8 +95,8 @@
         </div>
 
         <div class="schedules">
-            {% if schedules['schedules']|length > 0 %}
-                {% for schedule in schedules['schedules'] %}
+            {% if store['schedules']|length > 0 %}
+                {% for schedule in store['schedules'] %}
                     <table class="schedule {{ 'schedule' + loop.index0|string }}"
                            id="{{ 'current' if (loop.index0 == 0) else '' }}">
                         <tr>
@@ -136,15 +143,32 @@
 </div>
 
 {% if user %}
-    <div id="formDiv" class="modal">
-        <form id="form">
-            <input id="loc" type="text" hidden required value="/api/accounts/{{ user.email() }}/stores/add"
-                   title="loc"/>
+    <div id="addStoreFormDiv" class="modal">
+        <form id="addStoreForm" class="form" action="/api/accounts/{{ user.email() }}/stores/add">
             <label for="store_name">Store Name:</label><br/>
             <input type="text" name="store_name" id="store_name" required/><br/>
             <label for="dep_name">Dep Name:</label><br/>
             <input type="text" name="dep_name" id="dep_name" required/><br/>
             <button id="addStore" type="submit">Add Store</button>
+        </form>
+    </div>
+
+    <div id="addScheduleFormDiv" class="modal">
+        <form id="addScheduleForm" class="form" action="{{ upload_url }}" method="POST" enctype="multipart/form-data">
+            <input id="scheduleStoreName" required type="hidden" name="store_name" value="{{ store_name }}"/>
+            <input id="scheduleDepName" required type="hidden" name="dep_name" value="{{ dep_name }}"/>
+            <input id="scheduleStoreUserId" required type="hidden" name="store_user_id" value="{{ store_user_id }}"/>
+
+            <label for="scheduleYear">Year: </label>
+            <input id="scheduleYear" required type="text" name="year" value="2015"/><br>
+            <label for="scheduleWeek">Year: </label>
+            <input id ="scheduleWeek" required type="text" name="week" value="20"/><br>
+            <label for="scheduleWeekOffset">Week Offset: </label>
+            <input id="scheduleWeekOffset" required type="text" name="week_offset" value="5"/><br>
+
+            <label for="scheduleFile">Upload Schedule Image: </label>
+            <input id="scheduleFile" required type="file" name="file"><br>
+            <input type="submit" value="Submit">
         </form>
     </div>
 {% endif %}
