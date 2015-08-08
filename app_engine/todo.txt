@@ -1,0 +1,10 @@
+##Web
+
+#Index
+Check if account exists
+Redirect to default store
+
+#Store
+Check if account exists
+Use store_user_id
+Check if store exists -> give error redirect to index
