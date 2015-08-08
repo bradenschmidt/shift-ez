@@ -3258,7 +3258,7 @@ window.PolymerGestures = {};
 
       return this.valueFn_;
     }
-  }
+  };
 
   function IdentPath(name) {
     this.name = name;
@@ -3546,7 +3546,7 @@ window.PolymerGestures = {};
         elements[i] = getFn(elements[i]);
 
       return function(model, observer, filterRegistry) {
-        var arr = []
+        var arr = [];
         for (var i = 0; i < elements.length; i++)
           arr.push(elements[i](model, observer, filterRegistry));
         return arr;
@@ -3593,7 +3593,7 @@ window.PolymerGestures = {};
     },
 
     createThisExpression: notImplemented
-  }
+  };
 
   function ConstantObservable(value) {
     this.value_ = value;
@@ -3604,7 +3604,7 @@ window.PolymerGestures = {};
     discardChanges: function() { return this.value_; },
     deliver: function() {},
     close: function() {},
-  }
+  };
 
   function Expression(delegate) {
     this.scopeIdent = delegate.scopeIdent;
@@ -3678,7 +3678,7 @@ window.PolymerGestures = {};
       if (this.expression.setValue)
         return this.expression.setValue(model, newValue);
     }
-  }
+  };
 
   /**
    * Converts a style property name to a css property name. For example:
@@ -3719,8 +3719,7 @@ window.PolymerGestures = {};
       return true;
 
     return false;
-  };
-
+  }
   function PolymerExpressions() {}
 
   PolymerExpressions.prototype = {
@@ -3853,8 +3852,7 @@ if (typeof window.Polymer === 'function') {
         break;
     }
     modules[name] = module;
-  };
-
+  }
   function marshal(name) {
     return modules[name];
   }
@@ -3865,8 +3863,7 @@ if (typeof window.Polymer === 'function') {
     HTMLImports.whenImportsReady(function() {
       withDependencies(task, depends);
     });
-  };
-
+  }
   // exports
 
   scope.marshal = marshal;
@@ -4256,7 +4253,7 @@ scope.isIE = isIE;
 
   var numberIsNaN = global.Number.isNaN || function(value) {
     return typeof value === 'number' && global.isNaN(value);
-  }
+      };
 
   function areSameValue(left, right) {
     if (left === right)
@@ -4392,7 +4389,7 @@ scope.isIE = isIE;
       'ws': ['afterElement'],
       ']': ['inPath', 'push']
     }
-  }
+  };
 
   function noop() {}
 
@@ -4412,7 +4409,7 @@ scope.isIE = isIE;
 
       append: function() {
         if (key === undefined)
-          key = newChar
+          key = newChar;
         else
           key += newChar;
       }
@@ -4456,7 +4453,7 @@ scope.isIE = isIE;
       }
     }
 
-    return; // parse error
+     // parse error
   }
 
   function isIdent(s) {
@@ -4922,7 +4919,7 @@ scope.isIE = isIE;
       this.check_(undefined, true);
       return this.value_;
     }
-  }
+  };
 
   var collectObservers = !hasObserve;
   var allObservers;
@@ -5017,7 +5014,7 @@ scope.isIE = isIE;
       var copy = Array.isArray(object) ? [] : {};
       for (var prop in object) {
         copy[prop] = object[prop];
-      };
+      }
       if (Array.isArray(object))
         copy.length = object.length;
       return copy;
@@ -5206,7 +5203,7 @@ scope.isIE = isIE;
         var object;
         var needsDirectObserver = false;
         for (var i = 0; i < this.observed_.length; i += 2) {
-          object = this.observed_[i]
+          object = this.observed_[i];
           if (object !== observerSentinel) {
             needsDirectObserver = true;
             break;
@@ -5277,7 +5274,7 @@ scope.isIE = isIE;
     iterateObjects_: function(observe) {
       var object;
       for (var i = 0; i < this.observed_.length; i += 2) {
-        object = this.observed_[i]
+        object = this.observed_[i];
         if (object !== observerSentinel)
           this.observed_[i + 1].iterateObjects(object, observe)
       }
@@ -5379,7 +5376,7 @@ scope.isIE = isIE;
       this.getValueFn_ = undefined;
       this.setValueFn_ = undefined;
     }
-  }
+  };
 
   var expectedRecordTypes = {
     add: true,
@@ -5786,7 +5783,7 @@ scope.isIE = isIE;
         splices.splice(i, 0, splice);
         i++;
 
-        var offset = splice.addedCount - splice.removed.length
+        var offset = splice.addedCount - splice.removed.length;
         current.index += offset;
         insertionOffset += offset;
       }
@@ -5833,8 +5830,7 @@ scope.isIE = isIE;
           splices.push(splice);
 
         return
-      };
-
+      }
       splices = splices.concat(calcSplices(array, splice.index, splice.index + splice.addedCount,
                                            splice.removed, 0, splice.removed.length));
     });
@@ -5951,7 +5947,7 @@ scope.isIE = isIE;
     var observable = value;
     updateText(this, observable.open(textBinding(this)));
     return maybeUpdateBindings(this, name, observable);
-  }
+  };
 
   function updateAttribute(el, name, conditional, value) {
     if (conditional) {
@@ -6135,7 +6131,7 @@ scope.isIE = isIE;
 
     // Checkboxes may need to update bindings of other checkboxes.
     return updateBindings(this, name, binding);
-  }
+  };
 
   HTMLTextAreaElement.prototype.bind = function(name, value, oneTime) {
     if (name !== 'value')
@@ -6151,10 +6147,10 @@ scope.isIE = isIE;
     updateInput(this, 'value',
                 observable.open(inputBinding(this, 'value', sanitizeValue)));
     return maybeUpdateBindings(this, name, binding);
-  }
+  };
 
   function updateOption(option, value) {
-    var parentNode = option.parentNode;;
+    var parentNode = option.parentNode;
     var select;
     var selectBinding;
     var oldValue;
@@ -6194,7 +6190,7 @@ scope.isIE = isIE;
     var binding = bindInputEvent(this, 'value', observable);
     updateOption(this, observable.open(optionBinding(this)));
     return maybeUpdateBindings(this, name, binding);
-  }
+  };
 
   HTMLSelectElement.prototype.bind = function(name, value, oneTime) {
     if (name === 'selectedindex')
@@ -6259,7 +6255,7 @@ scope.isIE = isIE;
         ref = node.getElementById(id);
 
       if (ref || !node.templateCreator_)
-        break
+        break;
 
       node = node.templateCreator_;
     }
@@ -6429,7 +6425,7 @@ scope.isIE = isIE;
     var subTemplates = node.querySelectorAll(allTemplatesSelectors);
 
     if (isTemplate(node))
-      fn(node)
+      fn(node);
     forEach(subTemplates, fn);
   }
 
@@ -6464,7 +6460,7 @@ scope.isIE = isIE;
 
   // http://dvcs.w3.org/hg/webcomponents/raw-file/tip/spec/templates/index.html#dfn-template-contents-owner
   function getOrCreateTemplateContentsOwner(template) {
-    var doc = template.ownerDocument
+    var doc = template.ownerDocument;
     if (!doc.defaultView)
       return doc;
     var d = doc.templateContentsOwner_;
@@ -6803,12 +6799,12 @@ scope.isIE = isIE;
       this.model_ = undefined;
       this.delegate_ = undefined;
       if (this.bindings_ && this.bindings_.ref)
-        this.bindings_.ref.close()
+        this.bindings_.ref.close();
       this.refContent_ = undefined;
       if (!this.iterator_)
         return;
       this.iterator_.valueChanged();
-      this.iterator_.close()
+      this.iterator_.close();
       this.iterator_ = undefined;
     },
 
@@ -6938,11 +6934,10 @@ scope.isIE = isIE;
       }
 
       return newValue;
-    }
+    };
 
     return tokens;
-  };
-
+  }
   function processOneTimeBinding(name, tokens, node, model) {
     if (tokens.hasOnePath) {
       var delegateFn = tokens[3];
@@ -6986,7 +6981,7 @@ scope.isIE = isIE;
       if (delegateFn) {
         var value = delegateFn(model, node, oneTime);
         if (oneTime)
-          observer.addPath(value)
+          observer.addPath(value);
         else
           observer.addObserver(value);
         continue;
@@ -6994,7 +6989,7 @@ scope.isIE = isIE;
 
       var path = tokens[i + 1];
       if (oneTime)
-        observer.addPath(path.getValueFrom(model))
+        observer.addPath(path.getValueFrom(model));
       else
         observer.addPath(model, path);
     }
@@ -7004,7 +6999,7 @@ scope.isIE = isIE;
 
   function processBindings(node, bindings, model, instanceBindings) {
     for (var i = 0; i < bindings.length; i += 2) {
-      var name = bindings[i]
+      var name = bindings[i];
       var tokens = bindings[i + 1];
       var value = processBinding(name, tokens, node, model);
       var binding = node.bind(name, value, tokens.onlyOneTime);
@@ -7643,7 +7638,7 @@ scope.isIE = isIE;
           } else if (EOF == c) {
             break loop;
           } else {
-            err('Code point not allowed in scheme: ' + c)
+            err('Code point not allowed in scheme: ' + c);
             break loop;
           }
           break;
@@ -7711,8 +7706,8 @@ scope.isIE = isIE;
             this._fragment = '#';
             state = 'fragment';
           } else {
-            var nextC = input[cursor+1]
-            var nextNextC = input[cursor+2]
+            var nextC = input[cursor + 1];
+            var nextNextC = input[cursor + 2];
             if (
               'file' != this._scheme || !ALPHA.test(c) ||
               (nextC != ':' && nextC != '|') ||
@@ -8179,8 +8174,7 @@ function flush() {
       log.data && console.groupEnd();
     });
   }
-};
-
+}
 // polling dirty checker
 // flush periodically if platform does not have object observe.
 if (!Observer.hasObjectObserve) {
@@ -10084,7 +10078,7 @@ scope.styleResolver = styleResolver;
         var n$ = root.querySelectorAll("[id]");
         for (var i=0, l=n$.length, n; (i<l) && (n=n$[i]); i++) {
           $[n.id] = n;
-        };
+        }
       }
     },
 
@@ -10130,7 +10124,8 @@ scope.styleResolver = styleResolver;
    * @property Base
    * @type Function
    */
-  function PolymerBase() {};
+  function PolymerBase() {
+  }
   PolymerBase.prototype = base;
   base.constructor = PolymerBase;
 
@@ -11286,7 +11281,7 @@ scope.api.declaration.path = path;
     registerPrototype: function(name, extendee) { 
       var info = {
         prototype: this.prototype
-      }
+      };
       // native element must be specified in extends
       var typeExtension = this.findTypeExtension(extendee);
       if (typeExtension) {
