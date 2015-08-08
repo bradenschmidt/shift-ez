@@ -225,3 +225,9 @@ header h1 {
   bottom: 5%;
   right: 5%;
 }
+
+#progressBar {
+  display: none;
+  text-align: center;
+  margin: 0 auto !important;
+}

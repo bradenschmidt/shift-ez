@@ -50,6 +50,9 @@ function showSchedule(prev, i) {
 
 $("#addScheduleForm").validate({
     submitHandler: function (form) {
+        $('#addScheduleForm').hide();
+        $("#progressBar").show(500).css("display", "block");
+
         var params = {};
 
         params.store_name = $("#scheduleStoreName").val();
@@ -69,6 +72,27 @@ $("#addScheduleForm").validate({
 
         $.ajax(
             {
+                xhr: function () {
+                    var xhr = new window.XMLHttpRequest();
+                    xhr.upload.addEventListener("progress", function (evt) {
+                        if (evt.lengthComputable) {
+                            var percentComplete = parseInt((evt.loaded / evt.total) * 100);
+                            console.log(percentComplete);
+                            $('#progressBar').attr('value', percentComplete);
+                            //Do something with upload progress here
+                        }
+                    }, false);
+
+                    xhr.addEventListener("progress", function (evt) {
+                        if (evt.lengthComputable) {
+                            var percentComplete = evt.loaded / evt.total;
+                            console.log(percentComplete);
+                            //Do something with download progress
+                        }
+                    }, false);
+
+                    return xhr;
+                },
                 type: "POST",
                 url: $("#addScheduleForm").attr('action'),
                 contentType: false,
@@ -80,10 +104,15 @@ $("#addScheduleForm").validate({
                 alert(data.desc);
                 if (data.code == 0) {
                     location.reload();
+                } else {
+                    $('#progressBar').hide();
+                    $('#addScheduleForm').show();
                 }
             }).fail(function (data) {
                 alert("Schedule Add failed: " + data.statusText);
                 console.log(data);
+                $('#progressBar').hide();
+                $('#addScheduleForm').show();
             }
         );
     }
