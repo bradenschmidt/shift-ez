@@ -11,6 +11,17 @@ handlers:
 - url: .*
   script: main.app
 
+skip_files:
+- ^(.*/)?.*\.md
+- ^(.*/)?.*\.vsdx
+
+- ^(.*/)?#.*#$
+- ^(.*/)?.*~$
+- ^(.*/)?.*\.py[co]$
+- ^(.*/)?.*/RCS/.*$
+- ^(.*/)?\..*$
+
+
 libraries:
 - name: jinja2
   version: "2.6"
